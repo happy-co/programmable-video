@@ -1,19 +1,21 @@
 package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 
-import androidx.annotation.NonNull;
+import android.content.Context
+import android.util.Log
+import androidx.annotation.NonNull
+import com.twilio.video.Video
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.plugin.platform.PlatformViewRegistry
 
 /** TwilioUnofficialProgrammableVideoPlugin */
-public class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin, MethodCallHandler {
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        val channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "twilio_unofficial_programmable_video")
-        channel.setMethodCallHandler(TwilioUnofficialProgrammableVideoPlugin());
-    }
+class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
+    private lateinit var roomChannel: EventChannel
+
+    private lateinit var methodChannel: MethodChannel
+
+    private lateinit var remoteParticipantChannel: EventChannel
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -25,21 +27,69 @@ public class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin, MethodCall
     // depending on the user's project. onAttachedToEngine or registerWith must both be defined
     // in the same class.
     companion object {
+        @Suppress("unused")
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "twilio_unofficial_programmable_video")
-            channel.setMethodCallHandler(TwilioUnofficialProgrammableVideoPlugin())
+            val instance = TwilioUnofficialProgrammableVideoPlugin()
+            instance.onAttachedToEngine(registrar.context(), registrar.messenger(), registrar.platformViewRegistry())
+        }
+
+        @JvmStatic
+        val LOG_TAG = "TwilioUnofficial_PVideo"
+
+        lateinit var roomListener: RoomListener
+
+        var remoteParticipantListener = RemoteParticipantListener()
+
+        @JvmStatic
+        fun debug(msg: String) {
+            Log.d(LOG_TAG, msg)
         }
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        if (call.method == "getPlatformVersion") {
-            result.success("Android ${android.os.Build.VERSION.RELEASE}")
-        } else {
-            result.notImplemented()
-        }
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        onAttachedToEngine(binding.applicationContext, binding.binaryMessenger, binding.platformViewRegistry)
+    }
+
+    private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger, platformViewRegistry: PlatformViewRegistry) {
+        val pluginHandler = PluginHandler(applicationContext)
+        methodChannel = MethodChannel(messenger, "twilio_unofficial_programmable_video")
+        methodChannel.setMethodCallHandler(pluginHandler)
+
+        roomChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/room")
+        roomChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel attached")
+                roomListener.events = events
+                roomListener.room = Video.connect(applicationContext, roomListener.connectOptions, roomListener)
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel detached")
+                roomListener.events = null
+            }
+        })
+
+        remoteParticipantChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/remote")
+        remoteParticipantChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel attached")
+                remoteParticipantListener.events = events
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel detached")
+                remoteParticipantListener.events = null
+            }
+        })
+
+        val pvf = ParticipantViewFactory(StandardMessageCodec.INSTANCE, pluginHandler)
+        platformViewRegistry.registerViewFactory("twilio_unofficial_programmable_video/views", pvf)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        methodChannel.setMethodCallHandler(null)
+        roomChannel.setStreamHandler(null)
+        remoteParticipantChannel.setStreamHandler(null)
     }
 }

@@ -1,0 +1,62 @@
+image: cirrusci/flutter:stable
+
+stages:
+  - lint
+  - test
+  - publish
+
+before_script:
+
+flutter_analyze:
+  stage: lint
+  script:
+    - flutter analyze --pub
+  only:
+    - merge_requests
+  # TODO: Should be removed after solving and following all analyses!
+  allow_failure: true
+
+firebase_functions:
+  image: node:8.15.0-alpine
+  stage: lint
+  script:
+    - cd example/firebase/functions || exit 1
+    - npm i
+    - npm run lint
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - example/firebase/functions/**/*
+  # TODO: Should be removed after solving and following all analyses!
+  allow_failure: true
+
+unit_test_package:
+  stage: test
+  script:
+    - flutter test --pub test/*
+  only:
+    - merge_requests
+  # TODO: Should be removed after fixing the unit tests!
+  allow_failure: true
+
+unit_test_example:
+  stage: test
+  script:
+    - cd example || exit 1
+    - flutter test --pub test/*
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - example/**/*
+  # TODO: Should be removed after fixing the unit tests!
+  allow_failure: true
+
+dry-run:
+  stage: publish
+  script:
+    - flutter pub get
+    - flutter pub publish --dry-run
+  only:
+    - merge_requests

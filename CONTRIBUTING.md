@@ -1,0 +1,49 @@
+# Contributing Guidelines
+If you're interested in contributing to this project, here are a few ways to do so:
+
+### Bug fixes
+* If you find a bug, please first report it using [Gitlab issues](https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues/new).
+* Issues that have already been identified as a bug will be labelled ~"type::bug" .
+* If you'd like to submit a fix for a bug, send a [Merge Request](https://docs.gitlab.com/ee/user/project/repository/forking_workflow.html#merging-upstream) from your own fork, also read the [How To](#how-to) and [Development Guidelines](#development-guidelines).
+* Include a test that isolates the bug and verifies that it was fixed.
+* Also update the example and documentation if necessary.
+
+### New Features
+* If you'd like to add a feature to the library that doesn't already exist, feel free to describe the feature in a new [Gitlab issue](https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues/new).
+* Issues that have been identified as a feature request will be labelled ~"type::feature".
+* If you'd like to implement the new feature, please wait for feedback from the project maintainers before spending too much time writing the code. In some cases, enhancements may not align well with the project objectives at the time.
+* Implement your code and please read the [How To](#how-to) and [Development Guidelines](#development-guidelines).
+* Also update the example and documentation where needed.
+
+### Documentation & Miscellaneous
+* If you think the documentation could be clearer, or you have an alternative implementation of something that may have more advantages, we would love to hear it.
+* As always first file a report in a [Gitlab issue](https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues/new).
+* Issues that have been identified as a feature request will be labelled ~"type::documentation".
+* Implement the changes to the documentation, please read the [How To](#how-to) and [Development Guidelines](#development-guidelines).
+
+# Requirements
+For a contribution to be accepted:
+
+* Take note of the [Development Guidelines](#development-guidelines)
+* Code must follow existing styling conventions
+* Commit message should start with a [issue number](#how-to) and should also be descriptive.
+
+If the contribution doesn't meet these criteria, a maintainer will discuss it with you on the issue. You can still continue to add more commits to the branch you have sent the Merge Request from.
+
+# How To
+* First of all [file an bug or feature report](https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues/new) on this repository.
+* [Fork the project](https://docs.gitlab.com/ee/gitlab-basics/fork-project.html) on Gitlab
+* Clone the forked repository to your local development machine (e.g. `git clone https://gitlab.com/<YOUR_GITLAB_USER>/programmable-video.git`)
+* Run `flutter pub get` in the cloned repository to get all the dependencies
+* Create a new local branch based on issue number from first step (e.g. `git checkout -b 12-new-feature`)
+* Make your changes
+* When committing your changes, make sure to start the commit message with `#<issue-number>` (e.g. `git commit -m '#12 - New Feature added'`)
+* Push your new branch to your own fork into the same remote branch (e.g. `git push origin 12-new-feature`)
+* On Gitlab goto the [merge request page](https://docs.gitlab.com/ee/user/project/repository/forking_workflow.html#merging-upstream) on your own fork and create a merge request to this reposistory
+
+# Development Guidelines
+* Backend code for the example app should be written for Cloud Functions, see the `example/firebase` folder.
+* Documentation should be updated.
+* Example application should be updated.
+* Format the Flutter code accordingly.
+* Note the [`analysis_options.yaml`](analysis_options.yaml) and write code as stated in this file
