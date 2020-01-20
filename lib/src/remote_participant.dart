@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'remote_video_track.dart';
+import 'package:twilio_unofficial_programmable_video/src/remote_video_track.dart';
 
 class RemoteParticipant {
   Stream<dynamic> _participantStream;

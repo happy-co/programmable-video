@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:twilio_unofficial_programmable_video/remote_participant.dart';
+import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
 
 class RemoteVideoTrack {
   final String _sid;

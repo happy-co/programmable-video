@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/local_participant.dart';
-import 'package:twilio_unofficial_programmable_video/twilio_exception.dart';
-import 'remote_participant.dart';
+import 'package:twilio_unofficial_programmable_video/src/local_participant.dart';
+import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
+import 'package:twilio_unofficial_programmable_video/src/twilio_exception.dart';
 
 class Room {
   final int _internalId;
@@ -115,7 +115,8 @@ class Room {
     RemoteParticipant participant;
     if (data['remoteParticipant'] != null) {
       final Map<String, dynamic> participantMap = Map<String, dynamic>.from(data['remoteParticipant']);
-      remoteParticipants.add(_createRemoteParticipant(participantMap));
+      participant = _createRemoteParticipant(participantMap);
+      remoteParticipants.add(participant);
     }
 
     TwilioException exception;

@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'package:twilio_unofficial_programmable_video_example/conference/conference_page.dart';
+import 'package:twilio_unofficial_programmable_video_example/room/room_bloc.dart';
+import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
+import 'package:twilio_unofficial_programmable_video_example/shared/services/backend_service.dart';
+import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_exception_alert_dialog.dart';
+
+class JoinRoomForm extends StatefulWidget {
+  final RoomBloc roomBloc;
+
+  const JoinRoomForm({
+    Key key,
+    @required this.roomBloc,
+  }) : super(key: key);
+
+  static Widget create(BuildContext context) {
+    final BackendService backendService = Provider.of<BackendService>(context, listen: false);
+    return Provider<RoomBloc>(
+      create: (BuildContext context) => RoomBloc(backendService: backendService),
+      child: Consumer<RoomBloc>(
+        builder: (BuildContext context, RoomBloc roomBloc, _) => JoinRoomForm(
+          roomBloc: roomBloc,
+        ),
+      ),
+      dispose: (BuildContext context, RoomBloc roomBloc) => roomBloc.dispose(),
+    );
+  }
+
+  @override
+  _JoinRoomFormState createState() => _JoinRoomFormState();
+}
+
+class _JoinRoomFormState extends State<JoinRoomForm> {
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<RoomModel>(
+        stream: widget.roomBloc.modelStream,
+        initialData: RoomModel(),
+        builder: (BuildContext context, AsyncSnapshot<RoomModel> snapshot) {
+          final RoomModel roomModel = snapshot.data;
+          return Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _buildChildren(roomModel),
+            ),
+          );
+        });
+  }
+
+  List<Widget> _buildChildren(RoomModel roomModel) {
+    return <Widget>[
+      TextField(
+        decoration: InputDecoration(
+          labelText: 'Enter room name',
+          errorText: roomModel.nameErrorText,
+          enabled: !roomModel.isLoading,
+        ),
+        controller: _nameController,
+        onChanged: widget.roomBloc.updateName,
+      ),
+      const SizedBox(
+        height: 16,
+      ),
+      _buildButton(roomModel),
+      const SizedBox(
+        height: 16,
+      ),
+    ];
+  }
+
+  Widget _buildButton(RoomModel roomModel) {
+    return roomModel.isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : FlatButton(
+            onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
+            child: const Text('JOIN'),
+            color: Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor,
+            textColor: Theme.of(context).appBarTheme?.textTheme?.title?.color ?? Colors.white,
+            disabledColor: Colors.grey.shade300,
+          );
+  }
+
+  Future<void> _submit() async {
+    try {
+      await widget.roomBloc.submit();
+      await Navigator.of(context).push(
+        MaterialPageRoute<ConferencePage>(
+          fullscreenDialog: true,
+          builder: (BuildContext context) => ConferencePage(
+            roomModel: widget.roomBloc.model,
+          ),
+        ),
+      );
+    } on PlatformException catch (error) {
+      await PlatformExceptionAlertDialog(
+        title: 'Error creating room',
+        exception: error,
+      ).show(context);
+    }
+  }
+}

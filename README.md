@@ -1,8 +1,11 @@
-# WIP twilio_unofficial_programmable_video
+# [WIP] twilio_unofficial_programmable_video
 
 Unofficial Twilio Programmable Video Flutter package.
 
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
+
+## Join the community
+If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 
 ## Prerequisites
 Before you can start using the plugin you need to make sure you have everything setup for your project.
