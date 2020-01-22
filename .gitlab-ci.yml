@@ -5,8 +5,6 @@ stages:
   - test
   - publish
 
-before_script:
-
 flutter_analyze:
   stage: lint
   script:
@@ -16,8 +14,6 @@ flutter_analyze:
     - flutter analyze --pub
   only:
     - merge_requests
-  # TODO: Should be removed after solving and following all analyses!
-  allow_failure: true
 
 firebase_functions:
   image: node:8.15.0-alpine

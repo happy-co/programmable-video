@@ -21,6 +21,8 @@ class Room {
 
   final EventChannel _remoteParticipantChannel;
 
+  // TODO: give it purpose!
+  // ignore: unused_field
   Stream<dynamic> _roomStream;
 
   String _sid;

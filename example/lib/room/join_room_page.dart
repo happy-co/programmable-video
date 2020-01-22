@@ -6,7 +6,7 @@ class JoinRoomPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Twilio Programmable Video'),
+        title: const Text('Twilio Unofficial Programmable Video'),
       ),
       body: Center(
         child: SingleChildScrollView(

@@ -98,6 +98,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     // TODO(WLFN): Not sure if the remoteVideoTrackPublication contains a remoteVideoTrack at this point.
+    // TODO(AS): FOR(WLFN) Use the remoteVideoTrack param, not the one from the Publication!
     override fun onVideoTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, remoteVideoTrack: RemoteVideoTrack) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnsubscribed => trackSid: ${remoteVideoTrackPublication.trackSid}, isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
         sendEvent("videoTrackUnsubscribed", mapOf(

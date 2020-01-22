@@ -15,6 +15,8 @@ class RemoteParticipantEvent {
 }
 
 class RemoteParticipant {
+  // TODO: give it purpose!
+  // ignore: unused_field
   Stream<dynamic> _participantStream;
 
   final String _identity;

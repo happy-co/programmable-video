@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_unofficial_programmable_video_example/models/twilio_room_request.dart';
-import 'package:twilio_unofficial_programmable_video_example/models/twilio_room_response.dart';
 import 'package:twilio_unofficial_programmable_video_example/models/twilio_room_token_request.dart';
 import 'package:twilio_unofficial_programmable_video_example/models/twilio_room_token_response.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
@@ -28,7 +27,7 @@ class RoomBloc {
     updateWith(isSubmitted: true, isLoading: true);
     try {
       try {
-        final TwilioRoomResponse twilioRoomResponse = await backendService.createRoom(
+        await backendService.createRoom(
           TwilioRoomRequest(
             uniqueName: model.name,
             type: TwilioRoomType.groupSmall,

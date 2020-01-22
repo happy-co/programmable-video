@@ -1,13 +1,15 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_button_bar.dart';
+import 'package:twilio_unofficial_programmable_video_example/conference/draggable_publisher.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/platform_service.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/noise_box.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/widgets/responsive_save_area.dart';
-import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
 import 'package:wakelock/wakelock.dart';
 
 class ConferencePage extends StatefulWidget {
@@ -25,19 +27,13 @@ class ConferencePage extends StatefulWidget {
 class _ConferencePageState extends State<ConferencePage> {
   bool _videoEnabled = true;
   bool _microphoneEnabled = false; // TODO(AS): Enable audio again...
-  double _top;
-  double _right = 10;
-  double _bottom = 80;
-  double _left;
 
   LocalVideoTrack _localVideoTrack;
   Room _room;
   String _deviceId;
+  StreamController<bool> _onButtonBarVisible = StreamController<bool>.broadcast();
 
   final List<Participant> _participants = [];
-  final Duration _duration300ms = const Duration(milliseconds: 300);
-  final Duration _duration0ms = const Duration(milliseconds: 0);
-  Duration _duration;
 
   @override
   void initState() {
@@ -46,7 +42,6 @@ class _ConferencePageState extends State<ConferencePage> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    _duration = _duration300ms;
     _wakeLock(true);
     _getDeviceId();
     _connectToRoom();
@@ -61,34 +56,38 @@ class _ConferencePageState extends State<ConferencePage> {
       DeviceOrientation.portraitDown,
     ]);
     _wakeLock(false);
+    _onButtonBarVisible.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: null,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: ResponsiveSafeArea(
-          builder: (BuildContext context, Size size) {
-            return Stack(
-              children: <Widget>[
-                _buildParticipants(context, size),
-                ConferenceButtonBar(
-                  videoEnabled: _videoEnabled,
-                  microphoneEnabled: _microphoneEnabled,
-                  onVideoEnabled: _onVideoEnabled,
-                  onMicrophoneEnabled: _onMicrophoneEnabled,
-                  onHangup: _onHangup,
-                  onSwitchCamera: _onSwitchCamera,
-                  onPersonAdd: _onPersonAdd,
-                  onShow: _onShowBar,
-                  onHide: _onHideBar,
-                ),
-              ],
-            );
-          },
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: GestureDetector(
+        onTap: null,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Stack(
+                children: <Widget>[
+                  _buildParticipants(context, constraints.biggest),
+                  ConferenceButtonBar(
+                    videoEnabled: _videoEnabled,
+                    microphoneEnabled: _microphoneEnabled,
+                    onVideoEnabled: _onVideoEnabled,
+                    onMicrophoneEnabled: _onMicrophoneEnabled,
+                    onHangup: _onHangup,
+                    onSwitchCamera: _onSwitchCamera,
+                    onPersonAdd: _onPersonAdd,
+                    onShow: _onShowBar,
+                    onHide: _onHideBar,
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -119,6 +118,13 @@ class _ConferencePageState extends State<ConferencePage> {
       _room.onParticipantConnected.listen(_onParticipantConnected);
       _room.onParticipantDisconnected.listen(_onParticipantDisconnected);
       _room.onConnectFailure.listen(_onConnectFailure);
+    } on PlatformException catch (err) {
+      await PlatformAlertDialog(
+        title: "An error occurred",
+        content: err.message,
+        defaultActionText: 'OK',
+      ).show(context);
+      Navigator.of(context).pop();
     } catch (err) {
       print(err);
     }
@@ -138,9 +144,7 @@ class _ConferencePageState extends State<ConferencePage> {
     setState(() {
       _participants.add(_buildParticipant(child: _localVideoTrack.widget(), isRemote: false, id: _deviceId));
       for (final RemoteParticipant remoteParticipant in roomEvent.room.remoteParticipants) {
-        remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
-        remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
-
+        _addRemoteParticipantListeners(remoteParticipant);
         for (final RemoteVideoTrackPublication remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
           if (remoteVideoTrackPublication.isTrackSubscribed) {
             _participants.add(
@@ -153,8 +157,12 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onParticipantConnected(RoomEvent roomEvent) {
-    roomEvent.remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
-    roomEvent.remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
+    _addRemoteParticipantListeners(roomEvent.remoteParticipant);
+  }
+
+  void _addRemoteParticipantListeners(RemoteParticipant remoteParticipant) {
+    remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
+    remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
   }
 
   void _onParticipantDisconnected(RoomEvent roomEvent) {
@@ -286,9 +294,6 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _buildOverlayLayout(BuildContext context, Size size, List<Widget> children) {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
-    print('statusBarHeight: $statusBarHeight');
-
     if (_participants.isEmpty) {
       children.add(Container(
         child: const Center(
@@ -308,73 +313,11 @@ class _ConferencePageState extends State<ConferencePage> {
 
     final Participant localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
-      final double width = size.width * 0.25;
-      final double height = width * (size.height / size.width);
-
-      Widget clippedVideo = Container(
-        width: width,
-        height: height,
-        child: ClipRRect(
-          child: localParticipant.widget,
-          borderRadius: const BorderRadius.all(Radius.circular(20)),
-        ),
-      );
-
-//      children.add(
-//        Positioned(
-//          width: size.width / 2,
-//          height: size.height / 2,
-//          top: 0,
-//          left: 0,
-//          child: DragTarget(
-//            builder: (BuildContext context, List candidateData, List rejectedData) {
-//              return Container();
-//            },
-//            onWillAccept: (_) {
-//              print('DragTarget.onWillAccept');
-//              return true;
-//            },
-//            onAccept: (_) {
-//              print('DragTarget.onAccept');
-//            },
-//            onLeave: (_) => print('DragTarget.onLeave'),
-//          ),
-//        ),
-//      );
-      children.add(
-        AnimatedPositioned(
-          top: _top,
-          right: _right,
-          bottom: _bottom,
-          left: _left,
-          width: width,
-          height: height,
-          child: Draggable(
-            child: clippedVideo,
-            feedback: clippedVideo,
-            childWhenDragging: Container(),
-            onDragCompleted: () {
-              print('Draggable.onDragCompleted');
-            },
-            onDraggableCanceled: (_, __) => print('Draggable.onDragCanceled'),
-            onDragEnd: (DraggableDetails details) {
-              //if (details.wasAccepted) {
-              print('Draggable.onDragEnd, details.offset => ${details.offset}');
-              _top = statusBarHeight - details.offset.dy;
-              _left = details.offset.dx;
-              _bottom = null;
-              _right = null;
-              setState(() {});
-              //}
-            },
-            onDragStarted: () {
-              print('Draggable.onDragStarted => Set animation duration to 0ms');
-              _duration = _duration0ms;
-            },
-          ),
-          duration: _duration,
-        ),
-      );
+      children.add(DraggablePublisher(
+        child: localParticipant.widget,
+        availableScreenSize: size,
+        onButtonBarVisible: _onButtonBarVisible.stream,
+      ));
     }
   }
 
@@ -457,17 +400,24 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _onShowBar() {
     setState(() {
-      _bottom = 80;
+      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom, SystemUiOverlay.top]);
     });
+    _onButtonBarVisible.add(true);
   }
 
   void _onHideBar() {
     setState(() {
-      _bottom = 10;
+      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     });
+    _onButtonBarVisible.add(false);
   }
 
   Future<void> _wakeLock(bool enable) async {
-    return await (enable ? Wakelock.enable() : Wakelock.disable());
+    try {
+      return await (enable ? Wakelock.enable() : Wakelock.disable());
+    } catch (err) {
+      print('Unable to change the Wakelock and set it to $enable');
+      print(err);
+    }
   }
 }

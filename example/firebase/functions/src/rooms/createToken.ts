@@ -17,7 +17,8 @@ module.exports = async (data: any, context: CallableContext) => {
     if (!data.uniqueName) {
         throw new functions.https.HttpsError('invalid-argument', 'uniqueName is required!');
     }
-    // Make sure the identity is unique. When a
+    // Make sure the identity is unique. When a new connection to the room occurs with the
+    // same identity, the first connection will be kicked from the room.
     if (!data.identity) {
         throw new functions.https.HttpsError('invalid-argument', 'identity is required!');
     }
