@@ -12,7 +12,12 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
 
     override fun onConnected(room: Room) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onConnected => room sid is '${room.sid}'")
-        sendEvent("connected", mapOf("room" to roomToMap(room), "localParticipant" to localParticipantToMap(room.localParticipant), "remoteParticipants" to remoteParticipantsToList(room.remoteParticipants)))
+        sendEvent("connected", mapOf(
+                "room" to roomToMap(room),
+                "localParticipant" to localParticipantToMap(room.localParticipant),
+                "remoteParticipants" to remoteParticipantsToList(room.remoteParticipants))
+        )
+        room.remoteParticipants.forEach { it.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener) }
     }
 
     override fun onDisconnected(room: Room, e: TwilioException?) {
@@ -38,7 +43,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
 
     override fun onReconnecting(room: Room, e: TwilioException) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnecting => room sid is '${room.sid}', exception is $e")
-        sendEvent("reconnecting", mapOf("room" to roomToMap(room)), e)
+        sendEvent("connected", mapOf("room" to roomToMap(room), "remoteParticipants" to remoteParticipantsToList(room.remoteParticipants)), e)
     }
 
     override fun onRecordingStarted(room: Room) {
@@ -51,7 +56,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
         sendEvent("recordingStopped", mapOf("room" to roomToMap(room)))
     }
 
-    private fun remoteParticipantsToList(remoteParticipants: List<RemoteParticipant>): List<Map<String, Any>> {
+    private fun remoteParticipantsToList(remoteParticipants: List<RemoteParticipant>): List<Map<String, Any?>> {
         return remoteParticipants.map { RemoteParticipantListener.remoteParticipantToMap(it) }
     }
 

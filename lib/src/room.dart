@@ -4,6 +4,16 @@ import 'package:twilio_unofficial_programmable_video/src/local_participant.dart'
 import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
 import 'package:twilio_unofficial_programmable_video/src/twilio_exception.dart';
 
+class RoomEvent {
+  final Room room;
+
+  final RemoteParticipant remoteParticipant;
+
+  final TwilioException exception;
+
+  RoomEvent(this.room, this.remoteParticipant, this.exception) : assert(room != null);
+}
+
 class Room {
   final int _internalId;
 
@@ -33,32 +43,32 @@ class Room {
 
   List<RemoteParticipant> remoteParticipants = <RemoteParticipant>[];
 
-  final StreamController<TwilioException> _onConnectFailure = StreamController<TwilioException>();
-  Stream<TwilioException> onConnectFailure;
+  final StreamController<RoomEvent> _onConnectFailure = StreamController<RoomEvent>();
+  Stream<RoomEvent> onConnectFailure;
 
-  final StreamController<Room> _onConnectedCtrl = StreamController<Room>();
-  Stream<Room> onConnected;
+  final StreamController<RoomEvent> _onConnectedCtrl = StreamController<RoomEvent>();
+  Stream<RoomEvent> onConnected;
 
-  final StreamController<TwilioException> _onDisconnected = StreamController<TwilioException>();
-  Stream<TwilioException> onDisconnected;
+  final StreamController<RoomEvent> _onDisconnected = StreamController<RoomEvent>();
+  Stream<RoomEvent> onDisconnected;
 
-  final StreamController<RemoteParticipant> _onParticipantConnected = StreamController<RemoteParticipant>();
-  Stream<RemoteParticipant> onParticipantConnected;
+  final StreamController<RoomEvent> _onParticipantConnected = StreamController<RoomEvent>();
+  Stream<RoomEvent> onParticipantConnected;
 
-  final StreamController<RemoteParticipant> _onParticipantDisconnected = StreamController<RemoteParticipant>();
-  Stream<RemoteParticipant> onParticipantDisconnected;
+  final StreamController<RoomEvent> _onParticipantDisconnected = StreamController<RoomEvent>();
+  Stream<RoomEvent> onParticipantDisconnected;
 
-  final StreamController<Room> _onReconnected = StreamController<Room>();
-  Stream<Room> onReconnected;
+  final StreamController<RoomEvent> _onReconnected = StreamController<RoomEvent>();
+  Stream<RoomEvent> onReconnected;
 
-  final StreamController<TwilioException> _onReconnecting = StreamController<TwilioException>();
-  Stream<TwilioException> onReconnecting;
+  final StreamController<RoomEvent> _onReconnecting = StreamController<RoomEvent>();
+  Stream<RoomEvent> onReconnecting;
 
-  final StreamController<Room> _onRecordingStarted = StreamController<Room>();
-  Stream<Room> onRecordingStarted;
+  final StreamController<RoomEvent> _onRecordingStarted = StreamController<RoomEvent>();
+  Stream<RoomEvent> onRecordingStarted;
 
-  final StreamController<Room> _onRecordingStopped = StreamController<Room>();
-  Stream<Room> onRecordingStopped;
+  final StreamController<RoomEvent> _onRecordingStopped = StreamController<RoomEvent>();
+  Stream<RoomEvent> onRecordingStopped;
 
   Room(this._internalId, this._eventChannel, this._remoteParticipantChannel)
       : assert(_internalId != null),
@@ -77,7 +87,7 @@ class Room {
 
   void disconnect() {}
 
-  RemoteParticipant _createRemoteParticipant(Map<String, dynamic> remoteParticipantMap) {
+  RemoteParticipant _createOrFindRemoteParticipant(Map<String, dynamic> remoteParticipantMap) {
     return remoteParticipants.firstWhere(
       (RemoteParticipant p) => p.sid == remoteParticipantMap['sid'],
       orElse: () => RemoteParticipant.fromMap(remoteParticipantMap, _remoteParticipantChannel),
@@ -89,13 +99,15 @@ class Room {
     print("Event '$eventName' => ${event['data']}, error: ${event['error']}");
     final Map<String, dynamic> data = Map<String, dynamic>.from(event['data']);
 
-    if (data['room'] != null) {
-      final Map<String, String> roomMap = Map<String, String>.from(data['room']);
-      _sid = roomMap['sid'];
-      _name = roomMap['name'];
-    }
+    // If no room data is received, skip the event.
+    if (data['room'] == null) return;
 
-    // This is only filled if it is the "connected" event.
+    final Map<String, String> roomMap = Map<String, String>.from(data['room']);
+    _sid = roomMap['sid'];
+    _name = roomMap['name'];
+
+    // TODO(WLFN): The localParticipant can be updated. A updateFromMap method should be implemented.
+    // This is only filled if it is the "connected" event
     if (data['localParticipant'] != null && _localParticipant == null) {
       final Map<String, String> localParticipantMap = Map<String, String>.from(data['localParticipant']);
       if (localParticipantMap['sid'] != null) {
@@ -103,57 +115,68 @@ class Room {
       }
     }
 
-    // This is only filled if it is the "connected" event.
-    // TODO: Might be needed for the "reconnected" event as well.
+    // This is only filled if it is the "connected" event or the "reconnected" event.
     if (data['remoteParticipants'] != null) {
       final List<Map<String, dynamic>> remoteParticipantsList = data['remoteParticipants'].map<Map<String, dynamic>>((r) => Map<String, dynamic>.from(r)).toList();
       for (final Map<String, dynamic> remoteParticipantMap in remoteParticipantsList) {
-        remoteParticipants.add(_createRemoteParticipant(remoteParticipantMap));
+        final remoteParticipant = _createOrFindRemoteParticipant(remoteParticipantMap);
+        if (!remoteParticipants.contains(remoteParticipant)) {
+          remoteParticipants.add(remoteParticipant);
+        }
+        remoteParticipant.updateFromMap(remoteParticipantMap);
       }
     }
 
-    RemoteParticipant participant;
+    RemoteParticipant remoteParticipant;
     if (data['remoteParticipant'] != null) {
-      final Map<String, dynamic> participantMap = Map<String, dynamic>.from(data['remoteParticipant']);
-      participant = _createRemoteParticipant(participantMap);
-      remoteParticipants.add(participant);
+      final Map<String, dynamic> remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
+      remoteParticipant = _createOrFindRemoteParticipant(remoteParticipantMap);
+      if (!remoteParticipants.contains(remoteParticipant)) {
+        remoteParticipants.add(remoteParticipant);
+      }
+      remoteParticipant.updateFromMap(remoteParticipantMap);
     }
 
     TwilioException exception;
     if (event['error'] != null) {
-      final Map<String, String> errorMap = Map<String, String>.from(event['error'] as Map<dynamic, dynamic>);
+      final Map<String, dynamic> errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
       exception = TwilioException(errorMap['code'] as int, errorMap['message']);
     }
 
+    final roomEvent = RoomEvent(this, remoteParticipant, exception);
+
     switch (eventName) {
       case 'connectFailure':
-        _onConnectFailure.add(exception);
+        assert(exception != null);
+        _onConnectFailure.add(roomEvent);
         break;
       case 'connected':
-        _onConnectedCtrl.add(this);
+        _onConnectedCtrl.add(roomEvent);
         break;
       case 'disconnected':
-        _onDisconnected.add(exception);
+        _onDisconnected.add(roomEvent);
         break;
       case 'participantConnected':
-        _onParticipantConnected.add(participant);
+        assert(remoteParticipant != null);
+        _onParticipantConnected.add(roomEvent);
         break;
       case 'participantDisconnected':
-        remoteParticipants.remove(participant);
-        // TODO: The "participantDisconnected" event might have an exception. But we are not sending it.
-        _onParticipantDisconnected.add(participant);
+        assert(remoteParticipant != null);
+        remoteParticipants.remove(remoteParticipant);
+        _onParticipantDisconnected.add(roomEvent);
         break;
       case 'reconnected':
-        _onReconnected.add(this);
+        assert(exception != null);
+        _onReconnected.add(roomEvent);
         break;
       case 'reconnecting':
-        _onReconnecting.add(exception);
+        _onReconnecting.add(roomEvent);
         break;
       case 'recordingStarted':
-        _onRecordingStarted.add(this);
+        _onRecordingStarted.add(roomEvent);
         break;
       case 'recordingStopped':
-        _onRecordingStopped.add(this);
+        _onRecordingStopped.add(roomEvent);
         break;
     }
   }

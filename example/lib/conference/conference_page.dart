@@ -8,6 +8,7 @@ import 'package:twilio_unofficial_programmable_video_example/shared/widgets/nois
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/responsive_save_area.dart';
 import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ConferencePage extends StatefulWidget {
   final RoomModel roomModel;
@@ -23,7 +24,7 @@ class ConferencePage extends StatefulWidget {
 
 class _ConferencePageState extends State<ConferencePage> {
   bool _videoEnabled = true;
-  bool _microphoneEnabled = true;
+  bool _microphoneEnabled = false; // TODO(AS): Enable audio again...
   double _top;
   double _right = 10;
   double _bottom = 80;
@@ -46,6 +47,7 @@ class _ConferencePageState extends State<ConferencePage> {
       DeviceOrientation.portraitDown,
     ]);
     _duration = _duration300ms;
+    _wakeLock(true);
     _getDeviceId();
     _connectToRoom();
   }
@@ -58,6 +60,7 @@ class _ConferencePageState extends State<ConferencePage> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    _wakeLock(false);
     super.dispose();
   }
 
@@ -107,13 +110,14 @@ class _ConferencePageState extends State<ConferencePage> {
       var connectOptions = ConnectOptions(widget.roomModel.token)
         ..roomName(widget.roomModel.name)
         ..preferAudioCodecs([OpusCodec()])
-        ..audioTracks([LocalAudioTrack(false)]) // TODO(AS): Enable audio again...
+        ..audioTracks([LocalAudioTrack(_microphoneEnabled)])
         ..videoTracks([_localVideoTrack]);
 
       _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
 
       _room.onConnected.listen(_onConnected);
       _room.onParticipantConnected.listen(_onParticipantConnected);
+      _room.onParticipantDisconnected.listen(_onParticipantDisconnected);
       _room.onConnectFailure.listen(_onConnectFailure);
     } catch (err) {
       print(err);
@@ -130,32 +134,55 @@ class _ConferencePageState extends State<ConferencePage> {
     );
   }
 
-  void _onConnected(Room room) {
+  void _onConnected(RoomEvent roomEvent) {
     setState(() {
       _participants.add(_buildParticipant(child: _localVideoTrack.widget(), isRemote: false, id: _deviceId));
-      for (final RemoteParticipant remoteParticipant in room.remoteParticipants) {
-        if (remoteParticipant.remoteVideoTracks.isNotEmpty) {
-          _participants.add(
-            _buildParticipant(child: remoteParticipant.remoteVideoTracks[0].widget(), id: remoteParticipant.sid),
-          );
+      for (final RemoteParticipant remoteParticipant in roomEvent.room.remoteParticipants) {
+        remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
+        remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
+
+        for (final RemoteVideoTrackPublication remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
+          if (remoteVideoTrackPublication.isTrackSubscribed) {
+            _participants.add(
+              _buildParticipant(child: remoteVideoTrackPublication.remoteVideoTrack.widget(), id: remoteParticipant.sid),
+            );
+          }
         }
       }
     });
   }
 
-  void _onParticipantConnected(RemoteParticipant participant) {
-    participant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
+  void _onParticipantConnected(RoomEvent roomEvent) {
+    roomEvent.remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
+    roomEvent.remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
   }
 
-  void _onConnectFailure(Exception exception) {}
+  void _onParticipantDisconnected(RoomEvent roomEvent) {
+    print('Participants in the room:');
+    for (Participant p in _participants) {
+      print(' - ${p.id}');
+    }
+    print('Participant leaving: ${roomEvent.remoteParticipant.sid}');
+    setState(() {
+      _participants.removeWhere((Participant p) => p.id == roomEvent.remoteParticipant.sid);
+    });
+  }
 
-  void _onVideoTrackSubscribed(RemoteVideoTrack videoTrack) {
+  void _onConnectFailure(RoomEvent roomEvent) {
+    print('ConnectFailure: ${roomEvent.exception}');
+  }
+
+  void _onVideoTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
     setState(() {
       _participants.add(_buildParticipant(
-        child: videoTrack.widget(),
-        id: videoTrack.sid,
+        child: remoteParticipantEvent.remoteVideoTrack.widget(),
+        id: remoteParticipantEvent.remoteParticipant.sid, // TODO(AS): Has to be refactored to use 'participant.sid'
       ));
     });
+  }
+
+  void _onVideoTrackUnSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
+    print('VideoTrackUnsubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
   }
 
   void _onVideoEnabled() {
@@ -259,6 +286,9 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _buildOverlayLayout(BuildContext context, Size size, List<Widget> children) {
+    double statusBarHeight = MediaQuery.of(context).padding.top;
+    print('statusBarHeight: $statusBarHeight');
+
     if (_participants.isEmpty) {
       children.add(Container(
         child: const Center(
@@ -270,11 +300,13 @@ class _ConferencePageState extends State<ConferencePage> {
     if (_participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
-      final Participant remoteParticipant = _participants.firstWhere((Participant participant) => participant.isRemote);
-      children.add(remoteParticipant.widget);
+      final Participant remoteParticipant = _participants.firstWhere((Participant participant) => participant.isRemote, orElse: () => null);
+      if (remoteParticipant != null) {
+        children.add(remoteParticipant.widget);
+      }
     }
 
-    final Participant localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote);
+    final Participant localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
       final double width = size.width * 0.25;
       final double height = width * (size.height / size.width);
@@ -288,27 +320,27 @@ class _ConferencePageState extends State<ConferencePage> {
         ),
       );
 
-      children.add(
-        Positioned(
-          width: size.width / 2,
-          height: size.height / 2,
-          top: 0,
-          left: 0,
-          child: DragTarget(
-            builder: (BuildContext context, List candidateData, List rejectedData) {
-              return Container();
-            },
-            onWillAccept: (_) {
-              print('DragTarget.onWillAccept');
-              return true;
-            },
-            onAccept: (_) {
-              print('DragTarget.onAccept');
-            },
-            onLeave: (_) => print('DragTarget.onLeave'),
-          ),
-        ),
-      );
+//      children.add(
+//        Positioned(
+//          width: size.width / 2,
+//          height: size.height / 2,
+//          top: 0,
+//          left: 0,
+//          child: DragTarget(
+//            builder: (BuildContext context, List candidateData, List rejectedData) {
+//              return Container();
+//            },
+//            onWillAccept: (_) {
+//              print('DragTarget.onWillAccept');
+//              return true;
+//            },
+//            onAccept: (_) {
+//              print('DragTarget.onAccept');
+//            },
+//            onLeave: (_) => print('DragTarget.onLeave'),
+//          ),
+//        ),
+//      );
       children.add(
         AnimatedPositioned(
           top: _top,
@@ -326,17 +358,17 @@ class _ConferencePageState extends State<ConferencePage> {
             },
             onDraggableCanceled: (_, __) => print('Draggable.onDragCanceled'),
             onDragEnd: (DraggableDetails details) {
-              print('Draggable.onDragEnd');
-              if (details.wasAccepted) {
-                _top = details.offset.dy;
-                _left = details.offset.dx;
-                _bottom = null;
-                _right = null;
-                setState(() {});
-              }
+              //if (details.wasAccepted) {
+              print('Draggable.onDragEnd, details.offset => ${details.offset}');
+              _top = statusBarHeight - details.offset.dy;
+              _left = details.offset.dx;
+              _bottom = null;
+              _right = null;
+              setState(() {});
+              //}
             },
             onDragStarted: () {
-              print('Draggable.onDragStarted');
+              print('Draggable.onDragStarted => Set animation duration to 0ms');
               _duration = _duration0ms;
             },
           ),
@@ -349,7 +381,7 @@ class _ConferencePageState extends State<ConferencePage> {
   void _buildLayoutInGrid(BuildContext context, Size size, List<Widget> children, {bool removeLocalBeforeChunking = false, int columns = 2}) {
     Participant localParticipant;
     if (removeLocalBeforeChunking) {
-      localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote);
+      localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote, orElse: () => null);
       if (localParticipant != null) {
         _participants.remove(localParticipant);
       }
@@ -433,5 +465,9 @@ class _ConferencePageState extends State<ConferencePage> {
     setState(() {
       _bottom = 10;
     });
+  }
+
+  Future<void> _wakeLock(bool enable) async {
+    return await (enable ? Wakelock.enable() : Wakelock.disable());
   }
 }

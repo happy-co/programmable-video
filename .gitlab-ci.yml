@@ -10,6 +10,9 @@ before_script:
 flutter_analyze:
   stage: lint
   script:
+    - cd example || exit 1
+    - flutter pub get
+    - cd .. || exit 1
     - flutter analyze --pub
   only:
     - merge_requests

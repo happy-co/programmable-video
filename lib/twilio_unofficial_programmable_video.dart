@@ -11,3 +11,4 @@ export 'src/remote_video_track.dart';
 export 'src/room.dart';
 export 'src/twilio_exception.dart';
 export 'src/video_codecs.dart';
+export 'src/remote_video_track_publication.dart';
