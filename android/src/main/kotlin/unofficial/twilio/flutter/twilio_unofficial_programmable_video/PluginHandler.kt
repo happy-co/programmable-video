@@ -1,5 +1,6 @@
 package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 
+import android.app.Activity
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -23,11 +24,39 @@ import com.twilio.video.VideoCapturer
 import com.twilio.video.VideoCodec
 import com.twilio.video.Vp8Codec
 import com.twilio.video.Vp9Codec
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 
-class PluginHandler(private val applicationContext: Context) : MethodCallHandler {
+class PluginHandler(private val applicationContext: Context) : MethodCallHandler, ActivityAware {
+    private var previousAudioMode: Int = 0
+
+    private var previousMicrophoneMute: Boolean = false
+
+    private var audioFocusRequest: AudioFocusRequest? = null
+
+    private var previousVolumeControlStream: Int = 0
+
+    private var activity: Activity? = null
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        this.activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        this.activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        this.activity = null
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        this.activity = binding.activity
+    }
+
     private val remoteParticipants: List<RemoteParticipant>?
         get() {
             return TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.remoteParticipants?.toList()
@@ -216,16 +245,14 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
         }
     }
 
-    private var previousAudioMode: Int = 0
-
-    private var previousMicrophoneMute: Boolean = false
-
-    private var audioFocusRequest: AudioFocusRequest? = null
-
     private fun setAudioFocus(focus: Boolean) {
         val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (focus) {
             previousAudioMode = audioManager.mode
+            val volumeControlStream = this.activity?.volumeControlStream
+            if (volumeControlStream != null) {
+                previousVolumeControlStream = volumeControlStream
+            }
 
             // Request audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -254,7 +281,9 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
              * Always disable microphone mute during a WebRTC call.
              */
             previousMicrophoneMute = audioManager.isMicrophoneMute
+
             audioManager.isMicrophoneMute = false
+            this.activity?.volumeControlStream = AudioManager.STREAM_VOICE_CALL
         } else {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 audioManager.abandonAudioFocus(null)
@@ -263,6 +292,7 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
             }
             audioManager.mode = previousAudioMode
             audioManager.isMicrophoneMute = previousMicrophoneMute
+            this.activity?.volumeControlStream = previousVolumeControlStream
         }
     }
 }
