@@ -2,6 +2,8 @@ name: twilio_unofficial_programmable_video
 description: Unofficial Twilio Programmable Video Flutter package.
 version: 0.1.0
 homepage: https://gitlab.com/twilio-flutter-unofficial/programmable-video
+repository: https://gitlab.com/twilio-flutter-unofficial/programmable-video
+issue_tracker: https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues
 
 environment:
   sdk: ">=2.5.0 <3.0.0"
