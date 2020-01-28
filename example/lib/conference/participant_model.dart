@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class Participant {
+class ParticipantModel {
   final bool isRemote;
   final Widget widget;
   final String id;
 
-  Participant({
+  ParticipantModel({
     this.isRemote = true,
     @required this.widget,
     @required this.id,

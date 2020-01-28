@@ -5,11 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_button_bar.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/draggable_publisher.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart' as model;
+import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/platform_service.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/noise_box.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
+import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_exception_alert_dialog.dart';
 import 'package:wakelock/wakelock.dart';
 
 class ConferencePage extends StatefulWidget {
@@ -26,14 +27,14 @@ class ConferencePage extends StatefulWidget {
 
 class _ConferencePageState extends State<ConferencePage> {
   bool _videoEnabled = true;
-  bool _microphoneEnabled = false; // TODO(AS): Enable audio again...
+  bool _microphoneEnabled = true;
   CameraCapturer _cameraCapturer;
 
   Room _room;
   String _deviceId;
-  StreamController<bool> _onButtonBarVisible = StreamController<bool>.broadcast();
+  final StreamController<bool> _onButtonBarVisible = StreamController<bool>.broadcast();
 
-  final List<model.Participant> _participants = [];
+  final List<ParticipantModel> _participants = [];
 
   @override
   void initState() {
@@ -81,6 +82,7 @@ class _ConferencePageState extends State<ConferencePage> {
                     onHangup: _onHangup,
                     onSwitchCamera: _onSwitchCamera,
                     onPersonAdd: _onPersonAdd,
+                    onPersonRemove: _onPersonRemove,
                     onShow: _onShowBar,
                     onHide: _onHideBar,
                   ),
@@ -120,10 +122,9 @@ class _ConferencePageState extends State<ConferencePage> {
       _room.onParticipantDisconnected.listen(_onParticipantDisconnected);
       _room.onConnectFailure.listen(_onConnectFailure);
     } on PlatformException catch (err) {
-      await PlatformAlertDialog(
-        title: "An error occurred",
-        content: err.message,
-        defaultActionText: 'OK',
+      await PlatformExceptionAlertDialog(
+        title: 'An error occurred',
+        exception: err,
       ).show(context);
       Navigator.of(context).pop();
     } catch (err) {
@@ -131,8 +132,8 @@ class _ConferencePageState extends State<ConferencePage> {
     }
   }
 
-  model.Participant _buildParticipant({Widget child, bool isRemote = true, String id}) {
-    return model.Participant(
+  ParticipantModel _buildParticipant({Widget child, bool isRemote = true, String id}) {
+    return ParticipantModel(
       id: id,
       isRemote: isRemote,
       widget: Stack(
@@ -144,12 +145,17 @@ class _ConferencePageState extends State<ConferencePage> {
   void _onConnected(RoomEvent roomEvent) {
     setState(() {
       _participants.add(_buildParticipant(child: roomEvent.room.localParticipant.localVideoTracks[0].localVideoTrack.widget(), isRemote: false, id: _deviceId));
-      for (final RemoteParticipant remoteParticipant in roomEvent.room.remoteParticipants) {
+      for (final remoteParticipant in roomEvent.room.remoteParticipants) {
+        print('Adding participant already present in the room ${remoteParticipant.sid}');
         _addRemoteParticipantListeners(remoteParticipant);
-        for (final RemoteVideoTrackPublication remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
+        for (final remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
           if (remoteVideoTrackPublication.isTrackSubscribed) {
-            _participants.add(
-              _buildParticipant(child: remoteVideoTrackPublication.remoteVideoTrack.widget(), id: remoteParticipant.sid),
+            _participants.insert(
+              0,
+              _buildParticipant(
+                child: remoteVideoTrackPublication.remoteVideoTrack.widget(),
+                id: remoteParticipant.sid,
+              ),
             );
           }
         }
@@ -162,31 +168,37 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _addRemoteParticipantListeners(RemoteParticipant remoteParticipant) {
+    print('Adding videoTrack listeners to remoteParticipant ${remoteParticipant.sid}');
     remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
     remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
   }
 
   void _onParticipantDisconnected(RoomEvent roomEvent) {
-    print('Participants in the room:');
-    for (model.Participant p in _participants) {
-      print(' - ${p.id}');
-    }
-    print('Model.Participant leaving: ${roomEvent.remoteParticipant.sid}');
+    print('onParticipantDisconnected: ${roomEvent.remoteParticipant.sid}');
     setState(() {
-      _participants.removeWhere((model.Participant p) => p.id == roomEvent.remoteParticipant.sid);
+      _participants.removeWhere((ParticipantModel p) => p.id == roomEvent.remoteParticipant.sid);
     });
   }
 
-  void _onConnectFailure(RoomEvent roomEvent) {
+  Future<void> _onConnectFailure(RoomEvent roomEvent) async {
     print('ConnectFailure: ${roomEvent.exception}');
+    await PlatformAlertDialog(
+      title: 'Connect failure',
+      content: roomEvent.exception.message,
+      defaultActionText: 'OK',
+    ).show(context);
+    Navigator.of(context).pop();
   }
 
   void _onVideoTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
     setState(() {
-      _participants.add(_buildParticipant(
-        child: remoteParticipantEvent.remoteVideoTrack.widget(),
-        id: remoteParticipantEvent.remoteParticipant.sid, // TODO(AS): Has to be refactored to use 'participant.sid'
-      ));
+      _participants.insert(
+        0,
+        _buildParticipant(
+          child: remoteParticipantEvent.remoteVideoTrack.widget(),
+          id: remoteParticipantEvent.remoteParticipant.sid,
+        ),
+      );
     });
   }
 
@@ -195,7 +207,7 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onVideoEnabled() {
-    final localVideoTrack = this._room.localParticipant.localVideoTracks[0].localVideoTrack;
+    final localVideoTrack = _room.localParticipant.localVideoTracks[0].localVideoTrack;
     localVideoTrack.enable(!localVideoTrack.isEnabled);
     setState(() {
       _videoEnabled = !_videoEnabled;
@@ -204,7 +216,7 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onMicrophoneEnabled() {
-    final localAudioTrack = this._room.localParticipant.localAudioTracks[0].localAudioTrack;
+    final localAudioTrack = _room.localParticipant.localAudioTracks[0].localAudioTrack;
     localAudioTrack.enable(!localAudioTrack.isEnabled);
     setState(() {
       _microphoneEnabled = !_microphoneEnabled;
@@ -212,16 +224,10 @@ class _ConferencePageState extends State<ConferencePage> {
     print('onMicrophoneEnabled: $_microphoneEnabled');
   }
 
-  void _onHangup() {
+  Future<void> _onHangup() async {
     print('onHangup');
-    this._room.disconnect();
-    setState(() {
-      if (_participants.length == 1) {
-        Navigator.of(context).pop();
-      } else {
-        _participants.removeAt(0);
-      }
-    });
+    await _room.disconnect();
+    Navigator.of(context).pop();
   }
 
   void _onSwitchCamera() {
@@ -234,7 +240,7 @@ class _ConferencePageState extends State<ConferencePage> {
       if (_participants.length < 18) {
         _participants.insert(
           0,
-          model.Participant(
+          ParticipantModel(
             id: (_participants.length + 1).toString(),
             widget: Stack(
               children: <Widget>[
@@ -264,35 +270,55 @@ class _ConferencePageState extends State<ConferencePage> {
       } else {
         PlatformAlertDialog(
           title: 'Maximum reached',
-          content: 'There is a room limit of 18 participants',
+          content: 'Currently the lay-out can only render a maximum of 18 participants',
           defaultActionText: 'OK',
         ).show(context);
       }
     });
   }
 
+  void _onPersonRemove() {
+    print('onPersonRemove');
+    if (_participants.length > 1) {
+      setState(() {
+        _participants.removeAt(0);
+      });
+    }
+  }
+
   Widget _buildParticipants(BuildContext context, Size size) {
-    final List<Widget> children = <Widget>[];
+    final children = <Widget>[];
 
     if (_participants.length <= 2) {
       _buildOverlayLayout(context, size, children);
       return Stack(children: children);
     }
 
-    void buildInCols(bool removeLocalBeforeChunking, int columns) {
-      _buildLayoutInGrid(context, size, children, removeLocalBeforeChunking: removeLocalBeforeChunking, columns: columns);
+    void buildInCols(bool removeLocalBeforeChunking, bool moveLastOfEachRowToNextRow, int columns) {
+      _buildLayoutInGrid(
+        context,
+        size,
+        children,
+        removeLocalBeforeChunking: removeLocalBeforeChunking,
+        moveLastOfEachRowToNextRow: moveLastOfEachRowToNextRow,
+        columns: columns,
+      );
     }
 
     if (_participants.length <= 3) {
-      buildInCols(true, 1);
+      buildInCols(true, false, 1);
+    } else if (_participants.length == 5) {
+      buildInCols(false, true, 2);
     } else if (_participants.length <= 6 || _participants.length == 8) {
-      buildInCols(false, 2);
+      buildInCols(false, false, 2);
     } else if (_participants.length == 7 || _participants.length == 9) {
-      buildInCols(true, 2);
+      buildInCols(true, false, 2);
+    } else if (_participants.length == 10) {
+      buildInCols(false, true, 3);
     } else if (_participants.length == 13 || _participants.length == 16) {
-      buildInCols(true, 3);
+      buildInCols(true, false, 3);
     } else if (_participants.length <= 18) {
-      buildInCols(false, 3);
+      buildInCols(false, false, 3);
     }
 
     return Column(
@@ -312,13 +338,13 @@ class _ConferencePageState extends State<ConferencePage> {
     if (_participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
-      final model.Participant remoteParticipant = _participants.firstWhere((model.Participant participant) => participant.isRemote, orElse: () => null);
+      final remoteParticipant = _participants.firstWhere((ParticipantModel participant) => participant.isRemote, orElse: () => null);
       if (remoteParticipant != null) {
         children.add(remoteParticipant.widget);
       }
     }
 
-    final model.Participant localParticipant = _participants.firstWhere((model.Participant participant) => !participant.isRemote, orElse: () => null);
+    final localParticipant = _participants.firstWhere((ParticipantModel participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
       children.add(DraggablePublisher(
         child: localParticipant.widget,
@@ -328,23 +354,30 @@ class _ConferencePageState extends State<ConferencePage> {
     }
   }
 
-  void _buildLayoutInGrid(BuildContext context, Size size, List<Widget> children, {bool removeLocalBeforeChunking = false, int columns = 2}) {
-    model.Participant localParticipant;
+  void _buildLayoutInGrid(BuildContext context, Size size, List<Widget> children, {bool removeLocalBeforeChunking = false, bool moveLastOfEachRowToNextRow = false, int columns = 2}) {
+    ParticipantModel localParticipant;
     if (removeLocalBeforeChunking) {
-      localParticipant = _participants.firstWhere((model.Participant participant) => !participant.isRemote, orElse: () => null);
+      localParticipant = _participants.firstWhere((ParticipantModel participant) => !participant.isRemote, orElse: () => null);
       if (localParticipant != null) {
         _participants.remove(localParticipant);
       }
     }
-    final List<List<model.Participant>> chunkedParticipants = chunk(array: _participants, size: columns);
+    final chunkedParticipants = chunk(array: _participants, size: columns);
     if (localParticipant != null) {
       chunkedParticipants.last.add(localParticipant);
       _participants.add(localParticipant);
     }
 
-    for (final List<model.Participant> participantChunk in chunkedParticipants) {
-      final List<Widget> rowChildren = <Widget>[];
-      for (final model.Participant participant in participantChunk) {
+    if (moveLastOfEachRowToNextRow) {
+      for (var i = 0; i < chunkedParticipants.length - 1; i++) {
+        var participant = chunkedParticipants[i].removeLast();
+        chunkedParticipants[i + 1].insert(0, participant);
+      }
+    }
+
+    for (final participantChunk in chunkedParticipants) {
+      final rowChildren = <Widget>[];
+      for (final participant in participantChunk) {
         rowChildren.add(
           Container(
             width: size.width / participantChunk.length,
@@ -386,14 +419,14 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   List<List<T>> chunk<T>({@required List<T> array, @required int size}) {
-    final List<List<T>> result = <List<T>>[];
+    final result = <List<T>>[];
     if (array.isEmpty || size <= 0) {
       return result;
     }
-    int first = 0;
-    int last = size;
-    final int totalLoop = array.length % size == 0 ? array.length ~/ size : array.length ~/ size + 1;
-    for (int i = 0; i < totalLoop; i++) {
+    var first = 0;
+    var last = size;
+    final totalLoop = array.length % size == 0 ? array.length ~/ size : array.length ~/ size + 1;
+    for (var i = 0; i < totalLoop; i++) {
       if (last > array.length) {
         result.add(array.sublist(first, array.length));
       } else {

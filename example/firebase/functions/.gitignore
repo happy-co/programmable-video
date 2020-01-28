@@ -34,3 +34,4 @@ node_modules/
 .idea/dynamic.xml
 .idea/uiDesigner.xml
 .idea/assetWizardSettings.xml
+.runtimeconfig.json

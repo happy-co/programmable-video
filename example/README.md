@@ -42,7 +42,7 @@ Now that we are aware of the specific needed plans as stated above we can get th
 ### Install NodeJS & Firebase command-line tools
 We are going to use Firebase command-line tools to easily deploy functions. Therefore we need to install NodeJS.
 
-To install NodeJS, follow the installation documentation for your OS from https://nodejs.org/.
+To install NodeJS, follow the installation documentation for your OS from [https://nodejs.org/](https://nodejs.org/).
 
 After successful installation of NodeJS you can install Firebase command-line tools globally like this:
 

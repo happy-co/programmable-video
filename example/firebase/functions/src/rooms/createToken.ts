@@ -1,12 +1,12 @@
 import * as functions    from 'firebase-functions';
 import {CallableContext} from 'firebase-functions/lib/providers/https';
-
+import * as twilio       from 'twilio';
 /*
 Title: Retrieve an in-progress Room instance by UniqueName
 Twilio Docs Access Tokens: https://www.twilio.com/docs/video/tutorials/user-identity-access-tokens
 */
 
-module.exports = async (data: any, context: CallableContext) => {
+export const createToken = async (data: any, context: CallableContext) => {
     // If you plan to use Firebase Authentication, you could do some checks on the context.auth, like this:
     // if (!(context.auth && context.auth.token)) {
     //     throw new functions.https.HttpsError(
@@ -24,18 +24,14 @@ module.exports = async (data: any, context: CallableContext) => {
     }
 
     try {
-        const accountSid = functions.config().twilio.live.account_sid;
-        const apiKey = functions.config().twilio.api_key;
-        const apiSecret = functions.config().twilio.api_secret;
-
-        const AccessToken = require('twilio').jwt.AccessToken;
+        const AccessToken = twilio.jwt.AccessToken;
 
         // Create an access token which we will sign and return to the client,
         // containing the grant we just created
         const token = new AccessToken(
-            accountSid,
-            apiKey,
-            apiSecret,
+            process.env.TWILIO_ACCOUNT_SID as string,
+            process.env.TWILIO_API_KEY as string,
+            process.env.TWILIO_API_SECRET as string,
             {
                 identity: data.identity
             }

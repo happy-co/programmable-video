@@ -9,6 +9,7 @@ class ConferenceButtonBar extends StatefulWidget {
   final VoidCallback onHangup;
   final VoidCallback onSwitchCamera;
   final VoidCallback onPersonAdd;
+  final VoidCallback onPersonRemove;
   final VoidCallback onHide;
   final VoidCallback onShow;
   final bool videoEnabled;
@@ -21,6 +22,7 @@ class ConferenceButtonBar extends StatefulWidget {
     this.onHangup,
     this.onSwitchCamera,
     this.onPersonAdd,
+    this.onPersonRemove,
     @required this.videoEnabled,
     @required this.microphoneEnabled,
     this.onHide,
@@ -45,7 +47,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
   final Duration periodicDuration = const Duration(milliseconds: 100);
 
   Timer startTimeout([int milliseconds]) {
-    final Duration duration = milliseconds == null ? timeout : ms * milliseconds;
+    final duration = milliseconds == null ? timeout : ms * milliseconds;
     _remaining = duration.inMilliseconds;
     return Timer.periodic(periodicDuration, (Timer timer) {
       _remaining -= periodicDuration.inMilliseconds;
@@ -186,6 +188,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
         CircleButton(
           child: const Icon(Icons.person_add, color: Colors.white),
           onPressed: () => _onPressed(widget.onPersonAdd),
+          onLongPress: () => _onPressed(widget.onPersonRemove),
         ),
       ],
     );

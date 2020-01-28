@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 
 class CircleButton extends StatefulWidget {
+  final VoidCallback onLongPress;
   final VoidCallback onPressed;
   final GestureTapDownCallback onTapDown;
   final VoidCallback onTapCancel;
@@ -13,6 +14,7 @@ class CircleButton extends StatefulWidget {
 
   const CircleButton({
     Key key,
+    this.onLongPress,
     this.onPressed,
     this.child,
     this.color,
@@ -33,7 +35,7 @@ class _CircleButtonState extends State<CircleButton> {
   StreamSubscription<NativeDeviceOrientation> _orientationSubscription;
 
   void _handleOrientationChange(NativeDeviceOrientation orientation) {
-    double targetAngle = 0.0;
+    var targetAngle = 0.0;
     switch (orientation) {
       case NativeDeviceOrientation.unknown:
       case NativeDeviceOrientation.portraitUp:
@@ -71,7 +73,7 @@ class _CircleButtonState extends State<CircleButton> {
 
   @override
   Widget build(BuildContext context) {
-    final double size = 2 * widget.radius;
+    final size = 2 * widget.radius;
 
     return Container(
       width: size,
@@ -83,6 +85,7 @@ class _CircleButtonState extends State<CircleButton> {
         ),
       ),
       child: GestureDetector(
+        onLongPress: widget.onLongPress,
         onTapDown: widget.onTapDown,
         onTapCancel: widget.onTapCancel,
         child: RawMaterialButton(

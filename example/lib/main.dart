@@ -19,7 +19,7 @@ class TwilioUnofficialProgrammableVideoExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Provider<BackendService>(
-      create: (_) => FirestoreFunctions.instance,
+      create: (_) => FirebaseFunctions.instance,
       child: MaterialApp(
         title: 'Twilio Unofficial Programmable Video',
         theme: ThemeData(

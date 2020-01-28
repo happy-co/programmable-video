@@ -74,7 +74,7 @@ class _NoiseBoxState extends State<NoiseBox> with SingleTickerProviderStateMixin
         child: AnimatedBuilder(
           animation: _animationController,
           builder: (BuildContext context, Widget w) {
-            final List<Widget> children = <Widget>[
+            final children = <Widget>[
               CustomPaint(
                 painter: NoisePainter(
                   width: constraints.biggest.width,
@@ -121,14 +121,14 @@ class NoisePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final math.Random random = math.Random();
-    for (int w = 0; w < width; w += density) {
-      for (int h = 0; h < height; h += density) {
-        final Offset offset = Offset(
+    final random = math.Random();
+    for (var w = 0; w < width; w += density) {
+      for (var h = 0; h < height; h += density) {
+        final offset = Offset(
           random.nextDouble() * width,
           random.nextDouble() * height,
         );
-        final Paint paint = Paint();
+        final paint = Paint();
         paint.color = colors[random.nextInt(colors.length)];
         paint.strokeWidth = random.nextDouble() * 2;
 

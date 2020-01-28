@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_page.dart';
+import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_bloc.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/backend_service.dart';
@@ -16,7 +17,7 @@ class JoinRoomForm extends StatefulWidget {
   }) : super(key: key);
 
   static Widget create(BuildContext context) {
-    final BackendService backendService = Provider.of<BackendService>(context, listen: false);
+    final backendService = Provider.of<BackendService>(context, listen: false);
     return Provider<RoomBloc>(
       create: (BuildContext context) => RoomBloc(backendService: backendService),
       child: Consumer<RoomBloc>(
@@ -41,7 +42,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
         stream: widget.roomBloc.modelStream,
         initialData: RoomModel(),
         builder: (BuildContext context, AsyncSnapshot<RoomModel> snapshot) {
-          final RoomModel roomModel = snapshot.data;
+          final roomModel = snapshot.data;
           return Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
             child: Column(
@@ -62,6 +63,40 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
         ),
         controller: _nameController,
         onChanged: widget.roomBloc.updateName,
+      ),
+      const SizedBox(
+        height: 16,
+      ),
+      Row(
+        children: <Widget>[
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Room size:',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: DropdownButton(
+              underline: Container(
+                height: 1,
+                color: Colors.grey,
+              ),
+              isExpanded: true,
+              items: <TwilioRoomType>[TwilioRoomType.group, TwilioRoomType.groupSmall].map<DropdownMenuItem<TwilioRoomType>>((TwilioRoomType value) {
+                return DropdownMenuItem<TwilioRoomType>(
+                  value: value,
+                  child: Text(RoomModel.getTypeText(value)),
+                );
+              }).toList(),
+              value: widget.roomBloc.model.type,
+              onChanged: widget.roomBloc.updateType,
+            ),
+          ),
+        ],
       ),
       const SizedBox(
         height: 16,

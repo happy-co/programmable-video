@@ -108,11 +108,11 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
   void _onDraggableCanceled(Velocity velocity, Offset offset) {
     // Determine the center of the object being dragged so we can decide
     // in which corner the object should be placed.
-    double dx = (_width / 2) + offset.dx;
+    var dx = (_width / 2) + offset.dx;
     dx = dx < 0 ? 0 : dx >= widget.availableScreenSize.width ? widget.availableScreenSize.width - 1 : dx;
-    double dy = (_height / 2) + offset.dy;
+    var dy = (_height / 2) + offset.dy;
     dy = dy < 0 ? 0 : dy >= widget.availableScreenSize.height ? widget.availableScreenSize.height - 1 : dy;
-    Offset draggableCenter = Offset(dx, dy);
+    var draggableCenter = Offset(dx, dy);
     // We need a small delay here, because otherwise the property changes
     // in the [_onDragEnd] function will also animate, and we don't want that!
     Timer(const Duration(milliseconds: 50), () {

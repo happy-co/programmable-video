@@ -13,7 +13,7 @@ class PlatformExceptionAlertDialog extends PlatformAlertDialog {
         );
 
   static String _message(PlatformException exception) {
-    return _errors[exception.code] ?? exception.message;
+    return _errors[exception.code] ?? (exception.details != null ? (exception.details['message'] ?? exception.message) : exception.message);
   }
 
   static final Map<String, String> _errors = <String, String>{

@@ -18,17 +18,17 @@ abstract class BackendService {
   Future<TwilioListRoomResponse> listRooms(TwilioListRoomRequest twilioListRoomRequest);
 }
 
-class FirestoreFunctions implements BackendService {
-  FirestoreFunctions._();
+class FirebaseFunctions implements BackendService {
+  FirebaseFunctions._();
 
-  static final instance = FirestoreFunctions._();
+  static final instance = FirebaseFunctions._();
 
   final CloudFunctions cf = CloudFunctions(region: 'europe-west1');
 
   @override
   Future<TwilioRoomResponse> completeRoomBySid(TwilioRoomBySidRequest twilioRoomBySidRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'completeRoomBySid').call(twilioRoomBySidRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'completeRoomBySid').call(twilioRoomBySidRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
@@ -42,7 +42,7 @@ class FirestoreFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> createRoom(TwilioRoomRequest twilioRoomRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'createRoom').call(twilioRoomRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'createRoom').call(twilioRoomRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
@@ -56,7 +56,7 @@ class FirestoreFunctions implements BackendService {
   @override
   Future<TwilioRoomTokenResponse> createToken(TwilioRoomTokenRequest twilioRoomTokenRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'createToken').call(twilioRoomTokenRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'createToken').call(twilioRoomTokenRequest.toMap());
       return TwilioRoomTokenResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
@@ -70,7 +70,7 @@ class FirestoreFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> getRoomBySid(TwilioRoomBySidRequest twilioRoomBySidRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'getRoomBySid').call(twilioRoomBySidRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'getRoomBySid').call(twilioRoomBySidRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
@@ -84,7 +84,7 @@ class FirestoreFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> getRoomByUniqueName(TwilioRoomByUniqueNameRequest twilioRoomByUniqueNameRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'getRoomByUniqueName').call(twilioRoomByUniqueNameRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'getRoomByUniqueName').call(twilioRoomByUniqueNameRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
@@ -98,7 +98,7 @@ class FirestoreFunctions implements BackendService {
   @override
   Future<TwilioListRoomResponse> listRooms(TwilioListRoomRequest twilioListRoomRequest) async {
     try {
-      final HttpsCallableResult response = await cf.getHttpsCallable(functionName: 'listRooms').call(twilioListRoomRequest.toMap());
+      final response = await cf.getHttpsCallable(functionName: 'listRooms').call(twilioListRoomRequest.toMap());
       return TwilioListRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
     } on CloudFunctionsException catch (e) {
       throw PlatformException(
