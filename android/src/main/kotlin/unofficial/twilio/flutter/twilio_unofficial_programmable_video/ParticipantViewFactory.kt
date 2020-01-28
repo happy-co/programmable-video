@@ -20,10 +20,9 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
                     videoTrack = localParticipant.localVideoTracks!![0].localVideoTrack
                 }
             } else {
-                val params = args as Map<String, String>
                 TwilioUnofficialProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing view with params: '${params.values.joinToString(", ")}'")
                 if (params.containsKey("remoteParticipantSid") && params.containsKey("remoteVideoTrackSid")) {
-                    val remoteParticipant = plugin.getRemoteParticipant(params["remoteParticipantSid"])
+                    val remoteParticipant = plugin.getRemoteParticipant(params["remoteParticipantSid"] as String)
                     val remoteVideoTrack = remoteParticipant?.remoteVideoTracks?.find { it.trackSid == params["remoteVideoTrackSid"] }
                     if (remoteParticipant != null && remoteVideoTrack != null) {
                         videoTrack = remoteVideoTrack.remoteVideoTrack

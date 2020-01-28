@@ -16,13 +16,13 @@ class RemoteVideoTrack extends VideoTrack {
     return _sid;
   }
 
-  RemoteVideoTrack(this._sid, _enabled, this._remoteParticipant)
+  RemoteVideoTrack(this._sid, _enabled, _name, this._remoteParticipant)
       : assert(_sid != null),
         assert(_remoteParticipant != null),
-        super(_enabled);
+        super(_enabled, _name);
 
   factory RemoteVideoTrack.fromMap(Map<String, dynamic> map, RemoteParticipant remoteParticipant) {
-    return map != null ? RemoteVideoTrack(map["sid"], map["enabled"], remoteParticipant) : null;
+    return map != null ? RemoteVideoTrack(map['sid'], map['enabled'], map['name'], remoteParticipant) : null;
   }
 
   /// Returns a native widget.

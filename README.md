@@ -1,4 +1,4 @@
-# [WIP] twilio_unofficial_programmable_video
+# twilio_unofficial_programmable_video
 
 Unofficial Twilio Programmable Video Flutter package.
 
@@ -6,6 +6,11 @@ This package is currently work-in-progress and should not be used for production
 
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
+
+## Supported platforms
+* Android
+* ~~iOS~~ (not yet)
+* ~~Web~~ (not yet)
 
 ## Prerequisites
 Before you can start using the plugin you need to make sure you have everything setup for your project.
@@ -85,7 +90,8 @@ Reference table of all the events the plugin supports and their native platform 
 | RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        |     |
 | RemoteParticipant | videoTrackUnsubscribed       | onVideoTrackUnsubscribed       |     |
 
+# Example
+Check out our comprehensive [example](/example) provided with this plugin.
+
 # Development and Contributing
 Interested in contributing? We love merge requests! See the [Contribution](CONTRIBUTING.md) guidelines.
-
-You are also invited to join our [discord server](https://discord.gg/42x46NH)!

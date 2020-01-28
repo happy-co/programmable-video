@@ -1,4 +1,4 @@
-abstract class VideoTrack {
+abstract class AudioTrack {
   final String _name;
 
   bool _enabled;
@@ -8,14 +8,14 @@ abstract class VideoTrack {
     return _enabled;
   }
 
-  /// The video track name.
+  /// The audio track name.
   ///
   /// A pseudo random string is returned if no track name was specified.
   String get name {
     return _name;
   }
 
-  VideoTrack(this._enabled, this._name)
+  AudioTrack(this._enabled, this._name)
       : assert(_enabled != null),
         assert(_name != null);
 

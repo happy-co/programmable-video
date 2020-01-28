@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_button_bar.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/draggable_publisher.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart';
+import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart' as model;
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/platform_service.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/noise_box.dart';
@@ -27,13 +27,13 @@ class ConferencePage extends StatefulWidget {
 class _ConferencePageState extends State<ConferencePage> {
   bool _videoEnabled = true;
   bool _microphoneEnabled = false; // TODO(AS): Enable audio again...
+  CameraCapturer _cameraCapturer;
 
-  LocalVideoTrack _localVideoTrack;
   Room _room;
   String _deviceId;
   StreamController<bool> _onButtonBarVisible = StreamController<bool>.broadcast();
 
-  final List<Participant> _participants = [];
+  final List<model.Participant> _participants = [];
 
   @override
   void initState() {
@@ -105,12 +105,13 @@ class _ConferencePageState extends State<ConferencePage> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> _connectToRoom() async {
     try {
-      _localVideoTrack = LocalVideoTrack(true, VideoCapturer.FRONT_CAMERA);
+      await TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
+      _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
       var connectOptions = ConnectOptions(widget.roomModel.token)
         ..roomName(widget.roomModel.name)
         ..preferAudioCodecs([OpusCodec()])
         ..audioTracks([LocalAudioTrack(_microphoneEnabled)])
-        ..videoTracks([_localVideoTrack]);
+        ..videoTracks([LocalVideoTrack(true, _cameraCapturer)]);
 
       _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
 
@@ -130,8 +131,8 @@ class _ConferencePageState extends State<ConferencePage> {
     }
   }
 
-  Participant _buildParticipant({Widget child, bool isRemote = true, String id}) {
-    return Participant(
+  model.Participant _buildParticipant({Widget child, bool isRemote = true, String id}) {
+    return model.Participant(
       id: id,
       isRemote: isRemote,
       widget: Stack(
@@ -142,7 +143,7 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _onConnected(RoomEvent roomEvent) {
     setState(() {
-      _participants.add(_buildParticipant(child: _localVideoTrack.widget(), isRemote: false, id: _deviceId));
+      _participants.add(_buildParticipant(child: roomEvent.room.localParticipant.localVideoTracks[0].localVideoTrack.widget(), isRemote: false, id: _deviceId));
       for (final RemoteParticipant remoteParticipant in roomEvent.room.remoteParticipants) {
         _addRemoteParticipantListeners(remoteParticipant);
         for (final RemoteVideoTrackPublication remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
@@ -167,12 +168,12 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _onParticipantDisconnected(RoomEvent roomEvent) {
     print('Participants in the room:');
-    for (Participant p in _participants) {
+    for (model.Participant p in _participants) {
       print(' - ${p.id}');
     }
-    print('Participant leaving: ${roomEvent.remoteParticipant.sid}');
+    print('Model.Participant leaving: ${roomEvent.remoteParticipant.sid}');
     setState(() {
-      _participants.removeWhere((Participant p) => p.id == roomEvent.remoteParticipant.sid);
+      _participants.removeWhere((model.Participant p) => p.id == roomEvent.remoteParticipant.sid);
     });
   }
 
@@ -194,6 +195,8 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onVideoEnabled() {
+    final localVideoTrack = this._room.localParticipant.localVideoTracks[0].localVideoTrack;
+    localVideoTrack.enable(!localVideoTrack.isEnabled);
     setState(() {
       _videoEnabled = !_videoEnabled;
     });
@@ -201,6 +204,8 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onMicrophoneEnabled() {
+    final localAudioTrack = this._room.localParticipant.localAudioTracks[0].localAudioTrack;
+    localAudioTrack.enable(!localAudioTrack.isEnabled);
     setState(() {
       _microphoneEnabled = !_microphoneEnabled;
     });
@@ -209,6 +214,7 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _onHangup() {
     print('onHangup');
+    this._room.disconnect();
     setState(() {
       if (_participants.length == 1) {
         Navigator.of(context).pop();
@@ -220,6 +226,7 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _onSwitchCamera() {
     print('onSwitchCamera');
+    _cameraCapturer.switchCamera();
   }
 
   void _onPersonAdd() {
@@ -227,7 +234,7 @@ class _ConferencePageState extends State<ConferencePage> {
       if (_participants.length < 18) {
         _participants.insert(
           0,
-          Participant(
+          model.Participant(
             id: (_participants.length + 1).toString(),
             widget: Stack(
               children: <Widget>[
@@ -305,13 +312,13 @@ class _ConferencePageState extends State<ConferencePage> {
     if (_participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
-      final Participant remoteParticipant = _participants.firstWhere((Participant participant) => participant.isRemote, orElse: () => null);
+      final model.Participant remoteParticipant = _participants.firstWhere((model.Participant participant) => participant.isRemote, orElse: () => null);
       if (remoteParticipant != null) {
         children.add(remoteParticipant.widget);
       }
     }
 
-    final Participant localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote, orElse: () => null);
+    final model.Participant localParticipant = _participants.firstWhere((model.Participant participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
       children.add(DraggablePublisher(
         child: localParticipant.widget,
@@ -322,22 +329,22 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _buildLayoutInGrid(BuildContext context, Size size, List<Widget> children, {bool removeLocalBeforeChunking = false, int columns = 2}) {
-    Participant localParticipant;
+    model.Participant localParticipant;
     if (removeLocalBeforeChunking) {
-      localParticipant = _participants.firstWhere((Participant participant) => !participant.isRemote, orElse: () => null);
+      localParticipant = _participants.firstWhere((model.Participant participant) => !participant.isRemote, orElse: () => null);
       if (localParticipant != null) {
         _participants.remove(localParticipant);
       }
     }
-    final List<List<Participant>> chunkedParticipants = chunk(array: _participants, size: columns);
+    final List<List<model.Participant>> chunkedParticipants = chunk(array: _participants, size: columns);
     if (localParticipant != null) {
       chunkedParticipants.last.add(localParticipant);
       _participants.add(localParticipant);
     }
 
-    for (final List<Participant> participantChunk in chunkedParticipants) {
+    for (final List<model.Participant> participantChunk in chunkedParticipants) {
       final List<Widget> rowChildren = <Widget>[];
-      for (final Participant participant in participantChunk) {
+      for (final model.Participant participant in participantChunk) {
         rowChildren.add(
           Container(
             width: size.width / participantChunk.length,

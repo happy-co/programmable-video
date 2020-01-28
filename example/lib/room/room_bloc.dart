@@ -34,7 +34,7 @@ class RoomBloc {
           ),
         );
       } catch (err) {
-        if (err.message != 'Error: Room exists') {
+        if (err.details['message'] != 'Error: Room exists') {
           rethrow;
         }
       }

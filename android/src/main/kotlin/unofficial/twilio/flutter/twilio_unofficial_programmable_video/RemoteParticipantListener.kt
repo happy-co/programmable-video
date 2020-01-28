@@ -1,7 +1,13 @@
 package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 
-import com.twilio.video.*
-import io.flutter.plugin.common.EventChannel.EventSink
+import com.twilio.video.RemoteAudioTrack
+import com.twilio.video.RemoteAudioTrackPublication
+import com.twilio.video.RemoteDataTrack
+import com.twilio.video.RemoteDataTrackPublication
+import com.twilio.video.RemoteParticipant
+import com.twilio.video.RemoteVideoTrack
+import com.twilio.video.RemoteVideoTrackPublication
+import com.twilio.video.TwilioException
 
 class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onAudioTrackDisabled(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
@@ -97,25 +103,53 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
         // NOT IMPLEMENTED
     }
 
-    // TODO(WLFN): Not sure if the remoteVideoTrackPublication contains a remoteVideoTrack at this point.
-    // TODO(AS): FOR(WLFN) Use the remoteVideoTrack param, not the one from the Publication!
     override fun onVideoTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, remoteVideoTrack: RemoteVideoTrack) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnsubscribed => trackSid: ${remoteVideoTrackPublication.trackSid}, isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnsubscribed => " +
+                "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
+
         sendEvent("videoTrackUnsubscribed", mapOf(
                 "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
-                "remoteVideoTrackPublication" to remoteVideoTrackPublicationToMap(remoteVideoTrackPublication)
-        ))
+                "remoteVideoTrackPublication" to remoteVideoTrackPublicationToMap(remoteVideoTrackPublication),
+                "remoteVideoTrack" to remoteVideoTrackToMap(remoteVideoTrack))
+        )
     }
 
     companion object {
         @JvmStatic
         fun remoteParticipantToMap(remoteParticipant: RemoteParticipant, noTracks: Boolean = false): Map<String, Any?> {
+            val remoteAudioTrackPublications = if (!noTracks) remoteParticipant.remoteAudioTracks.map { remoteAudioTrackPublicationToMap(it) } else null
             val remoteVideoTrackPublications = if (!noTracks) remoteParticipant.remoteVideoTracks.map { remoteVideoTrackPublicationToMap(it) } else null
+
             return mapOf(
                     "identity" to remoteParticipant.identity,
                     "sid" to remoteParticipant.sid,
                     "remoteVideoTrackPublications" to remoteVideoTrackPublications
             )
+        }
+
+        @JvmStatic
+        fun remoteAudioTrackPublicationToMap(remoteAudioTrackPublication: RemoteAudioTrackPublication): Map<String, Any?> {
+            return mapOf(
+                    "sid" to remoteAudioTrackPublication.trackSid,
+                    "name" to remoteAudioTrackPublication.trackName,
+                    "enabled" to remoteAudioTrackPublication.isTrackEnabled,
+                    "subscribed" to remoteAudioTrackPublication.isTrackSubscribed,
+                    "remoteAudioTrack" to remoteAudioTrackToMap(remoteAudioTrackPublication.remoteAudioTrack)
+            )
+        }
+
+        @JvmStatic
+        fun remoteAudioTrackToMap(remoteAudioTrack: RemoteAudioTrack?): Map<String, Any>? {
+            if (remoteAudioTrack != null) {
+                return mapOf(
+                        "sid" to remoteAudioTrack.sid,
+                        "name" to remoteAudioTrack.name,
+                        "enabled" to remoteAudioTrack.isEnabled
+                )
+            }
+            return null
         }
 
         @JvmStatic
@@ -141,5 +175,4 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
             return null
         }
     }
-
 }

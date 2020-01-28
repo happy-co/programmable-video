@@ -5,6 +5,11 @@ Demonstrates how to use the `twilio_unofficial_programmable_video` plugin in a s
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 
+## Supported platforms
+* Android
+* ~~iOS~~ (not yet)
+* ~~Web~~ (not yet)
+
 ## Prerequisites
 
 This example makes use of a backend, to setup a backend and make it reachable on the internet we decided

@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const MethodChannel channel = MethodChannel('twilio_unofficial_programmable_video');
+  const channel = MethodChannel('twilio_unofficial_programmable_video');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 

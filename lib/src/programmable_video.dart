@@ -12,10 +12,26 @@ class TwilioUnofficialProgrammableVideo {
 
   static const EventChannel _remoteParticipantChannel = EventChannel('twilio_unofficial_programmable_video/remote');
 
-  static Future<bool> requestPermissionForCameraAndMicrophone() async {
-    final Map<PermissionGroup, PermissionStatus> permissions = await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
+  /// Enable debug logging, both natively and in Dart.
+  static Future<bool> debug(bool debug) async {
+    assert(debug != null);
+    // TODO(WLFN): Implemented this.
+    return await _methodChannel.invokeMethod('debug', {'debug': debug});
+  }
 
-    bool cameraAndMicPermissionGranted = true;
+  /// Set the speaker mode on or off.
+  static Future<bool> setSpeakerphoneOn(bool on) async {
+    assert(on != null);
+    return await _methodChannel.invokeMethod('setSpeakerphoneOn', {'on': on});
+  }
+
+  /// Request permission for camera and microphone.
+  ///
+  /// Uses the PermissionHandler plugin. Returns the granted result.
+  static Future<bool> requestPermissionForCameraAndMicrophone() async {
+    final permissions = await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
+
+    var cameraAndMicPermissionGranted = true;
     permissions.forEach((PermissionGroup permissionGroup, PermissionStatus permissionStatus) {
       return cameraAndMicPermissionGranted = cameraAndMicPermissionGranted ? permissionStatus == PermissionStatus.granted : false;
     });
@@ -23,11 +39,14 @@ class TwilioUnofficialProgrammableVideo {
     return cameraAndMicPermissionGranted;
   }
 
+  /// Connect to a [Room].
+  ///
+  /// Will request camera and microphone permissions.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     assert(connectOptions != null);
 
     if (await requestPermissionForCameraAndMicrophone()) {
-      final int roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions.toMap()});
+      final roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions.toMap()});
 
       return Room(roomId, _roomChannel, _remoteParticipantChannel);
     }

@@ -9,6 +9,5 @@ class ParticipantView(private var videoView: VideoView) : PlatformView {
     }
 
     override fun dispose() {
-
     }
 }

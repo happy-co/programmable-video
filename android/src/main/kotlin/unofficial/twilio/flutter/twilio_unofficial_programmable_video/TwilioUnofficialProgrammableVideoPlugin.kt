@@ -3,10 +3,14 @@ package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 import android.content.Context
 import android.util.Log
 import androidx.annotation.NonNull
+import com.twilio.video.CameraCapturer
 import com.twilio.video.Video
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.*
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformViewRegistry
 
 /** TwilioUnofficialProgrammableVideoPlugin */
@@ -38,6 +42,8 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
         val LOG_TAG = "TwilioUnofficial_PVideo"
 
         lateinit var roomListener: RoomListener
+
+        lateinit var cameraCapturer: CameraCapturer
 
         var remoteParticipantListener = RemoteParticipantListener()
 

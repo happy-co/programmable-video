@@ -68,5 +68,4 @@ class ConnectOptions {
       'videoTracks': _videoTracks != null ? Map<Object, Object>.fromIterable(_videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v.toMap())) : null
     };
   }
-
 }

@@ -5,6 +5,18 @@ stages:
   - test
   - publish
 
+kotlin_analyze:
+  image: kkopper/ktlint:0.36.0
+  stage: lint
+  script:
+    - cd android || exit 1
+    - ktlint
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - android/**/*.kt
+
 flutter_analyze:
   stage: lint
   script:
@@ -13,7 +25,13 @@ flutter_analyze:
     - cd .. || exit 1
     - flutter analyze --pub
   only:
-    - merge_requests
+    refs:
+      - merge_requests
+    changes:
+      - lib/**/*.dart
+      - test/**/*.dart
+      - example/lib/**/*.dart
+      - example/test/**/*.dart
 
 firebase_functions:
   image: node:8.15.0-alpine
@@ -59,3 +77,64 @@ dry-run:
     - flutter pub publish --dry-run
   only:
     - merge_requests
+
+tag:
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  stage: publish
+  script:
+    - |
+      if [ -z "${GITLAB_API_TOKEN}" ]; then
+        echo "Missing GITLAB_API_TOKEN environment variable"
+        exit 1
+      fi
+
+      export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
+      docker run --rm curlimages/curl --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags?tag_name=v${TAG_NAME}&ref=master&release_description=Check%20the%20%5BCHANGELOG.md%5D(%2FCHANGELOG.md)"
+  environment:
+    name: pub-dev
+    url: https://pub.dev/packages/twilio_unofficial_programmable_video
+  when: manual
+  only:
+    - master
+
+pub-dev:
+  # https://robertohuertas.com/2019/01/20/publish-flutter-package-with-travis/
+  stage: publish
+  script:
+    - |
+      if [ -z "${PUB_DEV_PUBLISH_ACCESS_TOKEN}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_ACCESS_TOKEN environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_REFRESH_TOKEN}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_REFRESH_TOKEN environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_TOKEN_ENDPOINT}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_TOKEN_ENDPOINT environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_EXPIRATION}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_EXPIRATION environment variable"
+        exit 1
+      fi
+
+      cat <<EOF > ~/.pub-cache/credentials.json
+      {
+        "accessToken":"$(echo "${PUB_DEV_PUBLISH_ACCESS_TOKEN}" | base64 -d)",
+        "refreshToken":"$(echo "${PUB_DEV_PUBLISH_REFRESH_TOKEN}" | base64 -d)",
+        "tokenEndpoint":"${PUB_DEV_PUBLISH_TOKEN_ENDPOINT}",
+        "scopes":["https://www.googleapis.com/auth/userinfo.email","openid"],
+        "expiration":${PUB_DEV_PUBLISH_EXPIRATION}
+      }
+      EOF
+    - flutter pub get
+    - flutter pub publish -f
+  only:
+    - tags
