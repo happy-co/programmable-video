@@ -253,7 +253,7 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
             /*
              * Always disable microphone mute during a WebRTC call.
              */
-            previousMicrophoneMute = audioManager.isMicrophoneMute;
+            previousMicrophoneMute = audioManager.isMicrophoneMute
             audioManager.isMicrophoneMute = false
         } else {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

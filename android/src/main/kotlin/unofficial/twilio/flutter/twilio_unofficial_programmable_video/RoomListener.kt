@@ -77,18 +77,21 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
         )
     }
 
-    private fun localParticipantToMap(localParticipant: LocalParticipant?): Map<String, Any?> {
-        val localAudioTrackPublications = localParticipant?.localAudioTracks?.map { localAudioTrackPublicationToMap(it) }
+    private fun localParticipantToMap(localParticipant: LocalParticipant?): Map<String, Any?>? {
+        if (localParticipant != null) {
+            val localAudioTrackPublications = localParticipant.localAudioTracks?.map { localAudioTrackPublicationToMap(it) }
 //        val localDataTrackPublications = localParticipant?.localDataTracks?.map { localDataTrackPublicationToMap(it) }
-        val localVideoTrackPublications = localParticipant?.localVideoTracks?.map { localVideoTrackPublicationToMap(it) }
-        return mapOf(
-                "identity" to localParticipant?.identity,
-                "sid" to localParticipant?.sid,
-                "signalingRegion" to localParticipant?.signalingRegion,
-                "networkQualityLevel" to localParticipant?.networkQualityLevel.toString(),
-                "localAudioTrackPublications" to localAudioTrackPublications,
-                "localVideoTrackPublications" to localVideoTrackPublications
-        )
+            val localVideoTrackPublications = localParticipant.localVideoTracks?.map { localVideoTrackPublicationToMap(it) }
+            return mapOf(
+                    "identity" to localParticipant.identity,
+                    "sid" to localParticipant.sid,
+                    "signalingRegion" to localParticipant.signalingRegion,
+                    "networkQualityLevel" to localParticipant.networkQualityLevel.toString(),
+                    "localAudioTrackPublications" to localAudioTrackPublications,
+                    "localVideoTrackPublications" to localVideoTrackPublications
+            )
+        }
+        return null
     }
 
     private fun localAudioTrackPublicationToMap(localVideoTrackPublication: LocalAudioTrackPublication): Map<String, Any> {

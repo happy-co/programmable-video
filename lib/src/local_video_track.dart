@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:twilio_unofficial_programmable_video/src/camera_capturer.dart';
+import 'package:twilio_unofficial_programmable_video/src/twilio_widget.dart';
 import 'package:twilio_unofficial_programmable_video/src/video_capturer.dart';
 import 'package:twilio_unofficial_programmable_video/src/video_track.dart';
 
@@ -49,11 +50,10 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// By default the widget will be mirrored, to change that set [mirror] to false.
   Widget widget({bool mirror = true}) {
-    return _widget ??= AndroidView(
-      viewType: 'twilio_unofficial_programmable_video/views',
-      creationParams: <String, dynamic>{'isLocal': true, 'mirror': mirror},
-      creationParamsCodec: const StandardMessageCodec(),
-    );
+    return _widget ??= TwilioWidget({
+      'isLocal': true,
+      'mirror': mirror,
+    });
   }
 
   @override

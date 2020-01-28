@@ -1,6 +1,6 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
+import 'package:twilio_unofficial_programmable_video/src/twilio_widget.dart';
 import 'package:twilio_unofficial_programmable_video/src/video_track.dart';
 
 /// A remote video track represents a remote video source.
@@ -29,13 +29,10 @@ class RemoteVideoTrack extends VideoTrack {
   ///
   /// By default the widget will not be mirrored, to change that set [mirror] to true.
   Widget widget({bool mirror = false}) {
-    return _widget ??= AndroidView(
-      viewType: 'twilio_unofficial_programmable_video/views',
-      creationParams: <String, dynamic>{'remoteParticipantSid': _remoteParticipant.sid, 'remoteVideoTrackSid': _sid, 'mirror': mirror},
-      creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: (int viewId) {
-        print('Remote View created => $viewId');
-      },
-    );
+    return _widget ??= TwilioWidget({
+      'remoteParticipantSid': _remoteParticipant.sid,
+      'remoteVideoTrackSid': _sid,
+      'mirror': mirror,
+    });
   }
 }
