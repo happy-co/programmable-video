@@ -29,6 +29,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
 class PluginHandler(private val applicationContext: Context) : MethodCallHandler, ActivityAware {
     private var previousAudioMode: Int = 0
@@ -140,7 +141,12 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
     }
 
     private fun connect(call: MethodCall, result: MethodChannel.Result) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("TwilioUnofficialProgrammableVideoPlugin.connect => called")
+        TwilioUnofficialProgrammableVideoPlugin.debug("TwilioUnofficialProgrammableVideoPlugin.connect => called, Build.MODEL: '${Build.MODEL}'")
+        if (TwilioUnofficialProgrammableVideoPlugin.HARDWARE_AEC_BLACKLIST.contains(Build.MODEL) && !WebRtcAudioUtils.useWebRtcBasedAcousticEchoCanceler()) {
+            TwilioUnofficialProgrammableVideoPlugin.debug("WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler => true")
+            WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(true)
+        }
+
         setAudioFocus(true)
         val optionsObj = call.argument<Map<String, Any>>("connectOptions")
         if (optionsObj != null) {

@@ -7,6 +7,9 @@ This package is currently work-in-progress and should not be used for production
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 
+## FAQ
+Read the [Frequently Asked Questions](FAQ.md) first before creating a new issue.
+
 ## Supported platforms
 * Android
 * ~~iOS~~ (not yet)

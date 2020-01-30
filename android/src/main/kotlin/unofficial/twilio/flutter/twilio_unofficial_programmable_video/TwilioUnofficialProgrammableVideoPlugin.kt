@@ -41,6 +41,23 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
         @JvmStatic
         val LOG_TAG = "TwilioUnofficial_PVideo"
 
+        @JvmStatic
+        val HARDWARE_AEC_BLACKLIST = hashSetOf(
+                "Pixel",
+                "Pixel 2",
+                "Pixel XL",
+                "Moto G5",
+                "Moto G (5S) Plus",
+                "Moto G4",
+                "TA-1053",
+                "Mi A1",
+                "Mi A2",
+                "E5823", // Sony z5 compact
+                "Redmi Note 5",
+                "FP2", // Fairphone FP2
+                "MI 5"
+        )
+
         lateinit var roomListener: RoomListener
 
         lateinit var cameraCapturer: CameraCapturer
