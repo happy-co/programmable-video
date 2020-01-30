@@ -1,7 +1,7 @@
-import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/src/audio_track.dart';
+part of twilio_unofficial_programmable_video;
 
 class LocalAudioTrack extends AudioTrack {
+  @override
   bool _enabled;
 
   /// Check if it is enabled.

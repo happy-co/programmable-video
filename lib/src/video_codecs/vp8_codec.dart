@@ -1,4 +1,4 @@
-import 'video_codec.dart';
+part of twilio_unofficial_programmable_video;
 
 class Vp8Codec extends VideoCodec {
   static const String NAME = 'VP8';

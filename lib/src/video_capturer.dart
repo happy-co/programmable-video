@@ -1,3 +1,5 @@
+part of twilio_unofficial_programmable_video;
+
 /// Generic video capturing interface.
 abstract class VideoCapturer {
   /// Indicates whether the capturer is a screen cast.

@@ -1,7 +1,4 @@
-import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/src/camera_source.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_capturer.dart';
+part of twilio_unofficial_programmable_video;
 
 /// The CameraCapturer is used to provide video frames for a [LocalVideoTrack] from a given [CameraSource].
 class CameraCapturer implements VideoCapturer {

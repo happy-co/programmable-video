@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: '^4.0.0'
+  permission_handler: ^4.2.0+hotfix.2
   enum_to_string: ^1.0.8
 
 # TODO: Remove the pendantic here and remove the override once the following issue is resolved:

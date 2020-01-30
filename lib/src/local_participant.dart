@@ -1,11 +1,4 @@
-import 'package:enum_to_string/enum_to_string.dart';
-import 'package:twilio_unofficial_programmable_video/src/audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/connect_options.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_video_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/network_quality_level.dart';
-import 'package:twilio_unofficial_programmable_video/src/participant.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track_publication.dart';
+part of twilio_unofficial_programmable_video;
 
 class LocalParticipant implements Participant {
   final String _identity;

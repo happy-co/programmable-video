@@ -1,3 +1,5 @@
+part of twilio_unofficial_programmable_video;
+
 abstract class AudioCodec {
   String name;
 

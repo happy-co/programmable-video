@@ -1,6 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/audio_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_audio_track.dart';
+part of twilio_unofficial_programmable_video;
 
 class LocalAudioTrackPublication implements AudioTrackPublication {
   final String _sid;

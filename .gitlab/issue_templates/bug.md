@@ -28,6 +28,8 @@ Create a list of more environment information, like:
 <!-- If you have any debug / error logging, please fill it here within the code block below -->
 ```
 Enter log information in this code block
+
+You can add this to your app for debug logging: `TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);`
 ```
 
 # More information

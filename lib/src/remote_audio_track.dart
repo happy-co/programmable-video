@@ -1,4 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/audio_track.dart';
+part of twilio_unofficial_programmable_video;
 
 /// A remote audio track represents a remote audio source.
 class RemoteAudioTrack extends AudioTrack {

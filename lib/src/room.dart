@@ -1,10 +1,4 @@
-import 'dart:async';
-import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_participant.dart';
-import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
-import 'package:twilio_unofficial_programmable_video/src/room_state.dart';
-import 'package:twilio_unofficial_programmable_video/src/twilio_exception.dart';
+part of twilio_unofficial_programmable_video;
 
 class RoomEvent {
   final Room room;
@@ -19,11 +13,8 @@ class RoomEvent {
 class Room {
   final int _internalId;
 
-  final EventChannel _eventChannel;
-
-  final EventChannel _remoteParticipantChannel;
-
   StreamSubscription<dynamic> _roomStream;
+  StreamSubscription<dynamic> _remoteParticipantStream;
 
   String _sid;
 
@@ -34,6 +25,10 @@ class Room {
   RoomState _state;
 
   LocalParticipant _localParticipant;
+
+  final List<RemoteParticipant> _remoteParticipants = [];
+
+  final Map<String, List<dynamic>> _remoteEventBuffer = {};
 
   /// The SID of this [Room].
   String get sid {
@@ -68,7 +63,9 @@ class Room {
   }
 
   /// All currently connected participants.
-  List<RemoteParticipant> remoteParticipants = <RemoteParticipant>[];
+  List<RemoteParticipant> get remoteParticipants {
+    return <RemoteParticipant>[..._remoteParticipants];
+  }
 
   final StreamController<RoomEvent> _onConnectFailure = StreamController<RoomEvent>();
   Stream<RoomEvent> onConnectFailure;
@@ -97,10 +94,12 @@ class Room {
   final StreamController<RoomEvent> _onRecordingStopped = StreamController<RoomEvent>();
   Stream<RoomEvent> onRecordingStopped;
 
-  Room(this._internalId, this._eventChannel, this._remoteParticipantChannel)
+  Room(this._internalId, EventChannel roomChannel, EventChannel remoteParticipantChannel)
       : assert(_internalId != null),
-        assert(_eventChannel != null) {
-    _roomStream = _eventChannel.receiveBroadcastStream(_internalId).listen(_parseEvents);
+        assert(roomChannel != null),
+        assert(remoteParticipantChannel != null) {
+    _roomStream = roomChannel.receiveBroadcastStream(_internalId).listen(_parseRoomEvents);
+    _remoteParticipantStream = remoteParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteParticipantEvents);
 
     onConnectFailure = _onConnectFailure.stream;
     onConnected = _onConnectedCtrl.stream;
@@ -116,18 +115,30 @@ class Room {
   Future<void> disconnect() async {
     await const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('disconnect');
     await _roomStream.cancel();
+    await _remoteParticipantStream.cancel();
   }
 
   RemoteParticipant _findOrCreateRemoteParticipant(Map<String, dynamic> remoteParticipantMap) {
-    return remoteParticipants.firstWhere(
+    var remoteParticipant = _remoteParticipants.firstWhere(
       (RemoteParticipant p) => p.sid == remoteParticipantMap['sid'],
-      orElse: () => RemoteParticipant.fromMap(remoteParticipantMap, _remoteParticipantChannel),
+      orElse: () => RemoteParticipant.fromMap(remoteParticipantMap),
     );
+
+    // Check if there are events buffered for the remote participant.
+    if (_remoteEventBuffer.containsKey(remoteParticipant.sid)) {
+      for(var event in _remoteEventBuffer[remoteParticipant.sid]) {
+        remoteParticipant._parseEvents(event);
+      }
+      // Empty the event buffer.
+      _remoteEventBuffer[remoteParticipant.sid] = [];
+    }
+
+    return remoteParticipant;
   }
 
-  void _parseEvents(dynamic event) {
+  void _parseRoomEvents(dynamic event) {
     final String eventName = event['name'];
-    print("Event '$eventName' => ${event['data']}, error: ${event['error']}");
+    TwilioUnofficialProgrammableVideo._log("Room => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
     final data = Map<String, dynamic>.from(event['data']);
 
     // If no room data is received, skip the event.
@@ -149,8 +160,8 @@ class Room {
       final List<Map<String, dynamic>> remoteParticipantsList = roomMap['remoteParticipants'].map<Map<String, dynamic>>((r) => Map<String, dynamic>.from(r)).toList();
       for (final remoteParticipantMap in remoteParticipantsList) {
         final remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantMap);
-        if (!remoteParticipants.contains(remoteParticipant)) {
-          remoteParticipants.add(remoteParticipant);
+        if (!_remoteParticipants.contains(remoteParticipant)) {
+          _remoteParticipants.add(remoteParticipant);
         }
         remoteParticipant.updateFromMap(remoteParticipantMap);
       }
@@ -160,8 +171,8 @@ class Room {
     if (data['remoteParticipant'] != null) {
       final remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
       remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantMap);
-      if (!remoteParticipants.contains(remoteParticipant)) {
-        remoteParticipants.add(remoteParticipant);
+      if (!_remoteParticipants.contains(remoteParticipant)) {
+        _remoteParticipants.add(remoteParticipant);
       }
       remoteParticipant.updateFromMap(remoteParticipantMap);
     }
@@ -191,7 +202,7 @@ class Room {
         break;
       case 'participantDisconnected':
         assert(remoteParticipant != null);
-        remoteParticipants.remove(remoteParticipant);
+        _remoteParticipants.remove(remoteParticipant);
         _onParticipantDisconnected.add(roomEvent);
         break;
       case 'reconnected':
@@ -208,5 +219,31 @@ class Room {
         _onRecordingStopped.add(roomEvent);
         break;
     }
+  }
+
+  void _parseRemoteParticipantEvents(dynamic event) {
+    final eventName = event['name'];
+    TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+
+    final data = Map<String, dynamic>.from(event['data']);
+
+    // If no remoteParticipant data is received, skip the event.
+    if (data['remoteParticipant'] == null) {
+      return;
+    }
+
+    final remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
+    final remoteParticipant = _remoteParticipants.firstWhere((p) => p.sid == remoteParticipantMap['sid'], orElse: () => null);
+
+    // If the received sid doesn't match, just buffer the event.
+    if (remoteParticipant == null) {
+      if (!_remoteEventBuffer.containsKey(remoteParticipantMap['sid'])) {
+        _remoteEventBuffer[remoteParticipantMap['sid']] = [];
+      }
+      TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Buffering event '$eventName' for participant '${remoteParticipantMap['sid']}'");
+      return _remoteEventBuffer[remoteParticipantMap['sid']].add(event);
+    }
+
+    remoteParticipant._parseEvents(event);
   }
 }

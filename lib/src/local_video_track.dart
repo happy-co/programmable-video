@@ -1,10 +1,7 @@
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:twilio_unofficial_programmable_video/src/camera_capturer.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_capturer.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track.dart';
+part of twilio_unofficial_programmable_video;
 
 class LocalVideoTrack extends VideoTrack {
+  @override
   bool _enabled;
 
   Widget _widget;
@@ -48,7 +45,10 @@ class LocalVideoTrack extends VideoTrack {
   /// Returns a native widget.
   ///
   /// By default the widget will be mirrored, to change that set [mirror] to false.
-  Widget widget({bool mirror = true}) {
+  /// If you provide a [key] make sure it is unique among all [VideoTrack]s otherwise Flutter might send the wrong creation params to the native side.
+  Widget widget({bool mirror = true, Key key}) {
+    key ??= ValueKey('Twilio_LocalParticipant');
+
     var creationParams = {
       'isLocal': true,
       'mirror': mirror,
@@ -59,7 +59,7 @@ class LocalVideoTrack extends VideoTrack {
       creationParams: creationParams,
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (int viewId) {
-        print('LocalView created => $viewId, creationParams: ${creationParams}');
+        TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: ${creationParams}');
       },
     );
   }

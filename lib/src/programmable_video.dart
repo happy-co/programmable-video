@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:twilio_unofficial_programmable_video/src/connect_options.dart';
-import 'package:twilio_unofficial_programmable_video/src/room.dart';
+part of twilio_unofficial_programmable_video;
 
 class TwilioUnofficialProgrammableVideo {
   static const MethodChannel _methodChannel = MethodChannel('twilio_unofficial_programmable_video');
@@ -12,11 +7,31 @@ class TwilioUnofficialProgrammableVideo {
 
   static const EventChannel _remoteParticipantChannel = EventChannel('twilio_unofficial_programmable_video/remote');
 
-  /// Enable debug logging, both natively and in Dart.
-  static Future<bool> debug(bool debug) async {
-    assert(debug != null);
-    // TODO(WLFN): Implemented this.
-    return await _methodChannel.invokeMethod('debug', {'debug': debug});
+  static const EventChannel _loggingChannel = EventChannel('twilio_unofficial_programmable_video/logging');
+
+  static StreamSubscription _loggingStream;
+
+  static var _dartDebug = false;
+
+  static void _log(String msg) {
+    if (_dartDebug) {
+      print('[  DART  ] $msg');
+    }
+  }
+
+  /// Enable debug logging, Either natively or in Dart (or both).
+  static Future<void> debug({bool dart = false, bool native = false}) async {
+    assert(dart != null);
+    assert(native != null);
+    _dartDebug = dart;
+    await _methodChannel.invokeMethod('debug', {'native': native});
+    if (native && _loggingStream == null) {
+      _loggingStream = _loggingChannel.receiveBroadcastStream().listen((dynamic event) {
+        if (native) {
+          print('[ NATIVE ] $event');
+        }
+      });
+    }
   }
 
   /// Set the speaker mode on or off.

@@ -74,6 +74,7 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         TwilioUnofficialProgrammableVideoPlugin.debug("TwilioUnofficialProgrammableVideoPlugin.onMethodCall => received ${call.method}")
         when (call.method) {
+            "debug" -> debug(call, result)
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
@@ -248,6 +249,16 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
             }
         } else {
             result.error("INIT_ERROR", "Missing ConnectOptions", null)
+        }
+    }
+
+    private fun debug(call: MethodCall, result: MethodChannel.Result) {
+        val enableNative = call.argument<Boolean>("native")
+        if (enableNative != null) {
+            TwilioUnofficialProgrammableVideoPlugin.nativeDebug = enableNative
+            result.success(enableNative)
+        } else {
+            result.error("MISSING_PARAMS", "Missing 'debug' parameter", null)
         }
     }
 

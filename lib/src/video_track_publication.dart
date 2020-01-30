@@ -1,5 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track.dart';
+part of twilio_unofficial_programmable_video;
 
 abstract class VideoTrackPublication extends TrackPublication {
   /// The published video track.

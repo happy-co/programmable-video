@@ -1,5 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track_publication.dart';
+part of twilio_unofficial_programmable_video;
 
 abstract class Participant {
   /// The unique identifier of a participant.

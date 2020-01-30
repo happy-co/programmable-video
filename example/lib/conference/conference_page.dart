@@ -107,6 +107,7 @@ class _ConferencePageState extends State<ConferencePage> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> _connectToRoom() async {
     try {
+      await TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);
       await TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
       _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
       var connectOptions = ConnectOptions(widget.roomModel.token)

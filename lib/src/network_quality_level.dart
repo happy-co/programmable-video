@@ -1,3 +1,5 @@
+part of twilio_unofficial_programmable_video;
+
 enum NetworkQualityLevel {
   /// The Network Quality Level cannot be determined or the Network Quality API has not been enabled.
   NETWORK_QUALITY_LEVEL_UNKNOWN,

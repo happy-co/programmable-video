@@ -129,3 +129,27 @@ pub-dev:
     - flutter pub publish -f
   only:
     - tags
+
+firebase:
+  image: andreysenov/firebase-tools
+  stage: publish
+  script:
+    # Deploy of functions only
+    - |
+      if [ -z "${FIREBASE_TOKEN}" ]; then
+        echo "Missing FIREBASE_TOKEN environment variable"
+        exit 1
+      fi
+
+      cd example/firebase/functions || exit 1
+      npm i
+      npm run build
+      cd .. || exit 1
+      firebase use twilio-flutter-plugin-dev --token ${FIREBASE_TOKEN}
+      firebase deploy --only functions -m "Version ${CI_COMMIT_REF_NAME} - Pipeline ${CI_PIPELINE_ID} - Build ${CI_BUILD_ID}" --token ${FIREBASE_TOKEN} --force
+  environment:
+    name: firebase
+    url: https://console.firebase.google.com/project/twilio-flutter-plugin-dev/overview
+  when: manual
+  only:
+    - tags

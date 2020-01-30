@@ -1,7 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/audio_codecs/audio_codec.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_audio_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/local_video_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_codecs/video_codec.dart';
+part of twilio_unofficial_programmable_video;
 
 /// Represents options when connecting to a Room.
 class ConnectOptions {

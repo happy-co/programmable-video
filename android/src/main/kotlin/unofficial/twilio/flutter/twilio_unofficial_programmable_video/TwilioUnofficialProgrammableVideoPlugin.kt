@@ -21,6 +21,8 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
 
     private lateinit var remoteParticipantChannel: EventChannel
 
+    private lateinit var loggingChannel: EventChannel
+
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
     // plugin registration via this function while apps migrate to use the new Android APIs
@@ -62,11 +64,18 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
 
         lateinit var cameraCapturer: CameraCapturer
 
+        var loggingSink: EventChannel.EventSink? = null
+
         var remoteParticipantListener = RemoteParticipantListener()
+
+        var nativeDebug: Boolean = false
 
         @JvmStatic
         fun debug(msg: String) {
-            Log.d(LOG_TAG, msg)
+            if (nativeDebug) {
+                Log.d(LOG_TAG, msg)
+                loggingSink?.success(msg)
+            }
         }
     }
 
@@ -103,6 +112,19 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
             override fun onCancel(arguments: Any) {
                 debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel detached")
                 remoteParticipantListener.events = null
+            }
+        })
+
+        loggingChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/logging")
+        loggingChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel attached")
+                loggingSink = events
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel detached")
+                loggingSink = null
             }
         })
 

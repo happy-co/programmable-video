@@ -1,12 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/src/audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/participant.dart';
-import 'package:twilio_unofficial_programmable_video/src/remote_audio_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/remote_video_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/remote_video_track_publication.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track_publication.dart';
+part of twilio_unofficial_programmable_video;
 
 class RemoteParticipantEvent {
   final RemoteParticipant remoteParticipant;
@@ -83,17 +75,15 @@ class RemoteParticipant implements Participant {
   final StreamController<RemoteParticipantEvent> _onVideoTrackUnsubscribed = StreamController<RemoteParticipantEvent>();
   Stream<RemoteParticipantEvent> onVideoTrackUnsubscribed;
 
-  RemoteParticipant(this._identity, this._sid, EventChannel remoteParticipantChannel)
+  RemoteParticipant(this._identity, this._sid)
       : assert(_identity != null),
         assert(_sid != null) {
-    _participantStream = remoteParticipantChannel.receiveBroadcastStream()..listen(_parseEvents);
-
     onVideoTrackSubscribed = _onVideoTrackSubscribed.stream;
     onVideoTrackUnsubscribed = _onVideoTrackUnsubscribed.stream;
   }
 
-  factory RemoteParticipant.fromMap(Map<String, dynamic> map, EventChannel remoteParticipantChannel) {
-    final remoteParticipant = RemoteParticipant(map['identity'], map['sid'], remoteParticipantChannel);
+  factory RemoteParticipant.fromMap(Map<String, dynamic> map) {
+    final remoteParticipant = RemoteParticipant(map['identity'], map['sid']);
     remoteParticipant.updateFromMap(map);
     return remoteParticipant;
   }
@@ -115,21 +105,8 @@ class RemoteParticipant implements Participant {
   }
 
   void _parseEvents(dynamic event) {
-    final data = Map<String, dynamic>.from(event['data']);
-
-    // If no remoteParticipant data is received, skip the event.
-    if (data['remoteParticipant'] == null) {
-      return;
-    }
-
-    final remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
-    // If the received sid doesn't match, just skip the event.
-    if (remoteParticipantMap['sid'] != _sid) {
-      return;
-    }
-
     final String eventName = event['name'];
-    print("Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+    final data = Map<String, dynamic>.from(event['data']);
 
     RemoteVideoTrackPublication remoteVideoTrackPublication;
     if (data['remoteVideoTrackPublication'] != null) {

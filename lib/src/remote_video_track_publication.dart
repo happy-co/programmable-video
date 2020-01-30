@@ -1,7 +1,4 @@
-import 'package:twilio_unofficial_programmable_video/src/remote_participant.dart';
-import 'package:twilio_unofficial_programmable_video/src/remote_video_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track.dart';
-import 'package:twilio_unofficial_programmable_video/src/video_track_publication.dart';
+part of twilio_unofficial_programmable_video;
 
 class RemoteVideoTrackPublication implements VideoTrackPublication {
   final String _sid;

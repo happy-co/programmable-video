@@ -1,3 +1,5 @@
+part of twilio_unofficial_programmable_video;
+
 class TwilioException implements Exception {
   static final int ACCESS_TOKEN_INVALID_EXCEPTION = 20101;
   static final int ACCESS_TOKEN_HEADER_INVALID_EXCEPTION = 20102;
