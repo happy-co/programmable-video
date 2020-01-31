@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// A local video track publication represents a [LocalVideoTrack] that has been shared to a [Room].
 class LocalVideoTrackPublication implements VideoTrackPublication {
   final String _sid;
 
@@ -36,19 +37,21 @@ class LocalVideoTrackPublication implements VideoTrackPublication {
 
   LocalVideoTrackPublication(this._sid) : assert(_sid != null);
 
-  factory LocalVideoTrackPublication.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory LocalVideoTrackPublication._fromMap(Map<String, dynamic> map) {
     var localVideoTrackPublication = LocalVideoTrackPublication(map['sid']);
-    localVideoTrackPublication.updateFromMap(map);
+    localVideoTrackPublication._updateFromMap(map);
     return localVideoTrackPublication;
   }
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     if (map['localVideoTrack'] != null) {
       final localVideoTrackMap = Map<String, dynamic>.from(map['localVideoTrack']);
       if (_localVideoTrack == null) {
-        _localVideoTrack = LocalVideoTrack.fromMap(localVideoTrackMap);
+        _localVideoTrack = LocalVideoTrack._fromMap(localVideoTrackMap);
       } else {
-        _localVideoTrack.updateFromMap(localVideoTrackMap);
+        _localVideoTrack._updateFromMap(localVideoTrackMap);
       }
     }
   }

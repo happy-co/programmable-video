@@ -1,15 +1,33 @@
 part of twilio_unofficial_programmable_video;
 
+/// The event class for a [RemoteParticipant] events.
 class RemoteParticipantEvent {
+  /// The receiving remote participant.
   final RemoteParticipant remoteParticipant;
 
+  /// The remote video track publication.
+  ///
+  /// Will be non-null with the following events:
+  /// - videoTrackDisabled
+  /// - videoTrackEnabled
+  /// - videoTrackPublished
+  /// - videoTrackSubscribed
+  /// - videoTrackSubscriptionFailed
+  /// - videoTrackUnpublished
+  /// - videoTrackUnsubscribed
   final RemoteVideoTrackPublication remoteVideoTrackPublication;
 
+  /// The remote video track.
+  ///
+  /// Will be non-null with the following events:
+  /// - videoTrackSubscribed
+  /// - videoTrackUnsubscribed
   final RemoteVideoTrack remoteVideoTrack;
 
   RemoteParticipantEvent(this.remoteParticipant, this.remoteVideoTrackPublication, this.remoteVideoTrack) : assert(remoteParticipant != null);
 }
 
+/// A participant represents a remote user that can connect to a [Room].
 class RemoteParticipant implements Participant {
   // TODO: give it purpose!
   // ignore: unused_field
@@ -82,28 +100,31 @@ class RemoteParticipant implements Participant {
     onVideoTrackUnsubscribed = _onVideoTrackUnsubscribed.stream;
   }
 
-  factory RemoteParticipant.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory RemoteParticipant._fromMap(Map<String, dynamic> map) {
     final remoteParticipant = RemoteParticipant(map['identity'], map['sid']);
-    remoteParticipant.updateFromMap(map);
+    remoteParticipant._updateFromMap(map);
     return remoteParticipant;
   }
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     if (map['remoteVideoTrackPublications'] != null) {
       final List<Map<String, dynamic>> remoteVideoTrackPublicationsList = map['remoteVideoTrackPublications'].map<Map<String, dynamic>>((r) => Map<String, dynamic>.from(r)).toList();
       for (final remoteVideoTrackPublicationMap in remoteVideoTrackPublicationsList) {
         final remoteVideoTrackPublication = _remoteVideoTrackPublications.firstWhere(
           (p) => p.trackSid == remoteVideoTrackPublicationMap['sid'],
-          orElse: () => RemoteVideoTrackPublication.fromMap(remoteVideoTrackPublicationMap, this),
+          orElse: () => RemoteVideoTrackPublication._fromMap(remoteVideoTrackPublicationMap, this),
         );
         if (!_remoteVideoTrackPublications.contains(remoteVideoTrackPublication)) {
           _remoteVideoTrackPublications.add(remoteVideoTrackPublication);
         }
-        remoteVideoTrackPublication.updateFromMap(remoteVideoTrackPublicationMap);
+        remoteVideoTrackPublication._updateFromMap(remoteVideoTrackPublicationMap);
       }
     }
   }
 
+  /// Parse native remote participant events to the right event streams.
   void _parseEvents(dynamic event) {
     final String eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
@@ -113,12 +134,12 @@ class RemoteParticipant implements Participant {
       final remoteVideoTrackPublicationMap = Map<String, dynamic>.from(data['remoteVideoTrackPublication']);
       remoteVideoTrackPublication = _remoteVideoTrackPublications.firstWhere(
         (RemoteVideoTrackPublication p) => p.trackSid == remoteVideoTrackPublicationMap['sid'],
-        orElse: () => RemoteVideoTrackPublication.fromMap(remoteVideoTrackPublicationMap, this),
+        orElse: () => RemoteVideoTrackPublication._fromMap(remoteVideoTrackPublicationMap, this),
       );
       if (!_remoteVideoTrackPublications.contains(remoteVideoTrackPublication)) {
         _remoteVideoTrackPublications.add(remoteVideoTrackPublication);
       }
-      remoteVideoTrackPublication.updateFromMap(remoteVideoTrackPublicationMap);
+      remoteVideoTrackPublication._updateFromMap(remoteVideoTrackPublicationMap);
     }
 
     RemoteVideoTrack remoteVideoTrack;
@@ -127,7 +148,7 @@ class RemoteParticipant implements Participant {
       remoteVideoTrack = remoteVideoTrackPublication.remoteVideoTrack;
       if (remoteVideoTrack == null) {
         final remoteVideoTrackMap = Map<String, dynamic>.from(data['remoteVideoTrack']);
-        remoteVideoTrack = RemoteVideoTrack.fromMap(remoteVideoTrackMap, this);
+        remoteVideoTrack = RemoteVideoTrack._fromMap(remoteVideoTrackMap, this);
       }
     }
 

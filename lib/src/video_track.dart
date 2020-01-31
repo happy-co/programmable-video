@@ -21,7 +21,8 @@ abstract class VideoTrack {
       : assert(_enabled != null),
         assert(_name != null);
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     _enabled = map['enabled'];
   }
 }

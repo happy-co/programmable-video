@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// Abstract base class for video codecs.
 abstract class VideoCodec {
   String name;
 

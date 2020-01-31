@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// A published track represents a track that has been shared with a [Room].
 abstract class TrackPublication {
   /// The SID of a track.
   ///

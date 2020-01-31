@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// A remote video track publication represents a [RemoteVideoTrack] that has been shared to a [Room].
 class RemoteVideoTrackPublication implements VideoTrackPublication {
   final String _sid;
 
@@ -11,6 +12,7 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
 
   bool _enabled;
 
+  /// Reference to the [RemoteParticipant].
   RemoteParticipant _remoteParticipant;
 
   /// The SID of the published video track.
@@ -56,20 +58,22 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
         assert(_name != null),
         assert(_remoteParticipant != null);
 
-  factory RemoteVideoTrackPublication.fromMap(Map<String, dynamic> map, RemoteParticipant remoteParticipant) {
+  /// Create a [RemoteParticipant] from a map.
+  factory RemoteVideoTrackPublication._fromMap(Map<String, dynamic> map, RemoteParticipant remoteParticipant) {
     var remoteVideoTrackPublication = RemoteVideoTrackPublication(map['subscribed'], map['enabled'], map['sid'], map['name'], remoteParticipant);
-    remoteVideoTrackPublication.updateFromMap(map);
+    remoteVideoTrackPublication._updateFromMap(map);
     return remoteVideoTrackPublication;
   }
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     _subscribed = map['subscribed'];
     _enabled = map['enabled'];
 
     if (map['remoteVideoTrack'] != null) {
       final remoteVideoTrackMap = Map<String, dynamic>.from(map['remoteVideoTrack']);
-      _remoteVideoTrack ??= RemoteVideoTrack.fromMap(remoteVideoTrackMap, _remoteParticipant);
-      _remoteVideoTrack.updateFromMap(remoteVideoTrackMap);
+      _remoteVideoTrack ??= RemoteVideoTrack._fromMap(remoteVideoTrackMap, _remoteParticipant);
+      _remoteVideoTrack._updateFromMap(remoteVideoTrackMap);
     } else {
       _remoteVideoTrack = null;
     }

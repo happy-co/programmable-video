@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// A local video track that gets video frames from a specified [VideoCapturer].
 class LocalVideoTrack extends VideoTrack {
   @override
   bool _enabled;
@@ -10,7 +11,7 @@ class LocalVideoTrack extends VideoTrack {
 
   /// Check if it is enabled.
   ///
-  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [cameraSource] are provided.
+  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraSource] are provided.
   @override
   bool get isEnabled {
     return _enabled;
@@ -25,11 +26,12 @@ class LocalVideoTrack extends VideoTrack {
       : assert(_videoCapturer != null),
         super(_enabled, name);
 
-  factory LocalVideoTrack.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory LocalVideoTrack._fromMap(Map<String, dynamic> map) {
     var videoCapturerMap = Map<String, dynamic>.from(map['videoCapturer'] as Map<dynamic, dynamic>);
-    var videoCapturer = videoCapturerMap['type'] == 'CameraCapturer' ? CameraCapturer.fromMap(videoCapturerMap) : throw Exception('Received unknown VideoCapturer');
+    var videoCapturer = videoCapturerMap['type'] == 'CameraCapturer' ? CameraCapturer._fromMap(videoCapturerMap) : throw Exception('Received unknown VideoCapturer');
     var localVideoTrack = LocalVideoTrack(map['enabled'], videoCapturer, name: map['name']);
-    localVideoTrack.updateFromMap(map);
+    localVideoTrack._updateFromMap(map);
     return localVideoTrack;
   }
 
@@ -64,15 +66,16 @@ class LocalVideoTrack extends VideoTrack {
     );
   }
 
+  /// Update properties from a map.
   @override
-  void updateFromMap(Map<String, dynamic> map) {
+  void _updateFromMap(Map<String, dynamic> map) {
     var videoCapturerMap = Map<String, dynamic>.from(map['videoCapturer'] as Map<dynamic, dynamic>);
-    _videoCapturer.updateFromMap(videoCapturerMap);
-
-    return super.updateFromMap(map);
+    _videoCapturer._updateFromMap(videoCapturerMap);
+    return super._updateFromMap(map);
   }
 
-  Map<String, Object> toMap() {
-    return <String, Object>{'enable': isEnabled, 'name': name, 'videoCapturer': _videoCapturer.toMap(),};
+  /// Create map from properties.
+  Map<String, Object> _toMap() {
+    return <String, Object>{'enable': isEnabled, 'name': name, 'videoCapturer': _videoCapturer._toMap(),};
   }
 }

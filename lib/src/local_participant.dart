@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// Represents the local participant of a [Room] you are connected to.
 class LocalParticipant implements Participant {
   final String _identity;
 
@@ -76,13 +77,15 @@ class LocalParticipant implements Participant {
         assert(_sid != null),
         assert(_signalingRegion != null);
 
-  factory LocalParticipant.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory LocalParticipant._fromMap(Map<String, dynamic> map) {
     var localParticipant = LocalParticipant(map['identity'], map['sid'], map['signalingRegion']);
-    localParticipant.updateFromMap(map);
+    localParticipant._updateFromMap(map);
     return localParticipant;
   }
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     _networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
 
     if (map['localAudioTrackPublications'] != null) {
@@ -90,12 +93,12 @@ class LocalParticipant implements Participant {
       for (final localAudioTrackPublicationMap in localAudioTrackPublicationsList) {
         final localAudioTrackPublication = _localAudioTrackPublications.firstWhere(
           (p) => p.trackSid == localAudioTrackPublicationMap['sid'],
-          orElse: () => LocalAudioTrackPublication.fromMap(localAudioTrackPublicationMap),
+          orElse: () => LocalAudioTrackPublication._fromMap(localAudioTrackPublicationMap),
         );
         if (!_localAudioTrackPublications.contains(localAudioTrackPublication)) {
           _localAudioTrackPublications.add(localAudioTrackPublication);
         }
-        localAudioTrackPublication.updateFromMap(localAudioTrackPublicationMap);
+        localAudioTrackPublication._updateFromMap(localAudioTrackPublicationMap);
       }
     }
 
@@ -104,12 +107,12 @@ class LocalParticipant implements Participant {
       for (final localVideoTrackPublicationMap in localVideoTrackPublicationsList) {
         final localVideoTrackPublication = _localVideoTrackPublications.firstWhere(
           (p) => p.trackSid == localVideoTrackPublicationMap['sid'],
-          orElse: () => LocalVideoTrackPublication.fromMap(localVideoTrackPublicationMap),
+          orElse: () => LocalVideoTrackPublication._fromMap(localVideoTrackPublicationMap),
         );
         if (!_localVideoTrackPublications.contains(localVideoTrackPublication)) {
           _localVideoTrackPublications.add(localVideoTrackPublication);
         }
-        localVideoTrackPublication.updateFromMap(localVideoTrackPublicationMap);
+        localVideoTrackPublication._updateFromMap(localVideoTrackPublicationMap);
       }
     }
   }

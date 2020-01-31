@@ -69,6 +69,17 @@ dry-run:
   only:
     - merge_requests
 
+dartdoc:
+  stage: publish
+  script:
+    - flutter pub get
+    - dartdoc --no-auto-include-dependencies --quiet
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - lib/**/*
+
 tag:
   image: docker:stable
   services:

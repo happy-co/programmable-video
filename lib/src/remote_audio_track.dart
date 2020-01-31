@@ -13,7 +13,8 @@ class RemoteAudioTrack extends AudioTrack {
       : assert(_sid != null),
         super(_enabled, _name);
 
-  factory RemoteAudioTrack.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory RemoteAudioTrack._fromMap(Map<String, dynamic> map) {
     return map != null ? RemoteAudioTrack(map['sid'], map['enabled'], map['name']) : null;
   }
 }

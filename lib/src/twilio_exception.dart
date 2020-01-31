@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// Twilio Video SDK Exception.
 class TwilioException implements Exception {
   static final int ACCESS_TOKEN_INVALID_EXCEPTION = 20101;
   static final int ACCESS_TOKEN_HEADER_INVALID_EXCEPTION = 20102;
@@ -54,8 +55,10 @@ class TwilioException implements Exception {
   static final int CONFIGURATION_ACQUIRE_FAILED_EXCEPTION = 53500;
   static final int CONFIGURATION_ACQUIRE_TURN_FAILED_EXCEPTION = 53501;
 
+  /// Code indicator, should match any of the [TwilioException] static properties.
   final int code;
 
+  /// Message containing a short explanation.
   final String message;
 
   TwilioException(this.code, this.message);

@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// Entry point for the Twilio Unofficial Programmable Video.
 class TwilioUnofficialProgrammableVideo {
   static const MethodChannel _methodChannel = MethodChannel('twilio_unofficial_programmable_video');
 
@@ -13,13 +14,16 @@ class TwilioUnofficialProgrammableVideo {
 
   static var _dartDebug = false;
 
+  /// Internal logging method for dart.
   static void _log(String msg) {
     if (_dartDebug) {
       print('[  DART  ] $msg');
     }
   }
 
-  /// Enable debug logging, Either natively or in Dart (or both).
+  /// Enable debug logging.
+  ///
+  /// For native logging set [native] to `true` and for dart set [dart] to `true`.
   static Future<void> debug({bool dart = false, bool native = false}) async {
     assert(dart != null);
     assert(native != null);
@@ -61,7 +65,7 @@ class TwilioUnofficialProgrammableVideo {
     assert(connectOptions != null);
 
     if (await requestPermissionForCameraAndMicrophone()) {
-      final roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions.toMap()});
+      final roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions._toMap()});
 
       return Room(roomId, _roomChannel, _remoteParticipantChannel);
     }

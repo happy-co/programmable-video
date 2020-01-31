@@ -2,12 +2,14 @@ part of twilio_unofficial_programmable_video;
 
 /// Generic video capturing interface.
 abstract class VideoCapturer {
-  /// Indicates whether the capturer is a screen cast.
+  /// Indicates whether it is a screen cast.
   bool get isScreenCast;
 
-  void updateFromMap(Map<String, dynamic> map);
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map);
 
-  Map<String, Object> toMap();
+  /// Create map from properties.
+  Map<String, Object> _toMap();
 
 // TODO(WLFN): onCapturerStarted and onFrameCaptured streams.
 }

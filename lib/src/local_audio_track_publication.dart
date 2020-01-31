@@ -1,5 +1,6 @@
 part of twilio_unofficial_programmable_video;
 
+/// A local audio track publication represents a [LocalAudioTrack] that has been shared to a [Room].
 class LocalAudioTrackPublication implements AudioTrackPublication {
   final String _sid;
 
@@ -34,21 +35,24 @@ class LocalAudioTrackPublication implements AudioTrackPublication {
     return _localAudioTrack;
   }
 
+  /// Construct from a map.
   LocalAudioTrackPublication(this._sid) : assert(_sid != null);
 
-  factory LocalAudioTrackPublication.fromMap(Map<String, dynamic> map) {
+  /// Construct from a map.
+  factory LocalAudioTrackPublication._fromMap(Map<String, dynamic> map) {
     var localAudioTrackPublication = LocalAudioTrackPublication(map['sid']);
-    localAudioTrackPublication.updateFromMap(map);
+    localAudioTrackPublication._updateFromMap(map);
     return localAudioTrackPublication;
   }
 
-  void updateFromMap(Map<String, dynamic> map) {
+  /// Update properties from a map.
+  void _updateFromMap(Map<String, dynamic> map) {
     if (map['localAudioTrack'] != null) {
       final localAudioTrackMap = Map<String, dynamic>.from(map['localAudioTrack']);
       if (_localAudioTrack == null) {
-        _localAudioTrack = LocalAudioTrack.fromMap(localAudioTrackMap);
+        _localAudioTrack = LocalAudioTrack._fromMap(localAudioTrackMap);
       } else {
-        _localAudioTrack.updateFromMap(localAudioTrackMap);
+        _localAudioTrack._updateFromMap(localAudioTrackMap);
       }
     }
   }

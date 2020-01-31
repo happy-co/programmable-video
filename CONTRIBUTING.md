@@ -18,7 +18,7 @@ If you're interested in contributing to this project, here are a few ways to do 
 ### Documentation & Miscellaneous
 * If you think the documentation could be clearer, or you have an alternative implementation of something that may have more advantages, we would love to hear it.
 * As always first file a report in a [Gitlab issue](https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues/new).
-* Issues that have been identified as a feature request will be labelled ~"type::documentation".
+* Issues that have been identified as a documentation change will be labelled ~"type::documentation".
 * Implement the changes to the documentation, please read the [How To](#how-to) and [Development Guidelines](#development-guidelines).
 
 # Requirements
@@ -47,3 +47,9 @@ If the contribution doesn't meet these criteria, a maintainer will discuss it wi
 * Example application should be updated.
 * Format the Flutter code accordingly.
 * Note the [`analysis_options.yaml`](analysis_options.yaml) and write code as stated in this file
+
+# Test generating of `dartdoc`
+* On local development make sure the `dartdoc` program is mentioned in your `$PATH`
+* `dartdoc` can be found here: `<FLUTTER_INSTALL_DIR>/bin/cache/dart-sdk/bin/dartdoc`
+* Generate docs with the following command: `dartdoc --no-auto-include-dependencies --quiet`
+* Output will be placed into `doc/api/`
