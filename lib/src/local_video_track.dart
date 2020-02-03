@@ -61,7 +61,7 @@ class LocalVideoTrack extends VideoTrack {
       creationParams: creationParams,
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (int viewId) {
-        TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: ${creationParams}');
+        TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
       },
     );
   }
