@@ -19,14 +19,14 @@ class PlatformAlertDialog extends PlatformWidget {
   Future<bool> show(BuildContext context) async {
     return Platform.isIOS
         ? await showCupertinoDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => this,
-    )
+            context: context,
+            builder: (BuildContext context) => this,
+          )
         : await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => this,
-    );
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) => this,
+          );
   }
 
   @override

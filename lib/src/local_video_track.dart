@@ -76,6 +76,10 @@ class LocalVideoTrack extends VideoTrack {
 
   /// Create map from properties.
   Map<String, Object> _toMap() {
-    return <String, Object>{'enable': isEnabled, 'name': name, 'videoCapturer': _videoCapturer._toMap(),};
+    return <String, Object>{
+      'enable': isEnabled,
+      'name': name,
+      'videoCapturer': _videoCapturer._toMap(),
+    };
   }
 }

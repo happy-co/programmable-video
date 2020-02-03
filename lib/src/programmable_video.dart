@@ -15,9 +15,9 @@ class TwilioUnofficialProgrammableVideo {
   static var _dartDebug = false;
 
   /// Internal logging method for dart.
-  static void _log(String msg) {
+  static void _log(dynamic msg) {
     if (_dartDebug) {
-      print('[  DART  ] $msg');
+      print('[   DART   ] $msg');
     }
   }
 
@@ -32,7 +32,7 @@ class TwilioUnofficialProgrammableVideo {
     if (native && _loggingStream == null) {
       _loggingStream = _loggingChannel.receiveBroadcastStream().listen((dynamic event) {
         if (native) {
-          print('[ NATIVE ] $event');
+          print('[  NATIVE  ] $event');
         }
       });
     }

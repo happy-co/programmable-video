@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
+import 'package:twilio_unofficial_programmable_video_example/debug.dart';
 
 class CircleButton extends StatefulWidget {
   final VoidCallback onLongPress;
@@ -61,7 +62,7 @@ class _CircleButtonState extends State<CircleButton> {
     super.initState();
     _orientationSubscription = _orientationStream.listen(
       _handleOrientationChange,
-      onError: (dynamic err) => print(err),
+      onError: (dynamic err) => Debug.log(err),
     );
   }
 

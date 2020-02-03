@@ -1,5 +1,5 @@
 name: twilio_unofficial_programmable_video
-description: Unofficial Twilio Programmable Video Flutter package.
+description: Create real-time videocall applications (WebRTC), with this Unofficial Twilio Programmable Video Flutter plugin.
 version: 0.1.0
 homepage: https://gitlab.com/twilio-flutter-unofficial/programmable-video
 repository: https://gitlab.com/twilio-flutter-unofficial/programmable-video

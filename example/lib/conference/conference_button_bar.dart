@@ -1,34 +1,35 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:twilio_unofficial_programmable_video_example/conference/participant_widget.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/circle_button.dart';
 
 class ConferenceButtonBar extends StatefulWidget {
   final VoidCallback onVideoEnabled;
-  final VoidCallback onMicrophoneEnabled;
+  final VoidCallback onAudioEnabled;
   final VoidCallback onHangup;
   final VoidCallback onSwitchCamera;
   final VoidCallback onPersonAdd;
   final VoidCallback onPersonRemove;
   final VoidCallback onHide;
   final VoidCallback onShow;
-  final bool videoEnabled;
-  final bool microphoneEnabled;
+  final Stream<ParticipantMediaEnabled> videoEnabled;
+  final Stream<ParticipantMediaEnabled> audioEnabled;
 
   const ConferenceButtonBar({
     Key key,
     this.onVideoEnabled,
-    this.onMicrophoneEnabled,
+    this.onAudioEnabled,
     this.onHangup,
     this.onSwitchCamera,
     this.onPersonAdd,
     this.onPersonRemove,
     @required this.videoEnabled,
-    @required this.microphoneEnabled,
+    @required this.audioEnabled,
     this.onHide,
     this.onShow,
   })  : assert(videoEnabled != null),
-        assert(microphoneEnabled != null),
+        assert(audioEnabled != null),
         super(key: key);
 
   @override
@@ -36,9 +37,11 @@ class ConferenceButtonBar extends StatefulWidget {
 }
 
 class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
-  double _bottom = 0;
+  var _bottom = 0.0;
   Timer _timer;
   int _remaining;
+  var _videoEnabled = true;
+  var _audioEnabled = true;
   final double _hidden = -100;
   final double _visible = 0;
 
@@ -158,12 +161,34 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
         CircleButton(
-          child: Icon(widget.videoEnabled ? Icons.videocam : Icons.videocam_off, color: Colors.white),
+          child: StreamBuilder<ParticipantMediaEnabled>(
+              stream: widget.videoEnabled,
+              initialData: ParticipantMediaEnabled(id: null, isEnabled: _videoEnabled),
+              builder: (context, snapshot) {
+                if (snapshot.data.id == null) {
+                  _videoEnabled = snapshot.data.isEnabled;
+                }
+                return Icon(
+                  _videoEnabled ? Icons.videocam : Icons.videocam_off,
+                  color: Colors.white,
+                );
+              }),
           onPressed: () => _onPressed(widget.onVideoEnabled),
         ),
         CircleButton(
-          child: Icon(widget.microphoneEnabled ? Icons.mic : Icons.mic_off, color: Colors.white),
-          onPressed: () => _onPressed(widget.onMicrophoneEnabled),
+          child: StreamBuilder<ParticipantMediaEnabled>(
+              stream: widget.audioEnabled,
+              initialData: ParticipantMediaEnabled(id: null, isEnabled: _audioEnabled),
+              builder: (context, snapshot) {
+                if (snapshot.data.id == null) {
+                  _audioEnabled = snapshot.data.isEnabled;
+                }
+                return Icon(
+                  _audioEnabled ? Icons.mic : Icons.mic_off,
+                  color: Colors.white,
+                );
+              }),
+          onPressed: () => _onPressed(widget.onAudioEnabled),
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 10.0),

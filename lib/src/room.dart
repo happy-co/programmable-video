@@ -82,40 +82,50 @@ class Room {
     return <RemoteParticipant>[..._remoteParticipants];
   }
 
+  final StreamController<RoomEvent> _onConnectFailure = StreamController<RoomEvent>.broadcast();
+
   /// Called when a connection to a room failed.
-  final StreamController<RoomEvent> _onConnectFailure = StreamController<RoomEvent>();
   Stream<RoomEvent> onConnectFailure;
 
+  final StreamController<RoomEvent> _onConnectedCtrl = StreamController<RoomEvent>.broadcast();
+
   /// Called when a room has succeeded.
-  final StreamController<RoomEvent> _onConnectedCtrl = StreamController<RoomEvent>();
   Stream<RoomEvent> onConnected;
 
+  final StreamController<RoomEvent> _onDisconnected = StreamController<RoomEvent>.broadcast();
+
   /// Called when a room has been disconnected from.
-  final StreamController<RoomEvent> _onDisconnected = StreamController<RoomEvent>();
   Stream<RoomEvent> onDisconnected;
 
+  final StreamController<RoomEvent> _onParticipantConnected = StreamController<RoomEvent>.broadcast();
+
   /// Called when a participant has connected to a room.
-  final StreamController<RoomEvent> _onParticipantConnected = StreamController<RoomEvent>();
   Stream<RoomEvent> onParticipantConnected;
 
+  final StreamController<RoomEvent> _onParticipantDisconnected = StreamController<RoomEvent>.broadcast();
+
   /// Called when a participant has disconnected from a room.
-  final StreamController<RoomEvent> _onParticipantDisconnected = StreamController<RoomEvent>();
   Stream<RoomEvent> onParticipantDisconnected;
 
+  final StreamController<RoomEvent> _onReconnected = StreamController<RoomEvent>.broadcast();
+
   /// Called after the [LocalParticipant] reconnects to a room after a network disruption.
-  final StreamController<RoomEvent> _onReconnected = StreamController<RoomEvent>();
   Stream<RoomEvent> onReconnected;
 
-  /// Called when the [LocalParticipant] has experienced a network disruption and the client begins trying to reestablish a connection to a room.
-  final StreamController<RoomEvent> _onReconnecting = StreamController<RoomEvent>();
+  final StreamController<RoomEvent> _onReconnecting = StreamController<RoomEvent>.broadcast();
+
+  /// Called when the [LocalParticipant] has experienced a network disruption and the client
+  /// begins trying to reestablish a connection to a room.
   Stream<RoomEvent> onReconnecting;
 
+  final StreamController<RoomEvent> _onRecordingStarted = StreamController<RoomEvent>.broadcast();
+
   /// This method is only called when a Room which was not previously recording starts recording.
-  final StreamController<RoomEvent> _onRecordingStarted = StreamController<RoomEvent>();
   Stream<RoomEvent> onRecordingStarted;
 
+  final StreamController<RoomEvent> _onRecordingStopped = StreamController<RoomEvent>.broadcast();
+
   /// This method is only called when a Room which was previously recording stops recording.
-  final StreamController<RoomEvent> _onRecordingStopped = StreamController<RoomEvent>();
   Stream<RoomEvent> onRecordingStopped;
 
   Room(this._internalId, EventChannel roomChannel, EventChannel remoteParticipantChannel)
@@ -153,7 +163,7 @@ class Room {
 
     // Check if there are events buffered for the remote participant.
     if (_remoteEventBuffer.containsKey(remoteParticipant.sid)) {
-      for(var event in _remoteEventBuffer[remoteParticipant.sid]) {
+      for (var event in _remoteEventBuffer[remoteParticipant.sid]) {
         remoteParticipant._parseEvents(event);
       }
       // Empty the event buffer.
@@ -222,6 +232,10 @@ class Room {
         _onConnectedCtrl.add(roomEvent);
         break;
       case 'disconnected':
+        for (var participant in _remoteParticipants) {
+          participant._dispose();
+        }
+        _remoteParticipants.clear();
         _onDisconnected.add(roomEvent);
         break;
       case 'participantConnected':
@@ -232,9 +246,9 @@ class Room {
         assert(remoteParticipant != null);
         _remoteParticipants.remove(remoteParticipant);
         _onParticipantDisconnected.add(roomEvent);
+        remoteParticipant._dispose();
         break;
       case 'reconnected':
-        assert(exception != null);
         _onReconnected.add(roomEvent);
         break;
       case 'reconnecting':

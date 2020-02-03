@@ -18,7 +18,7 @@ class TwilioListRoomResponse {
       rooms: (List<Map<String, dynamic>>.from(data['rooms']))
           .map(
             (Map<String, dynamic> room) => TwilioRoomResponse.fromMap(Map<String, dynamic>.from(data['room'])),
-      )
+          )
           .toList(),
       meta: TwilioPageMeta.fromMap(Map<String, dynamic>.from(data['meta'])),
     );

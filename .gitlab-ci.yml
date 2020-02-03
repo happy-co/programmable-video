@@ -24,6 +24,7 @@ flutter_analyze:
     - flutter pub get
     - cd .. || exit 1
     - flutter analyze --pub
+    - flutter format -l 240 -n . --set-exit-if-changed
   only:
     refs:
       - merge_requests

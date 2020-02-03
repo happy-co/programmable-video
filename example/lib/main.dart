@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:twilio_unofficial_programmable_video_example/debug.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/join_room_page.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/backend_service.dart';
 
 void main() {
+  Debug.enabled = true;
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.landscapeRight,
@@ -35,7 +37,7 @@ class TwilioUnofficialProgrammableVideoExample extends StatelessWidget {
             ),
           ),
         ),
-        home:  JoinRoomPage(),
+        home: JoinRoomPage(),
       ),
     );
   }

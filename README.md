@@ -1,5 +1,5 @@
 # twilio_unofficial_programmable_video
-Unofficial Twilio Programmable Video Flutter package.
+Create real-time videocall applications (WebRTC), with this Unofficial Twilio Programmable Video Flutter plugin.
 
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
 
@@ -23,7 +23,7 @@ First add it as a [dependency in your pubspec.yaml file](https://flutter.dev/doc
 For example:
 ```yaml
 dependencies:
-  twilio_unofficial_programmable_video: '^0.0.1'
+  twilio_unofficial_programmable_video: '^0.1.0'
 ```
 
 #### Proguard (Android only)
@@ -69,7 +69,7 @@ Future<Room> connectToRoom() async {
 }
 ```
 
-You **must** pass the Access Token when connecting to a Room.
+You **must** pass the [Access Token](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/README.md#access-tokens) when connecting to a Room.
 
 ### Join a Room
 If you'd like to join a Room you know already exists, you handle that exactly the same way as creating a room: just pass the Room name to the `connect` method. Once in a Room, you'll receive a `participantConnected` event for each Participant that successfully joins. Querying the `remoteParticipants` getter will return any existing Participants who have already joined the Room.
@@ -186,7 +186,7 @@ room.onParticipantConnected((RoomEvent roomEvent) {
 ### Participating in a Room
 
 #### Display a Camera Preview
-Just like Twilio we totally get you want to look fantastic before entering a Room. Sadly that isn't yet implemented so you should go analog and use a mirror.
+Just like Twilio we totally get that you want to look fantastic before entering a Room. Sadly that isn't yet implemented so you should go analog and use a mirror.
 
 #### Disconnect from a Room
 You can disconnect from a Room you're currently participating in. Other Participants will receive a `participantDisconnected` event.
@@ -258,10 +258,10 @@ var dartEnabled = true;
 TwilioUnofficialProgrammableVideo.debug(native: nativeEnabled, dart: dartEnabled);
 ```
 
-## API
-Keep in mind, you can't generate access tokens for programmable-video using the [TestCredentials](https://www.twilio.com/docs/iam/test-credentials#supported-resources), use your own.
+## Access Tokens
+Keep in mind, you can't generate access tokens for programmable-video using the [TestCredentials](https://www.twilio.com/docs/iam/test-credentials#supported-resources), make use of the LIVE credentials.
 
-You can easily generate an access token in the Twilio dashboard with the [Testing Tools](https://www.twilio.com/console/video/project/testing-tools)
+You can easily generate an access token in the Twilio dashboard with the [Testing Tools](https://www.twilio.com/console/video/project/testing-tools) to start testing your code. But we recommend you setup a backend to generate these tokens for you and secure your Twilio credentials. Like we do in our [example app](https://gitlab.com/twilio-flutter-unofficial/programmable-video/tree/master/example).
 
 ## Events table
 Reference table of all the events the plugin supports and their native platform counter part.
@@ -277,24 +277,24 @@ Reference table of all the events the plugin supports and their native platform 
 | Room              | reconnecting                 | onReconnecting                 | X           |
 | Room              | recordingStarted             | onRecordingStarted             | X           |
 | Room              | recordingStopped             | onRecordingStopped             | X           |
-| RemoteParticipant | audioTrackDisabled           | onAudioTrackDisabled           |             |
-| RemoteParticipant | audioTrackEnabled            | onAudioTrackEnabled            |             |
-| RemoteParticipant | audioTrackPublished          | onAudioTrackPublished          |             |
-| RemoteParticipant | audioTrackSubscribed         | onAudioTrackSubscribed         |             |
-| RemoteParticipant | audioTrackSubscriptionFailed | onAudioTrackSubscriptionFailed |             |
-| RemoteParticipant | audioTrackUnpublished        | onAudioTrackUnpublished        |             |
-| RemoteParticipant | audioTrackUnsubscribed       | onAudioTrackUnsubscribed       |             |
+| RemoteParticipant | audioTrackDisabled           | onAudioTrackDisabled           | X           |
+| RemoteParticipant | audioTrackEnabled            | onAudioTrackEnabled            | X           |
+| RemoteParticipant | audioTrackPublished          | onAudioTrackPublished          | X           |
+| RemoteParticipant | audioTrackSubscribed         | onAudioTrackSubscribed         | X           |
+| RemoteParticipant | audioTrackSubscriptionFailed | onAudioTrackSubscriptionFailed | X           |
+| RemoteParticipant | audioTrackUnpublished        | onAudioTrackUnpublished        | X           |
+| RemoteParticipant | audioTrackUnsubscribed       | onAudioTrackUnsubscribed       | X           |
 | RemoteParticipant | dataTrackPublished           | onDataTrackPublished           |             |
 | RemoteParticipant | dataTrackSubscribed          | onDataTrackSubscribed          |             |
 | RemoteParticipant | dataTrackSubscriptionFailed  | onDataTrackSubscriptionFailed  |             |
 | RemoteParticipant | dataTrackUnpublished         | onDataTrackUnpublished         |             |
 | RemoteParticipant | dataTrackUnsubscribed        | onDataTrackUnsubscribed        |             |
-| RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           |             |
-| RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            |             |
-| RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          |             |
+| RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           | X           |
+| RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            | X           |
+| RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          | X           |
 | RemoteParticipant | vdeoTrackSubscribed          | onVideoTrackSubscribed         | X           |
-| RemoteParticipant | videoTrackSubscriptionFailed | onVideoTrackSubscriptionFailed |             |
-| RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        |             |
+| RemoteParticipant | videoTrackSubscriptionFailed | onVideoTrackSubscriptionFailed | X           |
+| RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        | X           |
 | RemoteParticipant | videoTrackUnsubscribed       | onVideoTrackUnsubscribed       | X           |
 
 # Example

@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_button_bar.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/draggable_publisher.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_model.dart';
+import 'package:twilio_unofficial_programmable_video_example/conference/participant_widget.dart';
+import 'package:twilio_unofficial_programmable_video_example/debug.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/services/platform_service.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/noise_box.dart';
@@ -26,15 +26,20 @@ class ConferencePage extends StatefulWidget {
 }
 
 class _ConferencePageState extends State<ConferencePage> {
-  bool _videoEnabled = true;
-  bool _microphoneEnabled = true;
+  final StreamController<ParticipantMediaEnabled> _onAudioEnabledStreamController = StreamController<ParticipantMediaEnabled>.broadcast();
+  Stream<ParticipantMediaEnabled> _onAudioEnabledStream;
+  final StreamController<ParticipantMediaEnabled> _onVideoEnabledStreamController = StreamController<ParticipantMediaEnabled>.broadcast();
+  Stream<ParticipantMediaEnabled> _onVideoEnabledStream;
+
   CameraCapturer _cameraCapturer;
 
   Room _room;
   String _deviceId;
-  final StreamController<bool> _onButtonBarVisible = StreamController<bool>.broadcast();
+  final StreamController<bool> _onButtonBarVisibleStreamController = StreamController<bool>.broadcast();
 
-  final List<ParticipantModel> _participants = [];
+  final List<ParticipantWidget> _participants = [];
+  final List<ParticipantBuffer> _participantBuffer = [];
+  final List<StreamSubscription> _streamSubscriptions = [];
 
   @override
   void initState() {
@@ -46,6 +51,8 @@ class _ConferencePageState extends State<ConferencePage> {
     _wakeLock(true);
     _getDeviceId();
     _connectToRoom();
+    _onAudioEnabledStream = _onAudioEnabledStreamController.stream;
+    _onVideoEnabledStream = _onVideoEnabledStreamController.stream;
   }
 
   @override
@@ -57,8 +64,17 @@ class _ConferencePageState extends State<ConferencePage> {
       DeviceOrientation.portraitDown,
     ]);
     _wakeLock(false);
-    _onButtonBarVisible.close();
+    _disposeStreamsAndSubscriptions();
     super.dispose();
+  }
+
+  Future<void> _disposeStreamsAndSubscriptions() async {
+    await _onButtonBarVisibleStreamController.close();
+    await _onAudioEnabledStreamController.close();
+    await _onVideoEnabledStreamController.close();
+    for (var streamSubscription in _streamSubscriptions) {
+      await streamSubscription.cancel();
+    }
   }
 
   @override
@@ -75,10 +91,10 @@ class _ConferencePageState extends State<ConferencePage> {
                 children: <Widget>[
                   _buildParticipants(context, constraints.biggest),
                   ConferenceButtonBar(
-                    videoEnabled: _videoEnabled,
-                    microphoneEnabled: _microphoneEnabled,
-                    onVideoEnabled: _onVideoEnabled,
-                    onMicrophoneEnabled: _onMicrophoneEnabled,
+                    videoEnabled: _onVideoEnabledStream,
+                    audioEnabled: _onAudioEnabledStream,
+                    onVideoEnabled: _onLocalVideoEnabled,
+                    onAudioEnabled: _onLocalAudioEnabled,
                     onHangup: _onHangup,
                     onSwitchCamera: _onSwitchCamera,
                     onPersonAdd: _onPersonAdd,
@@ -99,7 +115,7 @@ class _ConferencePageState extends State<ConferencePage> {
     try {
       _deviceId = await PlatformService.deviceId;
     } catch (err) {
-      print(err);
+      Debug.log(err);
       _deviceId = DateTime.now().millisecondsSinceEpoch.toString();
     }
   }
@@ -113,15 +129,15 @@ class _ConferencePageState extends State<ConferencePage> {
       var connectOptions = ConnectOptions(widget.roomModel.token)
         ..roomName(widget.roomModel.name)
         ..preferAudioCodecs([OpusCodec()])
-        ..audioTracks([LocalAudioTrack(_microphoneEnabled)])
+        ..audioTracks([LocalAudioTrack(true)])
         ..videoTracks([LocalVideoTrack(true, _cameraCapturer)]);
 
       _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
 
-      _room.onConnected.listen(_onConnected);
-      _room.onParticipantConnected.listen(_onParticipantConnected);
-      _room.onParticipantDisconnected.listen(_onParticipantDisconnected);
-      _room.onConnectFailure.listen(_onConnectFailure);
+      _streamSubscriptions.add(_room.onConnected.listen(_onConnected));
+      _streamSubscriptions.add(_room.onParticipantConnected.listen(_onParticipantConnected));
+      _streamSubscriptions.add(_room.onParticipantDisconnected.listen(_onParticipantDisconnected));
+      _streamSubscriptions.add(_room.onConnectFailure.listen(_onConnectFailure));
     } on PlatformException catch (err) {
       await PlatformExceptionAlertDialog(
         title: 'An error occurred',
@@ -129,60 +145,83 @@ class _ConferencePageState extends State<ConferencePage> {
       ).show(context);
       Navigator.of(context).pop();
     } catch (err) {
-      print(err);
+      Debug.log(err);
     }
   }
 
-  ParticipantModel _buildParticipant({Widget child, bool isRemote = true, String id}) {
-    return ParticipantModel(
-      id: id,
-      isRemote: isRemote,
-      widget: Stack(
-        children: <Widget>[child],
-      ),
+  ParticipantWidget _buildParticipant({
+    @required Widget child,
+    @required String id,
+    @required bool audioEnabled,
+    @required bool videoEnabled,
+    RemoteParticipant remoteParticipant,
+  }) {
+    return ParticipantWidget(
+      id: remoteParticipant?.sid,
+      isRemote: remoteParticipant != null,
+      child: child,
+      audioEnabled: audioEnabled,
+      videoEnabled: videoEnabled,
     );
   }
 
   void _onConnected(RoomEvent roomEvent) {
+    Debug.log('onConnected => state: ${roomEvent.room.state}');
     setState(() {
-      _participants.add(_buildParticipant(child: roomEvent.room.localParticipant.localVideoTracks[0].localVideoTrack.widget(), isRemote: false, id: _deviceId));
+      if (roomEvent.room.state == RoomState.CONNECTED) {
+        // Only add ourselves when connected for the first time
+        _participants.add(
+          _buildParticipant(
+            child: roomEvent.room.localParticipant.localVideoTracks[0].localVideoTrack.widget(),
+            id: _deviceId,
+            audioEnabled: true,
+            videoEnabled: true,
+          ),
+        );
+      }
       for (final remoteParticipant in roomEvent.room.remoteParticipants) {
-        print('Adding participant already present in the room ${remoteParticipant.sid}');
-        _addRemoteParticipantListeners(remoteParticipant);
-        for (final remoteVideoTrackPublication in remoteParticipant.remoteVideoTracks) {
-          if (remoteVideoTrackPublication.isTrackSubscribed) {
-            _participants.insert(
-              0,
-              _buildParticipant(
-                child: remoteVideoTrackPublication.remoteVideoTrack.widget(),
-                id: remoteParticipant.sid,
-              ),
-            );
-          }
+        var participant = _participants.firstWhere((participant) => participant.id == remoteParticipant.sid, orElse: () => null);
+        if (participant == null) {
+          Debug.log('Adding participant that was already present in the room ${remoteParticipant.sid}, before I connected');
+          _addRemoteParticipantListeners(remoteParticipant);
         }
       }
     });
   }
 
   void _onParticipantConnected(RoomEvent roomEvent) {
+    Debug.log('onParticipantConnected, ${roomEvent.remoteParticipant.sid}');
     _addRemoteParticipantListeners(roomEvent.remoteParticipant);
   }
 
   void _addRemoteParticipantListeners(RemoteParticipant remoteParticipant) {
-    print('Adding videoTrack listeners to remoteParticipant ${remoteParticipant.sid}');
-    remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed);
-    remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnSubscribed);
+    Debug.log('Adding listeners to remoteParticipant ${remoteParticipant.sid}');
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackDisabled.listen(_onAudioTrackDisabled));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackEnabled.listen(_onAudioTrackEnabled));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackPublished.listen(_onAudioTrackPublished));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackSubscribed.listen(_onAudioTrackSubscribed));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackSubscriptionFailed.listen(_onAudioTrackSubscriptionFailed));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackUnpublished.listen(_onAudioTrackUnpublished));
+    _streamSubscriptions.add(remoteParticipant.onAudioTrackUnsubscribed.listen(_onAudioTrackUnsubscribed));
+
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackDisabled.listen(_onVideoTrackDisabled));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackEnabled.listen(_onVideoTrackEnabled));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackPublished.listen(_onVideoTrackPublished));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackSubscribed.listen(_onVideoTrackSubscribed));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackSubscriptionFailed.listen(_onVideoTrackSubscriptionFailed));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackUnpublished.listen(_onVideoTrackUnpublished));
+    _streamSubscriptions.add(remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnsubscribed));
   }
 
   void _onParticipantDisconnected(RoomEvent roomEvent) {
-    print('onParticipantDisconnected: ${roomEvent.remoteParticipant.sid}');
+    Debug.log('onParticipantDisconnected: ${roomEvent.remoteParticipant.sid}');
     setState(() {
-      _participants.removeWhere((ParticipantModel p) => p.id == roomEvent.remoteParticipant.sid);
+      _participants.removeWhere((ParticipantWidget p) => p.id == roomEvent.remoteParticipant.sid);
     });
   }
 
   Future<void> _onConnectFailure(RoomEvent roomEvent) async {
-    print('ConnectFailure: ${roomEvent.exception}');
+    Debug.log('onConnectFailure: ${roomEvent.exception}');
     await PlatformAlertDialog(
       title: 'Connect failure',
       content: roomEvent.exception.message,
@@ -191,48 +230,221 @@ class _ConferencePageState extends State<ConferencePage> {
     Navigator.of(context).pop();
   }
 
+  void _onAudioTrackDisabled(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackDisabled, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteAudioTrack.isEnabled}');
+    _setRemoteAudioEnabled(remoteParticipantEvent);
+  }
+
+  void _onAudioTrackEnabled(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackEnabled, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteAudioTrack.isEnabled}');
+    _setRemoteAudioEnabled(remoteParticipantEvent);
+  }
+
+  void _onAudioTrackPublished(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackPublished, ${remoteParticipantEvent.remoteParticipant.sid}}');
+  }
+
+  void _onAudioTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackSubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
+    _addOrUpdateParticipant(remoteParticipantEvent);
+  }
+
+  void _onAudioTrackSubscriptionFailed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackSubscriptionFailed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
+    PlatformAlertDialog(
+      title: 'AudioTrack Subscription Failed',
+      content: remoteParticipantEvent.exception.toString(),
+      defaultActionText: 'OK',
+    ).show(context);
+  }
+
+  void _onAudioTrackUnpublished(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackUnpublished, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
+  }
+
+  void _onAudioTrackUnsubscribed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onAudioTrackUnsubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}');
+  }
+
+  void _onVideoTrackDisabled(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackDisabled, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteVideoTrack.isEnabled}');
+    _setRemoteVideoEnabled(remoteParticipantEvent);
+  }
+
+  void _onVideoTrackEnabled(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackEnabled, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteVideoTrack.isEnabled}');
+    _setRemoteVideoEnabled(remoteParticipantEvent);
+  }
+
+  void _onVideoTrackPublished(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackPublished, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+  }
+
   void _onVideoTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackSubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
+    _addOrUpdateParticipant(remoteParticipantEvent);
+  }
+
+  void _onVideoTrackSubscriptionFailed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackSubscriptionFailed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+    PlatformAlertDialog(
+      title: 'VideoTrack Subscription Failed',
+      content: remoteParticipantEvent.exception.toString(),
+      defaultActionText: 'OK',
+    ).show(context);
+  }
+
+  void _onVideoTrackUnpublished(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackUnpublished, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+  }
+
+  void _onVideoTrackUnsubscribed(RemoteParticipantEvent remoteParticipantEvent) {
+    Debug.log('onVideoTrackUnsubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
+  }
+
+  void _addOrUpdateParticipant(RemoteParticipantEvent remoteParticipantEvent) {
+    final participant = _participants.firstWhere(
+      (ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid,
+      orElse: () => null,
+    );
+    if (participant != null) {
+      Debug.log('Participant found: ${participant.id}, updating A/V enabled values');
+      _setRemoteVideoEnabled(remoteParticipantEvent);
+      _setRemoteAudioEnabled(remoteParticipantEvent);
+    } else {
+      final bufferedParticipant = _participantBuffer.firstWhere(
+        (ParticipantBuffer participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid,
+        orElse: () => null,
+      );
+      if (bufferedParticipant != null) {
+        _participantBuffer.remove(bufferedParticipant);
+      } else if (remoteParticipantEvent.remoteVideoTrack == null) {
+        Debug.log('Audio subscription came first, waiting for the video subscription...');
+        _participantBuffer.add(
+          ParticipantBuffer(
+            id: remoteParticipantEvent.remoteParticipant.sid,
+            audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication?.remoteAudioTrack?.isEnabled ?? true,
+          ),
+        );
+        return;
+      }
+      Debug.log('New participant, adding: ${remoteParticipantEvent.remoteParticipant.sid}');
+      setState(() {
+        _participants.insert(
+          0,
+          _buildParticipant(
+            child: remoteParticipantEvent.remoteVideoTrack.widget(),
+            id: remoteParticipantEvent.remoteParticipant.sid,
+            remoteParticipant: remoteParticipantEvent.remoteParticipant,
+            audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication?.remoteAudioTrack?.isEnabled ?? bufferedParticipant?.audioEnabled ?? true,
+            videoEnabled: remoteParticipantEvent.remoteVideoTrackPublication?.remoteVideoTrack?.isEnabled ?? true,
+          ),
+        );
+      });
+    }
+  }
+
+  void _setRemoteAudioEnabled(RemoteParticipantEvent remoteParticipantEvent) {
+    if (remoteParticipantEvent.remoteAudioTrackPublication == null) {
+      return;
+    }
     setState(() {
-      _participants.insert(
-        0,
-        _buildParticipant(
-          child: remoteParticipantEvent.remoteVideoTrack.widget(),
-          id: remoteParticipantEvent.remoteParticipant.sid,
-        ),
+      var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid);
+      if (index < 0) {
+        return;
+      }
+      var participant = _participants[index];
+      _participants.replaceRange(
+        index,
+        index + 1,
+        [
+          participant.copyWith(audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication.isTrackEnabled),
+        ],
       );
     });
   }
 
-  void _onVideoTrackUnSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
-    print('VideoTrackUnsubscribed, ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
+  void _setRemoteVideoEnabled(RemoteParticipantEvent remoteParticipantEvent) {
+    if (remoteParticipantEvent.remoteVideoTrackPublication == null) {
+      return;
+    }
+    setState(() {
+      var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid);
+      if (index < 0) {
+        return;
+      }
+      var participant = _participants[index];
+      _participants.replaceRange(
+        index,
+        index + 1,
+        [
+          participant.copyWith(videoEnabled: remoteParticipantEvent.remoteVideoTrackPublication.isTrackEnabled),
+        ],
+      );
+    });
   }
 
-  void _onVideoEnabled() {
+  Future<void> _onLocalVideoEnabled() async {
     final localVideoTrack = _room.localParticipant.localVideoTracks[0].localVideoTrack;
-    localVideoTrack.enable(!localVideoTrack.isEnabled);
+    await localVideoTrack.enable(!localVideoTrack.isEnabled);
     setState(() {
-      _videoEnabled = !_videoEnabled;
+      var index = _participants.indexWhere((ParticipantWidget participant) => !participant.isRemote);
+      if (index < 0) {
+        return;
+      }
+      var participant = _participants[index];
+      _participants.replaceRange(
+        index,
+        index + 1,
+        [
+          participant.copyWith(videoEnabled: localVideoTrack.isEnabled),
+        ],
+      );
     });
-    print('onVideoEnabled: $_videoEnabled');
+    _onVideoEnabledStreamController.add(
+      ParticipantMediaEnabled(
+        isEnabled: localVideoTrack.isEnabled,
+      ),
+    );
+    Debug.log('onVideoEnabled: ${localVideoTrack.isEnabled}');
   }
 
-  void _onMicrophoneEnabled() {
+  Future<void> _onLocalAudioEnabled() async {
     final localAudioTrack = _room.localParticipant.localAudioTracks[0].localAudioTrack;
-    localAudioTrack.enable(!localAudioTrack.isEnabled);
+    await localAudioTrack.enable(!localAudioTrack.isEnabled);
+
     setState(() {
-      _microphoneEnabled = !_microphoneEnabled;
+      var index = _participants.indexWhere((ParticipantWidget participant) => !participant.isRemote);
+      if (index < 0) {
+        return;
+      }
+      var participant = _participants[index];
+      _participants.replaceRange(
+        index,
+        index + 1,
+        [
+          participant.copyWith(audioEnabled: localAudioTrack.isEnabled),
+        ],
+      );
     });
-    print('onMicrophoneEnabled: $_microphoneEnabled');
+
+    _onAudioEnabledStreamController.add(
+      ParticipantMediaEnabled(
+        isEnabled: localAudioTrack.isEnabled,
+      ),
+    );
+
+    Debug.log('onAudioEnabled: ${localAudioTrack.isEnabled}');
   }
 
   Future<void> _onHangup() async {
-    print('onHangup');
+    Debug.log('onHangup');
     await _room.disconnect();
     Navigator.of(context).pop();
   }
 
   void _onSwitchCamera() {
-    print('onSwitchCamera');
+    Debug.log('onSwitchCamera');
     _cameraCapturer.switchCamera();
   }
 
@@ -241,9 +453,9 @@ class _ConferencePageState extends State<ConferencePage> {
       if (_participants.length < 18) {
         _participants.insert(
           0,
-          ParticipantModel(
+          ParticipantWidget(
             id: (_participants.length + 1).toString(),
-            widget: Stack(
+            child: Stack(
               children: <Widget>[
                 const Placeholder(),
                 Center(
@@ -266,6 +478,10 @@ class _ConferencePageState extends State<ConferencePage> {
                 ),
               ],
             ),
+            isRemote: true,
+            audioEnabled: true,
+            videoEnabled: true,
+            isDummy: true,
           ),
         );
       } else {
@@ -279,10 +495,11 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _onPersonRemove() {
-    print('onPersonRemove');
-    if (_participants.length > 1) {
+    Debug.log('onPersonRemove');
+    var dummy = _participants.firstWhere((participant) => participant.isDummy, orElse: () => null);
+    if (dummy != null) {
       setState(() {
-        _participants.removeAt(0);
+        _participants.remove(dummy);
       });
     }
   }
@@ -339,26 +556,26 @@ class _ConferencePageState extends State<ConferencePage> {
     if (_participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
-      final remoteParticipant = _participants.firstWhere((ParticipantModel participant) => participant.isRemote, orElse: () => null);
+      final remoteParticipant = _participants.firstWhere((ParticipantWidget participant) => participant.isRemote, orElse: () => null);
       if (remoteParticipant != null) {
-        children.add(remoteParticipant.widget);
+        children.add(remoteParticipant);
       }
     }
 
-    final localParticipant = _participants.firstWhere((ParticipantModel participant) => !participant.isRemote, orElse: () => null);
+    final localParticipant = _participants.firstWhere((ParticipantWidget participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
       children.add(DraggablePublisher(
-        child: localParticipant.widget,
+        child: localParticipant,
         availableScreenSize: size,
-        onButtonBarVisible: _onButtonBarVisible.stream,
+        onButtonBarVisible: _onButtonBarVisibleStreamController.stream,
       ));
     }
   }
 
   void _buildLayoutInGrid(BuildContext context, Size size, List<Widget> children, {bool removeLocalBeforeChunking = false, bool moveLastOfEachRowToNextRow = false, int columns = 2}) {
-    ParticipantModel localParticipant;
+    ParticipantWidget localParticipant;
     if (removeLocalBeforeChunking) {
-      localParticipant = _participants.firstWhere((ParticipantModel participant) => !participant.isRemote, orElse: () => null);
+      localParticipant = _participants.firstWhere((ParticipantWidget participant) => !participant.isRemote, orElse: () => null);
       if (localParticipant != null) {
         _participants.remove(localParticipant);
       }
@@ -382,7 +599,8 @@ class _ConferencePageState extends State<ConferencePage> {
         rowChildren.add(
           Container(
             width: size.width / participantChunk.length,
-            child: participant.widget,
+            height: size.height / chunkedParticipants.length,
+            child: participant,
           ),
         );
       }
@@ -443,22 +661,22 @@ class _ConferencePageState extends State<ConferencePage> {
     setState(() {
       SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom, SystemUiOverlay.top]);
     });
-    _onButtonBarVisible.add(true);
+    _onButtonBarVisibleStreamController.add(true);
   }
 
   void _onHideBar() {
     setState(() {
       SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     });
-    _onButtonBarVisible.add(false);
+    _onButtonBarVisibleStreamController.add(false);
   }
 
   Future<void> _wakeLock(bool enable) async {
     try {
       return await (enable ? Wakelock.enable() : Wakelock.disable());
     } catch (err) {
-      print('Unable to change the Wakelock and set it to $enable');
-      print(err);
+      Debug.log('Unable to change the Wakelock and set it to $enable');
+      Debug.log(err);
     }
   }
 }
