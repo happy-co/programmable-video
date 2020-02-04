@@ -69,7 +69,7 @@ project id down.
 | twilio.test.account_sid |  ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | [Twilio console - Dashboard](https://www.twilio.com/console) |
 | twilio.test.auth_token |  your_auth_token | [Twilio console - Dashboard](https://www.twilio.com/console)|
 | twilio.api_key |  SKXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create)
-twilio.api_secret | your_api_secret | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create) |
+| twilio.api_secret | your_api_secret | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create) |
 8. Configure [the environment variables](https://firebase.google.com/docs/functions/config-env) for the Cloud Functions
 ```
 firebase functions:config:set twilio.live.account_sid="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" \

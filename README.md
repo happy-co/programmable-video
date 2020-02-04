@@ -4,7 +4,7 @@ Create real-time videocall applications (WebRTC), with this Unofficial Twilio Pr
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
 
 # Example
-Check out our comprehensive [example](https://gitlab.com/twilio-flutter-unofficial/programmable-video/tree/master/example) provided with this plugin.
+Check out our comprehensive [example](https://gitlab.com/twilio-flutter-unofficial/programmable-video/-/tree/master/example) provided with this plugin.
 
 [![Twilio Unofficial Programmable Video Example](https://j.gifs.com/5QEyOB.gif)](https://gitlab.com/twilio-flutter-unofficial/programmable-video/-/tree/master/example "Twilio Unofficial Programmable Video Example")
 
