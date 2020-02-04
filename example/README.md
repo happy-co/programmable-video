@@ -2,6 +2,8 @@
 
 Demonstrates how to use the `twilio_unofficial_programmable_video` plugin in a save manner as you would production like.
 
+![Twilio Unofficial Programmable Video Example](https://j.gifs.com/5QEyOB.gif)
+
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 

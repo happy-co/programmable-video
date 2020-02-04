@@ -258,7 +258,7 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
             TwilioUnofficialProgrammableVideoPlugin.nativeDebug = enableNative
             result.success(enableNative)
         } else {
-            result.error("MISSING_PARAMS", "Missing 'debug' parameter", null)
+            result.error("MISSING_PARAMS", "Missing 'native' parameter", null)
         }
     }
 
