@@ -56,11 +56,12 @@ npm install -g firebase-tools
 1. Create a project on Firebase. Any project name would be okay. Google Analytics is not needed, but if you want you can add it.
 2. Below the project name you will see the project id that will be created. You can change this when you press on it. Write this
 project id down.
-3. Open the file `.firebaserc` and change the value `twilio-flutter-plugin-dev` to your project id from step 2.
-4. Make sure the project is on [Blaze plan](#required-plans-on-firebase)
-5. In a terminal run `firebase login` and login with the same account as used in step 1.
-6. In a terminal go to the firebase functions directory in this example: `cd firebase/functions` and run `npm install`
-7. You will need to get the following information from your Twilio account for the next step:
+3. Go to your project settings and select your resource location in the `Google Cloud Platform (GCP) resource location`. Keep in mind, you can't change this afterwards.
+4. Open the file `.firebaserc` and change the value `twilio-flutter-plugin-dev` to your project id from step 2.
+5. Make sure the project is on [Blaze plan](#required-plans-on-firebase)
+6. In a terminal run `firebase login` and login with the same account as used in step 1.
+7. In a terminal go to the firebase functions directory in this example: `cd firebase/functions` and run `npm install`
+8. You will need to get the following information from your Twilio account for the next step:
 
 | Variable | Example value | Where to find/create |
 |-----|---------------|---------------|
@@ -70,7 +71,7 @@ project id down.
 | twilio.test.auth_token |  your_auth_token | [Twilio console - Dashboard](https://www.twilio.com/console)|
 | twilio.api_key |  SKXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create)
 | twilio.api_secret | your_api_secret | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create) |
-8. Configure [the environment variables](https://firebase.google.com/docs/functions/config-env) for the Cloud Functions
+9. Configure [the environment variables](https://firebase.google.com/docs/functions/config-env) for the Cloud Functions
 ```
 firebase functions:config:set twilio.live.account_sid="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" \
                               twilio.live.auth_token="your_auth_token" \
@@ -79,7 +80,7 @@ firebase functions:config:set twilio.live.account_sid="ACXXXXXXXXXXXXXXXXXXXXXXX
                               twilio.api_key="SKXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" \
                               twilio.api_secret="your_api_secret"
 ```
-9. Deploy the firebase project: `firebase deploy`
+10. Deploy the firebase project: `firebase deploy`
 
 ### Configure Flutter app
 This example uses the `cloud_functions` plugin from [pub.dev](https://pub.dev/packages/cloud_functions) and therefore we should also follow [the setup](https://pub.dev/packages/cloud_functions#setup) from this plugin.
