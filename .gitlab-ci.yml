@@ -38,6 +38,7 @@ firebase_functions:
   image: node:8.15.0-alpine
   stage: lint
   script:
+    - apk add --update git
     - cd example/firebase/functions || exit 1
     - npm i
     - npm run lint
