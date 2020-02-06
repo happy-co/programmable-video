@@ -33,9 +33,7 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
             if (videoTrack != null) {
                 val videoView = VideoView(context)
                 videoView.mirror = params["mirror"] as Boolean
-                val participantView = ParticipantView(videoView)
-                videoTrack.addRenderer(videoView)
-                return participantView
+                return ParticipantView(videoView, videoTrack)
             }
         }
 

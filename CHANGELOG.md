@@ -1,3 +1,7 @@
+## 0.1.1+1
+
+* Fixed Android crashes when joining/disconnecting multiple times
+
 ## 0.1.1
 
 * Better error handling on denied permissions

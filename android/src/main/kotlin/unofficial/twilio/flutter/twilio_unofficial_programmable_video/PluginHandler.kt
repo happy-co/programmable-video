@@ -136,6 +136,9 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
 
     private fun disconnect(call: MethodCall, result: MethodChannel.Result) {
         TwilioUnofficialProgrammableVideoPlugin.debug("TwilioUnofficialProgrammableVideoPlugin.disconnect => called")
+        TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.localParticipant?.localVideoTracks?.forEach { it.localVideoTrack.release() }
+        TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.localParticipant?.localAudioTracks?.forEach { it.localAudioTrack.release() }
+        TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.forEach { it.localDataTrack.release() }
         TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.disconnect()
         setAudioFocus(false)
         result.success(true)
