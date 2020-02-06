@@ -4,11 +4,11 @@ import './platform_alert_dialog.dart';
 
 class PlatformExceptionAlertDialog extends PlatformAlertDialog {
   PlatformExceptionAlertDialog({
-    @required String title,
-    @required PlatformException exception,
+    String title = 'An error occurred',
+    @required Exception exception,
   }) : super(
           title: title,
-          content: _message(exception),
+          content: exception is PlatformException ? _message(exception) : exception.toString(),
           defaultActionText: 'OK',
         );
 

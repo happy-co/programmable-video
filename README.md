@@ -28,7 +28,7 @@ First add it as a [dependency in your pubspec.yaml file](https://flutter.dev/doc
 For example:
 ```yaml
 dependencies:
-  twilio_unofficial_programmable_video: '^0.1.0'
+  twilio_unofficial_programmable_video: '^0.1.1'
 ```
 
 #### Proguard (Android only)

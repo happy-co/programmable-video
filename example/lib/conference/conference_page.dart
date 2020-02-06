@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
@@ -138,14 +139,12 @@ class _ConferencePageState extends State<ConferencePage> {
       _streamSubscriptions.add(_room.onParticipantConnected.listen(_onParticipantConnected));
       _streamSubscriptions.add(_room.onParticipantDisconnected.listen(_onParticipantDisconnected));
       _streamSubscriptions.add(_room.onConnectFailure.listen(_onConnectFailure));
-    } on PlatformException catch (err) {
+    } catch (err) {
+      Debug.log(err);
       await PlatformExceptionAlertDialog(
-        title: 'An error occurred',
         exception: err,
       ).show(context);
       Navigator.of(context).pop();
-    } catch (err) {
-      Debug.log(err);
     }
   }
 

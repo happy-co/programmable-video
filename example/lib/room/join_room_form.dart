@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:twilio_unofficial_programmable_video_example/conference/conference_page.dart';
+import 'package:twilio_unofficial_programmable_video_example/debug.dart';
 import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_bloc.dart';
 import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
@@ -131,10 +131,10 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
           ),
         ),
       );
-    } on PlatformException catch (error) {
+    } catch (err) {
+      Debug.log(err);
       await PlatformExceptionAlertDialog(
-        title: 'Error creating room',
-        exception: error,
+        exception: err,
       ).show(context);
     }
   }

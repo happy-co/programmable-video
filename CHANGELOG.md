@@ -1,3 +1,8 @@
+## 0.1.1
+
+* Better error handling on denied permissions
+* Improved re-requesting permission and otherwise open App Settings (Android)
+
 ## 0.1.0+2
 
 * Added animated GIF to show of the example app

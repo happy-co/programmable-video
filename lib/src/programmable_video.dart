@@ -51,14 +51,25 @@ class TwilioUnofficialProgrammableVideo {
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.
   static Future<bool> requestPermissionForCameraAndMicrophone() async {
-    final permissions = await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
+    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
+    final micPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
+    final camPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.camera);
+    _log('Permissions => Microphone: ${micPermission}, Camera: ${camPermission}');
 
-    var cameraAndMicPermissionGranted = true;
-    permissions.forEach((PermissionGroup permissionGroup, PermissionStatus permissionStatus) {
-      return cameraAndMicPermissionGranted = cameraAndMicPermissionGranted ? permissionStatus == PermissionStatus.granted : false;
-    });
+    if (micPermission == PermissionStatus.granted && camPermission == PermissionStatus.granted) {
+      return true;
+    }
 
-    return cameraAndMicPermissionGranted;
+    if (micPermission == PermissionStatus.denied || camPermission == PermissionStatus.denied) {
+      return requestPermissionForCameraAndMicrophone();
+    }
+
+    if (micPermission == PermissionStatus.neverAskAgain || camPermission == PermissionStatus.neverAskAgain) {
+      _log('Permissions => Opening App Settings');
+      await PermissionHandler().openAppSettings();
+    }
+
+    return false;
   }
 
   /// Connect to a [Room].
