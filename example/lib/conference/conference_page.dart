@@ -125,7 +125,6 @@ class _ConferencePageState extends State<ConferencePage> {
   Future<void> _connectToRoom() async {
     try {
       await TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);
-      await TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
       _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
       var connectOptions = ConnectOptions(widget.roomModel.token)
         ..roomName(widget.roomModel.name)

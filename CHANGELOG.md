@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Switch speaker mode based on headset plug
+
 ## 0.1.1+1
 
 * Fixed Android crashes when joining/disconnecting multiple times

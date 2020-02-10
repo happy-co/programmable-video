@@ -2,6 +2,8 @@ package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -31,7 +33,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
-class PluginHandler(private val applicationContext: Context) : MethodCallHandler, ActivityAware {
+class PluginHandler : MethodCallHandler, ActivityAware {
     private var previousAudioMode: Int = 0
 
     private var previousMicrophoneMute: Boolean = false
@@ -41,6 +43,21 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
     private var previousVolumeControlStream: Int = 0
 
     private var activity: Activity? = null
+
+    private var applicationContext: Context
+
+    private var myNoisyAudioStreamReceiver: BecomingNoisyReceiver
+
+    private var audioManager: AudioManager
+
+    private var headsetPlugIntent: IntentFilter
+
+    constructor(applicationContext: Context) {
+        this.applicationContext = applicationContext
+        audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        myNoisyAudioStreamReceiver = BecomingNoisyReceiver(audioManager)
+        headsetPlugIntent = IntentFilter(Intent.ACTION_HEADSET_PLUG)
+    }
 
     override fun onDetachedFromActivityForConfigChanges() {
         this.activity = null
@@ -127,7 +144,6 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
         val on = call.argument<Boolean>("on")
         if (on != null) {
-            val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             audioManager.isSpeakerphoneOn = on
             return result.success(on)
         }
@@ -266,7 +282,6 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
     }
 
     private fun setAudioFocus(focus: Boolean) {
-        val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (focus) {
             previousAudioMode = audioManager.mode
             val volumeControlStream = this.activity?.volumeControlStream
@@ -297,6 +312,8 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
              * speaker mode if this is not set.
              */
             audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+            audioManager.setSpeakerphoneOn(!audioManager.isWiredHeadsetOn())
+            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, headsetPlugIntent)
             /*
              * Always disable microphone mute during a WebRTC call.
              */
@@ -310,9 +327,16 @@ class PluginHandler(private val applicationContext: Context) : MethodCallHandler
             } else if (audioFocusRequest != null) {
                 audioManager.abandonAudioFocusRequest(audioFocusRequest)
             }
+            audioManager.setSpeakerphoneOn(false)
             audioManager.mode = previousAudioMode
             audioManager.isMicrophoneMute = previousMicrophoneMute
             this.activity?.volumeControlStream = previousVolumeControlStream
+            try {
+                applicationContext.unregisterReceiver(myNoisyAudioStreamReceiver)
+            } catch (e: java.lang.Exception) {
+                TwilioUnofficialProgrammableVideoPlugin.debug("${e.message}")
+                e.printStackTrace()
+            }
         }
     }
 }
