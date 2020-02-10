@@ -10,9 +10,11 @@ include: package:pedantic/analysis_options.yaml
 
 # For lint rules and documentation, see http://dart-lang.github.io/linter/lints.
 # Uncomment to specify additional rules.
-#linter:
-#  rules:
-#    - prefer_const_constructors
+linter:
+  rules:
+    - unnecessary_brace_in_string_interps
+    - non_constant_identifier_names
+    - cancel_subscriptions
 
 # analyzer:
 #   exclude:

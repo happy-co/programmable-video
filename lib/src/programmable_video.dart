@@ -54,7 +54,7 @@ class TwilioUnofficialProgrammableVideo {
     await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
     final micPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
     final camPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.camera);
-    _log('Permissions => Microphone: ${micPermission}, Camera: ${camPermission}');
+    _log('Permissions => Microphone: $micPermission, Camera: $camPermission');
 
     if (micPermission == PermissionStatus.granted && camPermission == PermissionStatus.granted) {
       return true;

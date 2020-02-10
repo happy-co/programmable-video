@@ -42,7 +42,7 @@ class RemoteVideoTrack extends VideoTrack {
       creationParams: creationParams,
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (int viewId) {
-        TwilioUnofficialProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: ${creationParams}');
+        TwilioUnofficialProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: $creationParams');
       },
     );
   }
