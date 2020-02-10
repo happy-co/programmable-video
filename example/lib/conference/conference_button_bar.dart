@@ -156,66 +156,71 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
     _timer = startTimeout();
   }
 
-  Row _buildRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: <Widget>[
-        CircleButton(
-          child: StreamBuilder<ParticipantMediaEnabled>(
-              stream: widget.videoEnabled,
-              initialData: ParticipantMediaEnabled(id: null, isEnabled: _videoEnabled),
-              builder: (context, snapshot) {
-                if (snapshot.data.id == null) {
-                  _videoEnabled = snapshot.data.isEnabled;
-                }
-                return Icon(
-                  _videoEnabled ? Icons.videocam : Icons.videocam_off,
-                  color: Colors.white,
-                );
-              }),
-          onPressed: () => _onPressed(widget.onVideoEnabled),
-        ),
-        CircleButton(
-          child: StreamBuilder<ParticipantMediaEnabled>(
-              stream: widget.audioEnabled,
-              initialData: ParticipantMediaEnabled(id: null, isEnabled: _audioEnabled),
-              builder: (context, snapshot) {
-                if (snapshot.data.id == null) {
-                  _audioEnabled = snapshot.data.isEnabled;
-                }
-                return Icon(
-                  _audioEnabled ? Icons.mic : Icons.mic_off,
-                  color: Colors.white,
-                );
-              }),
-          onPressed: () => _onPressed(widget.onAudioEnabled),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: CircleButton(
-            radius: 30,
+  Widget _buildRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          CircleButton(
+            radius: 25,
+            child: StreamBuilder<ParticipantMediaEnabled>(
+                stream: widget.videoEnabled,
+                initialData: ParticipantMediaEnabled(id: null, isEnabled: _videoEnabled),
+                builder: (context, snapshot) {
+                  if (snapshot.data.id == null) {
+                    _videoEnabled = snapshot.data.isEnabled;
+                  }
+                  return Icon(
+                    _videoEnabled ? Icons.videocam : Icons.videocam_off,
+                    color: Colors.white,
+                  );
+                }),
+            onPressed: () => _onPressed(widget.onVideoEnabled),
+          ),
+          CircleButton(
+            radius: 25,
+            child: StreamBuilder<ParticipantMediaEnabled>(
+                stream: widget.audioEnabled,
+                initialData: ParticipantMediaEnabled(id: null, isEnabled: _audioEnabled),
+                builder: (context, snapshot) {
+                  if (snapshot.data.id == null) {
+                    _audioEnabled = snapshot.data.isEnabled;
+                  }
+                  return Icon(
+                    _audioEnabled ? Icons.mic : Icons.mic_off,
+                    color: Colors.white,
+                  );
+                }),
+            onPressed: () => _onPressed(widget.onAudioEnabled),
+          ),
+          CircleButton(
+            radius: 35,
             child: const RotationTransition(
               turns: AlwaysStoppedAnimation<double>(135 / 360),
               child: Icon(
                 Icons.phone,
                 color: Colors.white,
-                size: 35,
+                size: 40,
               ),
             ),
             color: Colors.red.withAlpha(200),
             onPressed: () => _onPressed(widget.onHangup),
           ),
-        ),
-        CircleButton(
-          child: const Icon(Icons.switch_camera, color: Colors.white),
-          onPressed: () => _onPressed(widget.onSwitchCamera),
-        ),
-        CircleButton(
-          child: const Icon(Icons.person_add, color: Colors.white),
-          onPressed: () => _onPressed(widget.onPersonAdd),
-          onLongPress: () => _onPressed(widget.onPersonRemove),
-        ),
-      ],
+          CircleButton(
+            radius: 25,
+            child: const Icon(Icons.switch_camera, color: Colors.white),
+            onPressed: () => _onPressed(widget.onSwitchCamera),
+          ),
+          CircleButton(
+            radius: 25,
+            child: const Icon(Icons.person_add, color: Colors.white),
+            onPressed: () => _onPressed(widget.onPersonAdd),
+            onLongPress: () => _onPressed(widget.onPersonRemove),
+          ),
+        ],
+      ),
     );
   }
 }
