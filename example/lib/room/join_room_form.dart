@@ -122,13 +122,11 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
 
   Future<void> _submit() async {
     try {
-      await widget.roomBloc.submit();
+      final conferenceRoom = await widget.roomBloc.submit();
       await Navigator.of(context).push(
         MaterialPageRoute<ConferencePage>(
           fullscreenDialog: true,
-          builder: (BuildContext context) => ConferencePage(
-            roomModel: widget.roomBloc.model,
-          ),
+          builder: (BuildContext context) => ConferencePage.create(conferenceRoom),
         ),
       );
     } catch (err) {

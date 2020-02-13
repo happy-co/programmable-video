@@ -2,26 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class ParticipantMediaEnabled {
-  final bool isEnabled;
-  final String id;
-
-  ParticipantMediaEnabled({
-    @required this.isEnabled,
-    this.id,
-  }) : assert(isEnabled != null);
-}
-
-class ParticipantVideoAvailable {
-  final Widget widget;
-  final String id;
-
-  ParticipantVideoAvailable({
-    @required this.widget,
-    this.id,
-  }) : assert(widget != null);
-}
-
 class ParticipantBuffer {
   final bool audioEnabled;
   final String id;

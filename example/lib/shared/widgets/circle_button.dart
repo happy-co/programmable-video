@@ -19,7 +19,7 @@ class CircleButton extends StatefulWidget {
     this.onPressed,
     this.child,
     this.color,
-    this.radius = 20.0,
+    this.radius = 25.0,
     this.onTapCancel,
     this.onTapDown,
   })  : assert(radius != null),

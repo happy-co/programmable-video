@@ -8,18 +8,21 @@ class DraggablePublisher extends StatefulWidget {
   final Widget child;
   final double scaleFactor;
   final Stream<bool> onButtonBarVisible;
+  final Stream<double> onButtonBarHeight;
 
   const DraggablePublisher({
     Key key,
     @required this.availableScreenSize,
     this.child,
     @required this.onButtonBarVisible,
+    @required this.onButtonBarHeight,
 
     /// The portion of the screen the DraggableWidget should use.
     this.scaleFactor = .25,
   })  : assert(scaleFactor != null && scaleFactor > 0 && scaleFactor <= .4),
         assert(availableScreenSize != null),
         assert(onButtonBarVisible != null),
+        assert(onButtonBarHeight != null),
         super(key: key);
 
   @override
@@ -28,14 +31,18 @@ class DraggablePublisher extends StatefulWidget {
 
 class _DraggablePublisherState extends State<DraggablePublisher> {
   bool _isButtonBarVisible = true;
+  double _buttonBarHeight = 0;
   double _width;
   double _height;
   double _top;
   double _left;
+  final double _heightStatusBar = 20.0;
+  final double _padding = 8.0;
   final Duration _duration300ms = const Duration(milliseconds: 300);
   final Duration _duration0ms = const Duration(milliseconds: 0);
   Duration _duration;
   StreamSubscription _streamSubscription;
+  StreamSubscription _streamHeightSubscription;
 
   @override
   void initState() {
@@ -43,16 +50,25 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
     _duration = _duration300ms;
     _width = widget.availableScreenSize.width * widget.scaleFactor;
     _height = _width * (widget.availableScreenSize.height / widget.availableScreenSize.width);
-    _top = widget.availableScreenSize.height - 80 - _height;
-    _left = widget.availableScreenSize.width - 10 - _width;
+    _top = widget.availableScreenSize.height - (_buttonBarHeight + _padding) - _height;
+    _left = widget.availableScreenSize.width - _padding - _width;
 
     _streamSubscription = widget.onButtonBarVisible.listen(_buttonBarVisible);
+    _streamHeightSubscription = widget.onButtonBarHeight.listen(_getButtonBarHeight);
   }
 
   @override
   void dispose() {
     _streamSubscription.cancel();
+    _streamHeightSubscription.cancel();
     super.dispose();
+  }
+
+  void _getButtonBarHeight(double height) {
+    setState(() {
+      _buttonBarHeight = height;
+      _positionWidget();
+    });
   }
 
   void _buttonBarVisible(bool visible) {
@@ -112,20 +128,20 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
       _duration = _duration300ms;
       if (Rect.fromLTRB(0, 0, widget.availableScreenSize.width / 2, widget.availableScreenSize.height / 2).contains(draggableCenter)) {
         // Top-left
-        _top = (_isButtonBarVisible ? 30 : 10);
+        _top = (_isButtonBarVisible ? (_heightStatusBar + _padding) : _padding);
         _left = 10;
       } else if (Rect.fromLTRB(widget.availableScreenSize.width / 2, 0, widget.availableScreenSize.width, widget.availableScreenSize.height / 2).contains(draggableCenter)) {
         // Top-right
-        _top = (_isButtonBarVisible ? 30 : 10);
-        _left = widget.availableScreenSize.width - 10 - _width;
+        _top = (_isButtonBarVisible ? (_heightStatusBar + _padding) : _padding);
+        _left = widget.availableScreenSize.width - _padding - _width;
       } else if (Rect.fromLTRB(0, widget.availableScreenSize.height / 2, widget.availableScreenSize.width / 2, widget.availableScreenSize.height).contains(draggableCenter)) {
         // Bottom-left
-        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? 80 : 10) - _height;
+        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? (_buttonBarHeight + _padding) : _padding) - _height;
         _left = 10;
       } else if (Rect.fromLTRB(widget.availableScreenSize.width / 2, widget.availableScreenSize.height / 2, widget.availableScreenSize.width, widget.availableScreenSize.height).contains(draggableCenter)) {
         // Bottom-right
-        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? 80 : 10) - _height;
-        _left = widget.availableScreenSize.width - 10 - _width;
+        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? (_buttonBarHeight + _padding) : _padding) - _height;
+        _left = widget.availableScreenSize.width - _padding - _width;
       }
     });
   }

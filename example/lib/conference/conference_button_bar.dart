@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_widget.dart';
 import 'package:twilio_unofficial_programmable_video_example/shared/widgets/circle_button.dart';
 
 class ConferenceButtonBar extends StatefulWidget {
@@ -11,10 +11,11 @@ class ConferenceButtonBar extends StatefulWidget {
   final VoidCallback onSwitchCamera;
   final VoidCallback onPersonAdd;
   final VoidCallback onPersonRemove;
+  final void Function(double) onHeight;
   final VoidCallback onHide;
   final VoidCallback onShow;
-  final Stream<ParticipantMediaEnabled> videoEnabled;
-  final Stream<ParticipantMediaEnabled> audioEnabled;
+  final Stream<bool> videoEnabled;
+  final Stream<bool> audioEnabled;
 
   const ConferenceButtonBar({
     Key key,
@@ -26,6 +27,7 @@ class ConferenceButtonBar extends StatefulWidget {
     this.onPersonRemove,
     @required this.videoEnabled,
     @required this.audioEnabled,
+    this.onHeight,
     this.onHide,
     this.onShow,
   })  : assert(videoEnabled != null),
@@ -36,14 +38,15 @@ class ConferenceButtonBar extends StatefulWidget {
   _ConferenceButtonBarState createState() => _ConferenceButtonBarState();
 }
 
-class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
-  var _bottom = 0.0;
+class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLayoutMixin<ConferenceButtonBar> {
+  var _bottom = -100.0;
   Timer _timer;
   int _remaining;
   var _videoEnabled = true;
   var _audioEnabled = true;
-  final double _hidden = -100;
-  final double _visible = 0;
+  final double _hidden = -100.0;
+  final double _visible = 0.0;
+  final _keyButtonBarHeight = GlobalKey();
 
   final Duration timeout = const Duration(seconds: 5);
   final Duration ms = const Duration(milliseconds: 1);
@@ -109,6 +112,14 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
   }
 
   @override
+  void afterFirstLayout(BuildContext context) {
+    final RenderBox renderBoxButtonBar = _keyButtonBarHeight.currentContext.findRenderObject();
+    final heightButtonBar = renderBoxButtonBar.size.height;
+    widget.onHeight(heightButtonBar);
+    _toggleBar();
+  }
+
+  @override
   void dispose() {
     super.dispose();
     if (_timer != null && _timer.isActive) {
@@ -158,20 +169,17 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
 
   Widget _buildRow(BuildContext context) {
     return Padding(
+      key: _keyButtonBarHeight,
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           CircleButton(
-            radius: 25,
-            child: StreamBuilder<ParticipantMediaEnabled>(
+            child: StreamBuilder<bool>(
                 stream: widget.videoEnabled,
-                initialData: ParticipantMediaEnabled(id: null, isEnabled: _videoEnabled),
+                initialData: _videoEnabled,
                 builder: (context, snapshot) {
-                  if (snapshot.data.id == null) {
-                    _videoEnabled = snapshot.data.isEnabled;
-                  }
+                  _videoEnabled = snapshot.data;
                   return Icon(
                     _videoEnabled ? Icons.videocam : Icons.videocam_off,
                     color: Colors.white,
@@ -180,14 +188,11 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
             onPressed: () => _onPressed(widget.onVideoEnabled),
           ),
           CircleButton(
-            radius: 25,
-            child: StreamBuilder<ParticipantMediaEnabled>(
+            child: StreamBuilder<bool>(
                 stream: widget.audioEnabled,
-                initialData: ParticipantMediaEnabled(id: null, isEnabled: _audioEnabled),
+                initialData: _audioEnabled,
                 builder: (context, snapshot) {
-                  if (snapshot.data.id == null) {
-                    _audioEnabled = snapshot.data.isEnabled;
-                  }
+                  _audioEnabled = snapshot.data;
                   return Icon(
                     _audioEnabled ? Icons.mic : Icons.mic_off,
                     color: Colors.white,
@@ -209,12 +214,10 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> {
             onPressed: () => _onPressed(widget.onHangup),
           ),
           CircleButton(
-            radius: 25,
             child: const Icon(Icons.switch_camera, color: Colors.white),
             onPressed: () => _onPressed(widget.onSwitchCamera),
           ),
           CircleButton(
-            radius: 25,
             child: const Icon(Icons.person_add, color: Colors.white),
             onPressed: () => _onPressed(widget.onPersonAdd),
             onLongPress: () => _onPressed(widget.onPersonRemove),
