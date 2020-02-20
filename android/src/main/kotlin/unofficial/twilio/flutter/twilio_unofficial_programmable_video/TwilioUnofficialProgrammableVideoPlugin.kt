@@ -21,7 +21,11 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
 
     private lateinit var remoteParticipantChannel: EventChannel
 
+    private lateinit var localParticipantChannel: EventChannel
+
     private lateinit var loggingChannel: EventChannel
+
+    private lateinit var remoteDataTrackChannel: EventChannel
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -68,7 +72,11 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
 
         var remoteParticipantListener = RemoteParticipantListener()
 
+        var localParticipantListener = LocalParticipantListener()
+
         var nativeDebug: Boolean = false
+
+        var remoteDataTrackListener = RemoteDataTrackListener()
 
         @JvmStatic
         fun debug(msg: String) {
@@ -115,6 +123,19 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
             }
         })
 
+        localParticipantChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/local")
+        localParticipantChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel attached")
+                localParticipantListener.events = events
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel detached")
+                localParticipantListener.events = null
+            }
+        })
+
         loggingChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/logging")
         loggingChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
@@ -128,6 +149,19 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
             }
         })
 
+        remoteDataTrackChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/remote_data_track")
+        remoteDataTrackChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel attached")
+                remoteDataTrackListener.events = events
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel detached")
+                remoteDataTrackListener.events = null
+            }
+        })
+
         val pvf = ParticipantViewFactory(StandardMessageCodec.INSTANCE, pluginHandler)
         platformViewRegistry.registerViewFactory("twilio_unofficial_programmable_video/views", pvf)
     }
@@ -136,5 +170,8 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
         methodChannel.setMethodCallHandler(null)
         roomChannel.setStreamHandler(null)
         remoteParticipantChannel.setStreamHandler(null)
+        loggingChannel.setStreamHandler(null)
+        remoteDataTrackChannel.setStreamHandler(null)
+        localParticipantChannel.setStreamHandler(null)
     }
 }

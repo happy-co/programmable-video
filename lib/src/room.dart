@@ -1,25 +1,5 @@
 part of twilio_unofficial_programmable_video;
 
-/// The event class for all [Room] events.
-class RoomEvent {
-  /// The receiving room.
-  final Room room;
-
-  /// The remote participant that joined or leaved.
-  ///
-  /// Will be non-null with the following events:
-  /// - participantConnected
-  /// - participantDisconnected
-  final RemoteParticipant remoteParticipant;
-
-  /// The exception of the event.
-  ///
-  /// Can be null.
-  final TwilioException exception;
-
-  RoomEvent(this.room, this.remoteParticipant, this.exception) : assert(room != null);
-}
-
 /// A [Room] represents a media session with zero or more remote participants. Media shared by any one [RemoteParticipant] is distributed equally to all other participants.
 class Room {
   final int _internalId;
@@ -29,6 +9,12 @@ class Room {
 
   /// Stream for the native remote participant events.
   StreamSubscription<dynamic> _remoteParticipantStream;
+
+  /// Stream for the native local participant events.
+  StreamSubscription<dynamic> _localParticipantStream;
+
+  /// Stream for the native remote data track events.
+  StreamSubscription<dynamic> _remoteDataTrackStream;
 
   String _sid;
 
@@ -43,17 +29,13 @@ class Room {
   final List<RemoteParticipant> _remoteParticipants = [];
 
   /// Map of buffered events for remote participants.
-  final Map<String, List<dynamic>> _remoteEventBuffer = {};
+  final Map<String, List<dynamic>> _remoteParticipantsEventBuffer = {};
 
   /// The SID of this [Room].
-  String get sid {
-    return _sid;
-  }
+  String get sid => _sid;
 
   /// The name of this [Room].
-  String get name {
-    return _name;
-  }
+  String get name => _name;
 
   /// The region where media is processed.
   ///
@@ -61,82 +43,73 @@ class Room {
   /// It can be `null` under the following conditions:
   /// * The [Room] has not reached the [RoomState.CONNECTED] state.
   /// * The instance represents a peer-to-peer room.
-  String get mediaRegion {
-    return _mediaRegion;
-  }
+  String get mediaRegion => _mediaRegion;
 
   /// The current room state.
-  RoomState get state {
-    return _state;
-  }
+  RoomState get state => _state;
 
   /// The current local participant.
   ///
   /// If the room has not reached [RoomState.CONNECTED] then it will be `null`.
-  LocalParticipant get localParticipant {
-    return _localParticipant;
-  }
+  LocalParticipant get localParticipant => _localParticipant;
 
   /// All currently connected participants.
-  List<RemoteParticipant> get remoteParticipants {
-    return <RemoteParticipant>[..._remoteParticipants];
-  }
+  List<RemoteParticipant> get remoteParticipants => <RemoteParticipant>[..._remoteParticipants];
 
-  final StreamController<RoomEvent> _onConnectFailure = StreamController<RoomEvent>.broadcast();
+  final StreamController<RoomConnectFailureEvent> _onConnectFailure = StreamController<RoomConnectFailureEvent>.broadcast();
 
   /// Called when a connection to a room failed.
-  Stream<RoomEvent> onConnectFailure;
+  Stream<RoomConnectFailureEvent> onConnectFailure;
 
-  final StreamController<RoomEvent> _onConnectedCtrl = StreamController<RoomEvent>.broadcast();
+  final StreamController<Room> _onConnected = StreamController<Room>.broadcast();
 
   /// Called when a room has succeeded.
-  Stream<RoomEvent> onConnected;
+  Stream<Room> onConnected;
 
-  final StreamController<RoomEvent> _onDisconnected = StreamController<RoomEvent>.broadcast();
+  final StreamController<RoomDisconnectedEvent> _onDisconnected = StreamController<RoomDisconnectedEvent>.broadcast();
 
   /// Called when a room has been disconnected from.
-  Stream<RoomEvent> onDisconnected;
+  Stream<RoomDisconnectedEvent> onDisconnected;
 
-  final StreamController<RoomEvent> _onParticipantConnected = StreamController<RoomEvent>.broadcast();
+  final StreamController<RoomParticipantConnectedEvent> _onParticipantConnected = StreamController<RoomParticipantConnectedEvent>.broadcast();
 
   /// Called when a participant has connected to a room.
-  Stream<RoomEvent> onParticipantConnected;
+  Stream<RoomParticipantConnectedEvent> onParticipantConnected;
 
-  final StreamController<RoomEvent> _onParticipantDisconnected = StreamController<RoomEvent>.broadcast();
+  final StreamController<RoomParticipantDisconnectedEvent> _onParticipantDisconnected = StreamController<RoomParticipantDisconnectedEvent>.broadcast();
 
   /// Called when a participant has disconnected from a room.
-  Stream<RoomEvent> onParticipantDisconnected;
+  Stream<RoomParticipantDisconnectedEvent> onParticipantDisconnected;
 
-  final StreamController<RoomEvent> _onReconnected = StreamController<RoomEvent>.broadcast();
+  final StreamController<Room> _onReconnected = StreamController<Room>.broadcast();
 
   /// Called after the [LocalParticipant] reconnects to a room after a network disruption.
-  Stream<RoomEvent> onReconnected;
+  Stream<Room> onReconnected;
 
-  final StreamController<RoomEvent> _onReconnecting = StreamController<RoomEvent>.broadcast();
+  final StreamController<RoomReconnectingEvent> _onReconnecting = StreamController<RoomReconnectingEvent>.broadcast();
 
   /// Called when the [LocalParticipant] has experienced a network disruption and the client
   /// begins trying to reestablish a connection to a room.
-  Stream<RoomEvent> onReconnecting;
+  Stream<RoomReconnectingEvent> onReconnecting;
 
-  final StreamController<RoomEvent> _onRecordingStarted = StreamController<RoomEvent>.broadcast();
+  final StreamController<Room> _onRecordingStarted = StreamController<Room>.broadcast();
 
   /// This method is only called when a Room which was not previously recording starts recording.
-  Stream<RoomEvent> onRecordingStarted;
+  Stream<Room> onRecordingStarted;
 
-  final StreamController<RoomEvent> _onRecordingStopped = StreamController<RoomEvent>.broadcast();
+  final StreamController<Room> _onRecordingStopped = StreamController<Room>.broadcast();
 
   /// This method is only called when a Room which was previously recording stops recording.
-  Stream<RoomEvent> onRecordingStopped;
+  Stream<Room> onRecordingStopped;
 
-  Room(this._internalId, EventChannel roomChannel, EventChannel remoteParticipantChannel)
-      : assert(_internalId != null),
-        assert(roomChannel != null),
-        assert(remoteParticipantChannel != null) {
-    _roomStream = roomChannel.receiveBroadcastStream(_internalId).listen(_parseRoomEvents);
-    _remoteParticipantStream = remoteParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteParticipantEvents);
+  Room(this._internalId) : assert(_internalId != null) {
+    _roomStream = TwilioUnofficialProgrammableVideo._roomChannel.receiveBroadcastStream(_internalId).listen(_parseRoomEvents);
+    _remoteParticipantStream = TwilioUnofficialProgrammableVideo._remoteParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteParticipantEvents);
+    _localParticipantStream = TwilioUnofficialProgrammableVideo._localParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseLocalParticipantEvents);
+    _remoteDataTrackStream = TwilioUnofficialProgrammableVideo._remoteDataTrackChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteDataTrackEvents);
 
     onConnectFailure = _onConnectFailure.stream;
-    onConnected = _onConnectedCtrl.stream;
+    onConnected = _onConnected.stream;
     onDisconnected = _onDisconnected.stream;
     onParticipantConnected = _onParticipantConnected.stream;
     onParticipantDisconnected = _onParticipantDisconnected.stream;
@@ -150,6 +123,9 @@ class Room {
     await const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('disconnect');
     await _roomStream.cancel();
     await _remoteParticipantStream.cancel();
+    await _localParticipantStream.cancel();
+    await _remoteDataTrackStream.cancel();
+    _localParticipant?._dispose();
   }
 
   /// Find or create a [RemoteParticipant].
@@ -162,12 +138,12 @@ class Room {
     );
 
     // Check if there are events buffered for the remote participant.
-    if (_remoteEventBuffer.containsKey(remoteParticipant.sid)) {
-      for (var event in _remoteEventBuffer[remoteParticipant.sid]) {
+    if (_remoteParticipantsEventBuffer.containsKey(remoteParticipant.sid)) {
+      for (var event in _remoteParticipantsEventBuffer[remoteParticipant.sid]) {
         remoteParticipant._parseEvents(event);
       }
       // Empty the event buffer.
-      _remoteEventBuffer[remoteParticipant.sid] = [];
+      _remoteParticipantsEventBuffer[remoteParticipant.sid] = [];
     }
 
     return remoteParticipant;
@@ -215,57 +191,55 @@ class Room {
       remoteParticipant._updateFromMap(remoteParticipantMap);
     }
 
-    TwilioException exception;
+    TwilioException twilioException;
     if (event['error'] != null) {
       final errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
-      exception = TwilioException(errorMap['code'] as int, errorMap['message']);
+      twilioException = TwilioException(errorMap['code'] as int, errorMap['message']);
     }
-
-    final roomEvent = RoomEvent(this, remoteParticipant, exception);
 
     switch (eventName) {
       case 'connectFailure':
-        assert(exception != null);
-        _onConnectFailure.add(roomEvent);
+        assert(twilioException != null);
+        _onConnectFailure.add(RoomConnectFailureEvent(this, twilioException));
         break;
       case 'connected':
-        _onConnectedCtrl.add(roomEvent);
+        _onConnected.add(this);
         break;
       case 'disconnected':
         for (var participant in _remoteParticipants) {
           participant._dispose();
         }
         _remoteParticipants.clear();
-        _onDisconnected.add(roomEvent);
+        _onDisconnected.add(RoomDisconnectedEvent(this, twilioException));
         break;
       case 'participantConnected':
         assert(remoteParticipant != null);
-        _onParticipantConnected.add(roomEvent);
+        _onParticipantConnected.add(RoomParticipantConnectedEvent(this, remoteParticipant));
         break;
       case 'participantDisconnected':
         assert(remoteParticipant != null);
         _remoteParticipants.remove(remoteParticipant);
-        _onParticipantDisconnected.add(roomEvent);
+        _onParticipantDisconnected.add(RoomParticipantDisconnectedEvent(this, remoteParticipant));
         remoteParticipant._dispose();
         break;
       case 'reconnected':
-        _onReconnected.add(roomEvent);
+        _onReconnected.add(this);
         break;
       case 'reconnecting':
-        _onReconnecting.add(roomEvent);
+        _onReconnecting.add(RoomReconnectingEvent(this, twilioException));
         break;
       case 'recordingStarted':
-        _onRecordingStarted.add(roomEvent);
+        _onRecordingStarted.add(this);
         break;
       case 'recordingStopped':
-        _onRecordingStopped.add(roomEvent);
+        _onRecordingStopped.add(this);
         break;
     }
   }
 
   /// Parse native remote participant events.
   ///
-  /// If the [RemoteParticipant] is not found the event is buffered.
+  /// If the [RemoteParticipant] is not found, the event is buffered.
   void _parseRemoteParticipantEvents(dynamic event) {
     final eventName = event['name'];
     TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
@@ -282,13 +256,54 @@ class Room {
 
     // If the received sid doesn't match, just buffer the event.
     if (remoteParticipant == null) {
-      if (!_remoteEventBuffer.containsKey(remoteParticipantMap['sid'])) {
-        _remoteEventBuffer[remoteParticipantMap['sid']] = [];
+      if (!_remoteParticipantsEventBuffer.containsKey(remoteParticipantMap['sid'])) {
+        _remoteParticipantsEventBuffer[remoteParticipantMap['sid']] = [];
       }
       TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Buffering event '$eventName' for participant '${remoteParticipantMap['sid']}'");
-      return _remoteEventBuffer[remoteParticipantMap['sid']].add(event);
+      return _remoteParticipantsEventBuffer[remoteParticipantMap['sid']].add(event);
     }
 
     remoteParticipant._parseEvents(event);
+  }
+
+  /// Parse native local participant events.
+  void _parseLocalParticipantEvents(dynamic event) {
+    TwilioUnofficialProgrammableVideo._log("LocalParticipant => Event '${event['name']}' => ${event["data"]}, error: ${event["error"]}");
+
+    final data = Map<String, dynamic>.from(event['data']);
+
+    // If no localParticipant data is received, skip the event.
+    if (data['localParticipant'] == null || _localParticipant == null) {
+      return;
+    }
+
+    final localParticipantMap = Map<String, dynamic>.from(data['localParticipant']);
+    _localParticipant._updateFromMap(localParticipantMap);
+    _localParticipant._parseEvents(event);
+  }
+
+  /// Parse native remote participant events.
+  ///
+  /// If the [RemoteDataTrack] is not found, the event is buffered.
+  void _parseRemoteDataTrackEvents(dynamic event) {
+    final eventName = event['name'];
+    TwilioUnofficialProgrammableVideo._log("RemoteDataTrack => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+
+    final data = Map<String, dynamic>.from(event['data']);
+
+    // If no RemoteDataTrack data is received, skip the event.
+    if (data['remoteDataTrack'] == null) {
+      return;
+    }
+
+    final remoteDataTrackMap = Map<String, dynamic>.from(data['remoteDataTrack']);
+
+    _remoteParticipants.forEach((RemoteParticipant remoteParticipant) {
+      remoteParticipant.remoteDataTracks.forEach((RemoteDataTrackPublication dataTrackPublication) {
+        if (dataTrackPublication.trackSid == remoteDataTrackMap['sid']) {
+          dataTrackPublication.remoteDataTrack._parseEvents(event);
+        }
+      });
+    });
   }
 }

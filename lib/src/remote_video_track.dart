@@ -9,9 +9,7 @@ class RemoteVideoTrack extends VideoTrack {
   Widget _widget;
 
   /// Returns the server identifier. This value uniquely identifies the remote video track within the scope of a [Room].
-  String get sid {
-    return _sid;
-  }
+  String get sid => _sid;
 
   RemoteVideoTrack(this._sid, _enabled, _name, this._remoteParticipant)
       : assert(_sid != null),

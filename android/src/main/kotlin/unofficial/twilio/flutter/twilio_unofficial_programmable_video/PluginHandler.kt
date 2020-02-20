@@ -13,10 +13,12 @@ import androidx.annotation.NonNull
 import com.twilio.video.AudioCodec
 import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
+import com.twilio.video.DataTrackOptions
 import com.twilio.video.G722Codec
 import com.twilio.video.H264Codec
 import com.twilio.video.IsacCodec
 import com.twilio.video.LocalAudioTrack
+import com.twilio.video.LocalDataTrack
 import com.twilio.video.LocalParticipant
 import com.twilio.video.LocalVideoTrack
 import com.twilio.video.OpusCodec
@@ -32,6 +34,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
 class PluginHandler : MethodCallHandler, ActivityAware {
@@ -51,6 +54,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
 
     private var audioManager: AudioManager
 
+    @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(applicationContext: Context) {
         this.applicationContext = applicationContext
         audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -93,6 +97,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
+            "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
+            "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
             "LocalVideoTrack#enable" -> localVideoTrackEnable(call, result)
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
             else -> result.notImplemented()
@@ -142,6 +148,36 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             return result.error("NOT_FOUND", "No LocalAudioTrack found with the name '$localAudioTrackName'", null)
         }
         return result.error("MISSING_PARAMS", "The parameters 'name' and 'enable' were not given", null)
+    }
+
+    private fun localDataTrackSendString(call: MethodCall, result: MethodChannel.Result) {
+        val localDataTrackName = call.argument<String>("name")
+        val localDataTrackMessage = call.argument<String>("message")
+        TwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for $localDataTrackName")
+        if (localDataTrackName != null && localDataTrackMessage != null) {
+            val localDataTrack = TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
+            if (localDataTrack != null) {
+                localDataTrack.localDataTrack.send(localDataTrackMessage)
+                return result.success(null)
+            }
+            return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
+        }
+        return result.error("MISSING_PARAMS", "The parameters 'name' and 'message' were not given", null)
+    }
+
+    private fun localDataTrackSendByteBuffer(call: MethodCall, result: MethodChannel.Result) {
+        val localDataTrackName = call.argument<String>("name")
+        val localDataTrackMessage = call.argument<ByteArray>("message")
+        TwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendByteBuffer => called for $localDataTrackName")
+        if (localDataTrackName != null && localDataTrackMessage != null) {
+            val localDataTrack = TwilioUnofficialProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
+            if (localDataTrack != null) {
+                localDataTrack.localDataTrack.send(ByteBuffer.wrap(localDataTrackMessage))
+                return result.success(null)
+            }
+            return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
+        }
+        return result.error("MISSING_PARAMS", "The parameters 'name' and 'message' were not given", null)
     }
 
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
@@ -237,6 +273,38 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     optionsBuilder.audioTracks(audioTracks)
                 }
 
+                // Set the local data tracks if it has been passed.
+                if (optionsObj["dataTracks"] != null) {
+                    val dataTrackMap = optionsObj["dataTracks"] as Map<*, *>
+
+                    val dataTracks = ArrayList<LocalDataTrack?>()
+                    for ((dataTrack) in dataTrackMap) {
+                        dataTrack as Map<*, *> // Ensure right type.
+                        if (dataTrack["dataTrackOptions"] != null) {
+                            val dataTrackOptionsMap = dataTrack["dataTrackOptions"] as Map<*, *>
+
+                            val dataTrackOptionsBuilder = DataTrackOptions.Builder()
+                            if (dataTrackOptionsMap["ordered"] != null) {
+                                dataTrackOptionsBuilder.ordered(dataTrackOptionsMap["ordered"] as Boolean)
+                            }
+                            if (dataTrackOptionsMap["maxPacketLifeTime"] != null) {
+                                dataTrackOptionsBuilder.maxPacketLifeTime(dataTrackOptionsMap["maxPacketLifeTime"] as Int)
+                            }
+                            if (dataTrackOptionsMap["maxRetransmits"] != null) {
+                                dataTrackOptionsBuilder.maxRetransmits(dataTrackOptionsMap["maxRetransmits"] as Int)
+                            }
+                            if (dataTrackOptionsMap["name"] != null) {
+                                dataTrackOptionsBuilder.name(dataTrackOptionsMap["name"] as String)
+                            }
+                            dataTracks.add(LocalDataTrack.create(this.applicationContext, dataTrackOptionsBuilder.build()))
+                        } else {
+                            dataTracks.add(LocalDataTrack.create(this.applicationContext))
+                        }
+                    }
+        TwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
+                    optionsBuilder.dataTracks(dataTracks)
+                }
+
                 // Set the local video tracks if it has been passed.
                 if (optionsObj["videoTracks"] != null) {
                     val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
@@ -244,7 +312,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     val videoTracks = ArrayList<LocalVideoTrack?>()
                     for ((videoTrack) in videoTrackOptions) {
                         videoTrack as Map<*, *> // Ensure right type.
-                        val videoCapturerMap = videoTrack["videoCapturer"] as Map<String, Any>
+                        val videoCapturerMap = videoTrack["videoCapturer"] as Map<*, *>
 
                         val videoCapturer: VideoCapturer = when (videoCapturerMap["type"] as String) {
                             "CameraCapturer" -> when (videoCapturerMap["cameraSource"] as String) {

@@ -8,32 +8,22 @@ class LocalAudioTrackPublication implements AudioTrackPublication {
 
   /// The SID of the local audio track.
   @override
-  String get trackSid {
-    return _sid;
-  }
+  String get trackSid => _sid;
 
   /// The name of the local audio track.
   @override
-  String get trackName {
-    return _localAudioTrack.name;
-  }
+  String get trackName => _localAudioTrack.name;
 
   /// Returns `true` if the published audio track is enabled or `false` otherwise.
   @override
-  bool get isTrackEnabled {
-    return _localAudioTrack.isEnabled;
-  }
+  bool get isTrackEnabled => _localAudioTrack.isEnabled;
 
   /// The local audio track.
-  LocalAudioTrack get localAudioTrack {
-    return _localAudioTrack;
-  }
+  LocalAudioTrack get localAudioTrack => _localAudioTrack;
 
   /// The base audio track of the published local audio track.
   @override
-  AudioTrack get audioTrack {
-    return _localAudioTrack;
-  }
+  AudioTrack get audioTrack => _localAudioTrack;
 
   /// Construct from a map.
   LocalAudioTrackPublication(this._sid) : assert(_sid != null);

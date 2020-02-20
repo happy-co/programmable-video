@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,14 +19,17 @@ class ConferenceRoom with ChangeNotifier {
   final StreamController<Exception> _onExceptionStreamController = StreamController<Exception>.broadcast();
   Stream<Exception> onException;
 
-  final Completer<void> _completer = Completer<void>();
+  final Completer<Room> _completer = Completer<Room>();
 
   final List<ParticipantWidget> _participants = [];
   final List<ParticipantBuffer> _participantBuffer = [];
   final List<StreamSubscription> _streamSubscriptions = [];
+  final List<RemoteDataTrack> _dataTracks = [];
+  final List<String> _messages = [];
 
   CameraCapturer _cameraCapturer;
   Room _room;
+  Timer _timer;
 
   ConferenceRoom({
     @required this.name,
@@ -41,18 +45,21 @@ class ConferenceRoom with ChangeNotifier {
     return [..._participants];
   }
 
-  Future<void> connect() async {
+  Future<Room> connect() async {
     Debug.log('ConferenceRoom.connect()');
     try {
       await TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);
       await TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
 
       _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
-      var connectOptions = ConnectOptions(token)
-        ..roomName(name)
-        ..preferAudioCodecs([OpusCodec()])
-        ..audioTracks([LocalAudioTrack(true)])
-        ..videoTracks([LocalVideoTrack(true, _cameraCapturer)]);
+      var connectOptions = ConnectOptions(
+        token,
+        roomName: name,
+        preferredAudioCodecs: [OpusCodec()],
+        audioTracks: [LocalAudioTrack(true)],
+        dataTracks: [LocalDataTrack()],
+        videoTracks: [LocalVideoTrack(true, _cameraCapturer)],
+      );
 
       _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
 
@@ -68,6 +75,9 @@ class ConferenceRoom with ChangeNotifier {
 
   Future<void> disconnect() async {
     Debug.log('ConferenceRoom.disconnect()');
+    if (_timer != null) {
+      _timer.cancel();
+    }
     await _room.disconnect();
   }
 
@@ -87,8 +97,33 @@ class ConferenceRoom with ChangeNotifier {
     }
   }
 
+  Future<void> sendMessage(String message) async {
+    final tracks = _room.localParticipant.localDataTracks;
+    final localDataTrack = tracks.isEmpty ? null : tracks[0].localDataTrack;
+    if (localDataTrack == null || _messages.isNotEmpty) {
+      Debug.log('ConferenceRoom.sendMessage => Track is not available yet, buffering message.');
+      _messages.add(message);
+      return;
+    }
+    await localDataTrack.send(message);
+  }
+
+  Future<void> sendBufferMessage(ByteBuffer message) async {
+    final tracks = _room.localParticipant.localDataTracks;
+    final localDataTrack = tracks.isEmpty ? null : tracks[0].localDataTrack;
+    if (localDataTrack == null) {
+      return;
+    }
+    await localDataTrack.sendBuffer(message);
+  }
+
   Future<void> toggleVideoEnabled() async {
-    final localVideoTrack = _room.localParticipant.localVideoTracks[0].localVideoTrack;
+    final tracks = _room.localParticipant.localVideoTracks;
+    final localVideoTrack = tracks.isEmpty ? null : tracks[0].localVideoTrack;
+    if (localVideoTrack == null) {
+      Debug.log('ConferenceRoom.toggleVideoEnabled() => Track is not available yet!');
+      return;
+    }
     await localVideoTrack.enable(!localVideoTrack.isEnabled);
 
     var index = _participants.indexWhere((ParticipantWidget participant) => !participant.isRemote);
@@ -109,7 +144,12 @@ class ConferenceRoom with ChangeNotifier {
   }
 
   Future<void> toggleAudioEnabled() async {
-    final localAudioTrack = _room.localParticipant.localAudioTracks[0].localAudioTrack;
+    final tracks = _room.localParticipant.localAudioTracks;
+    final localAudioTrack = tracks.isEmpty ? null : tracks[0].localAudioTrack;
+    if (localAudioTrack == null) {
+      Debug.log('ConferenceRoom.toggleAudioEnabled() => Track is not available yet!');
+      return;
+    }
     await localAudioTrack.enable(!localAudioTrack.isEnabled);
 
     var index = _participants.indexWhere((ParticipantWidget participant) => !participant.isRemote);
@@ -166,47 +206,66 @@ class ConferenceRoom with ChangeNotifier {
     }
   }
 
-  void _onConnected(RoomEvent roomEvent) {
-    Debug.log('ConferenceRoom._onConnected => state: ${roomEvent.room.state}');
+  void _onConnected(Room room) {
+    Debug.log('ConferenceRoom._onConnected => state: ${room.state}');
 
-    if (roomEvent.room.state == RoomState.CONNECTED) {
-      // When connected for the first time, add remote participant listeners
-      _streamSubscriptions.add(_room.onParticipantConnected.listen(_onParticipantConnected));
-      _streamSubscriptions.add(_room.onParticipantDisconnected.listen(_onParticipantDisconnected));
-      // Only add ourselves when connected for the first time too.
-      _participants.add(
-        _buildParticipant(
-          child: roomEvent.room.localParticipant.localVideoTracks[0].localVideoTrack.widget(),
-          id: identity,
-          audioEnabled: true,
-          videoEnabled: true,
-        ),
-      );
-      notifyListeners();
-      _completer.complete();
-    }
-    for (final remoteParticipant in roomEvent.room.remoteParticipants) {
+    // When connected for the first time, add remote participant listeners
+    _streamSubscriptions.add(_room.onParticipantConnected.listen(_onParticipantConnected));
+    _streamSubscriptions.add(_room.onParticipantDisconnected.listen(_onParticipantDisconnected));
+    // Only add ourselves when connected for the first time too.
+    _participants.add(
+      _buildParticipant(
+        child: room.localParticipant.localVideoTracks[0].localVideoTrack.widget(),
+        id: identity,
+        audioEnabled: true,
+        videoEnabled: true,
+      ),
+    );
+    for (final remoteParticipant in room.remoteParticipants) {
       var participant = _participants.firstWhere((participant) => participant.id == remoteParticipant.sid, orElse: () => null);
       if (participant == null) {
         Debug.log('Adding participant that was already present in the room ${remoteParticipant.sid}, before I connected');
         _addRemoteParticipantListeners(remoteParticipant);
       }
     }
+    // We have to listen for the [onDataTrackPublished] event on the [LocalParticipant] in
+    // order to be able to use the [send] method.
+    _streamSubscriptions.add(room.localParticipant.onDataTrackPublished.listen(_onLocalDataTrackPublished));
+    notifyListeners();
+    _completer.complete(room);
+
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      // Let's see if we can send some data over the DataTrack API
+      sendMessage('And another minute has passed since I connected...');
+      // Also try the ByteBuffer way of sending data
+      final list = 'This data has been sent over the ByteBuffer channel of the DataTrack API'.codeUnits;
+      var bytes = Uint8List.fromList(list);
+      sendBufferMessage(bytes.buffer);
+    });
   }
 
-  Future<void> _onConnectFailure(RoomEvent roomEvent) async {
-    Debug.log('ConferenceRoom._onConnectFailure: ${roomEvent.exception}');
-    _completer.completeError(roomEvent.exception);
+  void _onLocalDataTrackPublished(LocalDataTrackPublishedEvent event) {
+    // Send buffered messages, if any...
+    while (_messages.isNotEmpty) {
+      var message = _messages.removeAt(0);
+      Debug.log('Sending buffered message: $message');
+      event.localDataTrackPublication.localDataTrack.send(message);
+    }
   }
 
-  void _onParticipantConnected(RoomEvent roomEvent) {
-    Debug.log('ConferenceRoom._onParticipantConnected, ${roomEvent.remoteParticipant.sid}');
-    _addRemoteParticipantListeners(roomEvent.remoteParticipant);
+  void _onConnectFailure(RoomConnectFailureEvent event) {
+    Debug.log('ConferenceRoom._onConnectFailure: ${event.exception}');
+    _completer.completeError(event.exception);
   }
 
-  void _onParticipantDisconnected(RoomEvent roomEvent) {
-    Debug.log('ConferenceRoom._onParticipantDisconnected: ${roomEvent.remoteParticipant.sid}');
-    _participants.removeWhere((ParticipantWidget p) => p.id == roomEvent.remoteParticipant.sid);
+  void _onParticipantConnected(RoomParticipantConnectedEvent event) {
+    Debug.log('ConferenceRoom._onParticipantConnected, ${event.remoteParticipant.sid}');
+    _addRemoteParticipantListeners(event.remoteParticipant);
+  }
+
+  void _onParticipantDisconnected(RoomParticipantDisconnectedEvent event) {
+    Debug.log('ConferenceRoom._onParticipantDisconnected: ${event.remoteParticipant.sid}');
+    _participants.removeWhere((ParticipantWidget p) => p.id == event.remoteParticipant.sid);
     notifyListeners();
   }
 
@@ -236,6 +295,12 @@ class ConferenceRoom with ChangeNotifier {
     _streamSubscriptions.add(remoteParticipant.onAudioTrackUnpublished.listen(_onAudioTrackUnpublished));
     _streamSubscriptions.add(remoteParticipant.onAudioTrackUnsubscribed.listen(_onAudioTrackUnsubscribed));
 
+    _streamSubscriptions.add(remoteParticipant.onDataTrackPublished.listen(_onDataTrackPublished));
+    _streamSubscriptions.add(remoteParticipant.onDataTrackSubscribed.listen(_onDataTrackSubscribed));
+    _streamSubscriptions.add(remoteParticipant.onDataTrackSubscriptionFailed.listen(_onDataTrackSubscriptionFailed));
+    _streamSubscriptions.add(remoteParticipant.onDataTrackUnpublished.listen(_onDataTrackUnpublished));
+    _streamSubscriptions.add(remoteParticipant.onDataTrackUnsubscribed.listen(_onDataTrackUnsubscribed));
+
     _streamSubscriptions.add(remoteParticipant.onVideoTrackDisabled.listen(_onVideoTrackDisabled));
     _streamSubscriptions.add(remoteParticipant.onVideoTrackEnabled.listen(_onVideoTrackEnabled));
     _streamSubscriptions.add(remoteParticipant.onVideoTrackPublished.listen(_onVideoTrackPublished));
@@ -245,87 +310,126 @@ class ConferenceRoom with ChangeNotifier {
     _streamSubscriptions.add(remoteParticipant.onVideoTrackUnsubscribed.listen(_onVideoTrackUnsubscribed));
   }
 
-  void _onAudioTrackDisabled(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackDisabled(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteAudioTrack.isEnabled}');
-    _setRemoteAudioEnabled(remoteParticipantEvent);
+  void _onAudioTrackDisabled(RemoteAudioTrackEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackDisabled(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrackPublication.trackSid}, isEnabled: ${event.remoteAudioTrackPublication.isTrackEnabled}');
+    _setRemoteAudioEnabled(event);
   }
 
-  void _onAudioTrackEnabled(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackEnabled(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteAudioTrack.isEnabled}');
-    _setRemoteAudioEnabled(remoteParticipantEvent);
+  void _onAudioTrackEnabled(RemoteAudioTrackEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackEnabled(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrackPublication.trackSid}, isEnabled: ${event.remoteAudioTrackPublication.isTrackEnabled}');
+    _setRemoteAudioEnabled(event);
   }
 
-  void _onAudioTrackPublished(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackPublished(), ${remoteParticipantEvent.remoteParticipant.sid}}');
+  void _onAudioTrackPublished(RemoteAudioTrackEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackPublished(), ${event.remoteParticipant.sid}}');
   }
 
-  void _onAudioTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackSubscribed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
-    _addOrUpdateParticipant(remoteParticipantEvent);
+  void _onAudioTrackSubscribed(RemoteAudioTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackSubscribed(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrackPublication.trackSid}');
+    _addOrUpdateParticipant(event);
   }
 
-  void _onAudioTrackSubscriptionFailed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackSubscriptionFailed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
+  void _onAudioTrackSubscriptionFailed(RemoteAudioTrackSubscriptionFailedEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackSubscriptionFailed(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrackPublication.trackSid}');
     _onExceptionStreamController.add(
       PlatformException(
         code: 'ConferenceRoom.audioTrackSubscriptionFailed',
         message: 'AudioTrack Subscription Failed',
-        details: remoteParticipantEvent.exception.toString(),
+        details: event.exception.toString(),
       ),
     );
   }
 
-  void _onAudioTrackUnpublished(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackUnpublished(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrackPublication.trackSid}');
+  void _onAudioTrackUnpublished(RemoteAudioTrackEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackUnpublished(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrackPublication.trackSid}');
   }
 
-  void _onAudioTrackUnsubscribed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onAudioTrackUnsubscribed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteAudioTrack.sid}');
+  void _onAudioTrackUnsubscribed(RemoteAudioTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onAudioTrackUnsubscribed(), ${event.remoteParticipant.sid}, ${event.remoteAudioTrack.sid}');
   }
 
-  void _onVideoTrackDisabled(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackDisabled(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteVideoTrack.isEnabled}');
-    _setRemoteVideoEnabled(remoteParticipantEvent);
+  void _onDataTrackPublished(RemoteDataTrackEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackPublished(), ${event.remoteParticipant.sid}}');
   }
 
-  void _onVideoTrackEnabled(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackEnabled(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}, isEnabled: ${remoteParticipantEvent.remoteVideoTrack.isEnabled}');
-    _setRemoteVideoEnabled(remoteParticipantEvent);
+  void _onDataTrackSubscribed(RemoteDataTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackSubscribed(), ${event.remoteParticipant.sid}, ${event.remoteDataTrackPublication.trackSid}');
+    final dataTrack = event.remoteDataTrackPublication.remoteDataTrack;
+    _dataTracks.add(dataTrack);
+    _streamSubscriptions.add(dataTrack.onMessage.listen(_onMessage));
+    _streamSubscriptions.add(dataTrack.onBufferMessage.listen(_onBufferMessage));
   }
 
-  void _onVideoTrackPublished(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackPublished(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+  void _onDataTrackSubscriptionFailed(RemoteDataTrackSubscriptionFailedEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackSubscriptionFailed(), ${event.remoteParticipant.sid}, ${event.remoteDataTrackPublication.trackSid}');
+    _onExceptionStreamController.add(
+      PlatformException(
+        code: 'ConferenceRoom.dataTrackSubscriptionFailed',
+        message: 'DataTrack Subscription Failed',
+        details: event.exception.toString(),
+      ),
+    );
   }
 
-  void _onVideoTrackSubscribed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackSubscribed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
-    _addOrUpdateParticipant(remoteParticipantEvent);
+  void _onDataTrackUnpublished(RemoteDataTrackEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackUnpublished(), ${event.remoteParticipant.sid}, ${event.remoteDataTrackPublication.trackSid}');
   }
 
-  void _onVideoTrackSubscriptionFailed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackSubscriptionFailed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+  void _onDataTrackUnsubscribed(RemoteDataTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackUnsubscribed(), ${event.remoteParticipant.sid}, ${event.remoteDataTrack.sid}');
+  }
+
+  void _onVideoTrackDisabled(RemoteVideoTrackEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackDisabled(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrackPublication.trackSid}, isEnabled: ${event.remoteVideoTrackPublication.isTrackEnabled}');
+    _setRemoteVideoEnabled(event);
+  }
+
+  void _onVideoTrackEnabled(RemoteVideoTrackEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackEnabled(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrackPublication.trackSid}, isEnabled: ${event.remoteVideoTrackPublication.isTrackEnabled}');
+    _setRemoteVideoEnabled(event);
+  }
+
+  void _onVideoTrackPublished(RemoteVideoTrackEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackPublished(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrackPublication.trackSid}');
+  }
+
+  void _onVideoTrackSubscribed(RemoteVideoTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackSubscribed(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrack.sid}');
+    _addOrUpdateParticipant(event);
+  }
+
+  void _onVideoTrackSubscriptionFailed(RemoteVideoTrackSubscriptionFailedEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackSubscriptionFailed(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrackPublication.trackSid}');
     _onExceptionStreamController.add(
       PlatformException(
         code: 'ConferenceRoom.videoTrackSubscriptionFailed',
         message: 'VideoTrack Subscription Failed',
-        details: remoteParticipantEvent.exception.toString(),
+        details: event.exception.toString(),
       ),
     );
   }
 
-  void _onVideoTrackUnpublished(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackUnpublished(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrackPublication.trackSid}');
+  void _onVideoTrackUnpublished(RemoteVideoTrackEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackUnpublished(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrackPublication.trackSid}');
   }
 
-  void _onVideoTrackUnsubscribed(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._onVideoTrackUnsubscribed(), ${remoteParticipantEvent.remoteParticipant.sid}, ${remoteParticipantEvent.remoteVideoTrack.sid}');
+  void _onVideoTrackUnsubscribed(RemoteVideoTrackSubscriptionEvent event) {
+    Debug.log('ConferenceRoom._onVideoTrackUnsubscribed(), ${event.remoteParticipant.sid}, ${event.remoteVideoTrack.sid}');
   }
 
-  void _setRemoteAudioEnabled(RemoteParticipantEvent remoteParticipantEvent) {
-    if (remoteParticipantEvent.remoteAudioTrackPublication == null) {
+  void _onMessage(RemoteDataTrackStringMessageEvent event) {
+    Debug.log('onMessage => ${event.remoteDataTrack.sid}, ${event.message}');
+  }
+
+  void _onBufferMessage(RemoteDataTrackBufferMessageEvent event) {
+    Debug.log('onBufferMessage => ${event.remoteDataTrack.sid}, ${String.fromCharCodes(event.message.asUint8List())}');
+  }
+
+  void _setRemoteAudioEnabled(RemoteAudioTrackEvent event) {
+    if (event.remoteAudioTrackPublication == null) {
       return;
     }
-    var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid);
+    var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == event.remoteParticipant.sid);
     if (index < 0) {
       return;
     }
@@ -334,17 +438,17 @@ class ConferenceRoom with ChangeNotifier {
       index,
       index + 1,
       [
-        participant.copyWith(audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication.isTrackEnabled),
+        participant.copyWith(audioEnabled: event.remoteAudioTrackPublication.isTrackEnabled),
       ],
     );
     notifyListeners();
   }
 
-  void _setRemoteVideoEnabled(RemoteParticipantEvent remoteParticipantEvent) {
-    if (remoteParticipantEvent.remoteVideoTrackPublication == null) {
+  void _setRemoteVideoEnabled(RemoteVideoTrackEvent event) {
+    if (event.remoteVideoTrackPublication == null) {
       return;
     }
-    var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid);
+    var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == event.remoteParticipant.sid);
     if (index < 0) {
       return;
     }
@@ -353,50 +457,52 @@ class ConferenceRoom with ChangeNotifier {
       index,
       index + 1,
       [
-        participant.copyWith(videoEnabled: remoteParticipantEvent.remoteVideoTrackPublication.isTrackEnabled),
+        participant.copyWith(videoEnabled: event.remoteVideoTrackPublication.isTrackEnabled),
       ],
     );
     notifyListeners();
   }
 
-  void _addOrUpdateParticipant(RemoteParticipantEvent remoteParticipantEvent) {
-    Debug.log('ConferenceRoom._addOrUpdateParticipant(), ${remoteParticipantEvent.remoteParticipant.sid}');
+  void _addOrUpdateParticipant(RemoteParticipantEvent event) {
+    Debug.log('ConferenceRoom._addOrUpdateParticipant(), ${event.remoteParticipant.sid}');
     final participant = _participants.firstWhere(
-      (ParticipantWidget participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid,
+      (ParticipantWidget participant) => participant.id == event.remoteParticipant.sid,
       orElse: () => null,
     );
     if (participant != null) {
       Debug.log('Participant found: ${participant.id}, updating A/V enabled values');
-      _setRemoteVideoEnabled(remoteParticipantEvent);
-      _setRemoteAudioEnabled(remoteParticipantEvent);
+      _setRemoteVideoEnabled(event);
+      _setRemoteAudioEnabled(event);
     } else {
       final bufferedParticipant = _participantBuffer.firstWhere(
-        (ParticipantBuffer participant) => participant.id == remoteParticipantEvent.remoteParticipant.sid,
+        (ParticipantBuffer participant) => participant.id == event.remoteParticipant.sid,
         orElse: () => null,
       );
       if (bufferedParticipant != null) {
         _participantBuffer.remove(bufferedParticipant);
-      } else if (remoteParticipantEvent.remoteVideoTrack == null) {
+      } else if (event is RemoteAudioTrackEvent) {
         Debug.log('Audio subscription came first, waiting for the video subscription...');
         _participantBuffer.add(
           ParticipantBuffer(
-            id: remoteParticipantEvent.remoteParticipant.sid,
-            audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication?.remoteAudioTrack?.isEnabled ?? true,
+            id: event.remoteParticipant.sid,
+            audioEnabled: event.remoteAudioTrackPublication?.remoteAudioTrack?.isEnabled ?? true,
           ),
         );
         return;
       }
-      Debug.log('New participant, adding: ${remoteParticipantEvent.remoteParticipant.sid}');
-      _participants.insert(
-        0,
-        _buildParticipant(
-          child: remoteParticipantEvent.remoteVideoTrack.widget(),
-          id: remoteParticipantEvent.remoteParticipant.sid,
-          remoteParticipant: remoteParticipantEvent.remoteParticipant,
-          audioEnabled: remoteParticipantEvent.remoteAudioTrackPublication?.remoteAudioTrack?.isEnabled ?? bufferedParticipant?.audioEnabled ?? true,
-          videoEnabled: remoteParticipantEvent.remoteVideoTrackPublication?.remoteVideoTrack?.isEnabled ?? true,
-        ),
-      );
+      if (event is RemoteVideoTrackSubscriptionEvent) {
+        Debug.log('New participant, adding: ${event.remoteParticipant.sid}');
+        _participants.insert(
+          0,
+          _buildParticipant(
+            child: event.remoteVideoTrack.widget(),
+            id: event.remoteParticipant.sid,
+            remoteParticipant: event.remoteParticipant,
+            audioEnabled: bufferedParticipant?.audioEnabled ?? true,
+            videoEnabled: event.remoteVideoTrackPublication?.remoteVideoTrack?.isEnabled ?? true,
+          ),
+        );
+      }
       notifyListeners();
     }
   }

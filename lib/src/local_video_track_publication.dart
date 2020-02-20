@@ -8,32 +8,22 @@ class LocalVideoTrackPublication implements VideoTrackPublication {
 
   /// The SID of the local video track.
   @override
-  String get trackSid {
-    return _sid;
-  }
+  String get trackSid => _sid;
 
   /// The name of the local video track.
   @override
-  String get trackName {
-    return _localVideoTrack.name;
-  }
+  String get trackName => _localVideoTrack.name;
 
   /// Returns `true` if the published video track is enabled or `false` otherwise.
   @override
-  bool get isTrackEnabled {
-    return _localVideoTrack.isEnabled;
-  }
+  bool get isTrackEnabled => _localVideoTrack.isEnabled;
 
   /// The local video track.
-  LocalVideoTrack get localVideoTrack {
-    return _localVideoTrack;
-  }
+  LocalVideoTrack get localVideoTrack => _localVideoTrack;
 
   /// The base video track of the published local video track.
   @override
-  VideoTrack get videoTrack {
-    return _localVideoTrack;
-  }
+  VideoTrack get videoTrack => _localVideoTrack;
 
   LocalVideoTrackPublication(this._sid) : assert(_sid != null);
 

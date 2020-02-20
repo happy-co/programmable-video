@@ -4,6 +4,8 @@ import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
 import com.twilio.video.LocalAudioTrack
 import com.twilio.video.LocalAudioTrackPublication
+import com.twilio.video.LocalDataTrack
+import com.twilio.video.LocalDataTrackPublication
 import com.twilio.video.LocalParticipant
 import com.twilio.video.LocalVideoTrack
 import com.twilio.video.LocalVideoTrackPublication
@@ -24,6 +26,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onConnected => room sid is '${room.sid}'")
         sendEvent("connected", mapOf("room" to roomToMap(room)))
         room.remoteParticipants.forEach { it.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener) }
+        room.localParticipant?.setListener(TwilioUnofficialProgrammableVideoPlugin.localParticipantListener)
     }
 
     override fun onDisconnected(room: Room, e: TwilioException?) {
@@ -45,11 +48,12 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
     override fun onReconnected(room: Room) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnected => room sid is '${room.sid}'")
         sendEvent("reconnected", mapOf("room" to roomToMap(room)))
+        room.remoteParticipants.forEach { it.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener) }
     }
 
     override fun onReconnecting(room: Room, e: TwilioException) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnecting => room sid is '${room.sid}', exception is $e")
-        sendEvent("reconnecting ", mapOf("room" to roomToMap(room)), e)
+        sendEvent("reconnecting", mapOf("room" to roomToMap(room)), e)
     }
 
     override fun onRecordingStarted(room: Room) {
@@ -80,7 +84,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
     private fun localParticipantToMap(localParticipant: LocalParticipant?): Map<String, Any?>? {
         if (localParticipant != null) {
             val localAudioTrackPublications = localParticipant.localAudioTracks?.map { localAudioTrackPublicationToMap(it) }
-//        val localDataTrackPublications = localParticipant?.localDataTracks?.map { localDataTrackPublicationToMap(it) }
+            val localDataTrackPublications = localParticipant.localDataTracks?.map { localDataTrackPublicationToMap(it) }
             val localVideoTrackPublications = localParticipant.localVideoTracks?.map { localVideoTrackPublicationToMap(it) }
             return mapOf(
                     "identity" to localParticipant.identity,
@@ -88,6 +92,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
                     "signalingRegion" to localParticipant.signalingRegion,
                     "networkQualityLevel" to localParticipant.networkQualityLevel.toString(),
                     "localAudioTrackPublications" to localAudioTrackPublications,
+                    "localDataTrackPublications" to localDataTrackPublications,
                     "localVideoTrackPublications" to localVideoTrackPublications
             )
         }
@@ -105,6 +110,24 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
         return mapOf(
                 "name" to localAudioTrack.name,
                 "enabled" to localAudioTrack.isEnabled
+        )
+    }
+
+    private fun localDataTrackPublicationToMap(localDataTrackPublication: LocalDataTrackPublication): Map<String, Any> {
+        return mapOf(
+                "sid" to localDataTrackPublication.trackSid,
+                "localDataTrack" to localDataTrackToMap(localDataTrackPublication.localDataTrack)
+        )
+    }
+
+    private fun localDataTrackToMap(localDataTrack: LocalDataTrack): Map<String, Any> {
+        return mapOf(
+                "name" to localDataTrack.name,
+                "enabled" to localDataTrack.isEnabled,
+                "ordered" to localDataTrack.isOrdered,
+                "reliable" to localDataTrack.isReliable,
+                "maxPacketLifeTime" to localDataTrack.maxPacketLifeTime,
+                "maxRetransmits" to localDataTrack.maxRetransmits
         )
     }
 

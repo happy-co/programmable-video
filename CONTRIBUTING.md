@@ -46,10 +46,60 @@ If the contribution doesn't meet these criteria, a maintainer will discuss it wi
 * Documentation should be updated.
 * Example application should be updated.
 * Format the Flutter code accordingly.
-* Note the [`analysis_options.yaml`](analysis_options.yaml) and write code as stated in this file
+* Note the [`analysis_options.yaml`](https://gitlab.com/twilio-flutter-unofficial/programmable-video/-/blob/master/analysis_options.yaml) and write code as stated in this file
 
 # Test generating of `dartdoc`
 * On local development make sure the `dartdoc` program is mentioned in your `$PATH`
 * `dartdoc` can be found here: `<FLUTTER_INSTALL_DIR>/bin/cache/dart-sdk/bin/dartdoc`
 * Generate docs with the following command: `dartdoc --no-auto-include-dependencies --quiet`
 * Output will be placed into `doc/api/`
+
+# Communicating between Dart and Native
+
+The communication between Native code and Dart goes via EventChannels. Below you will find a table with all the currently identified events we want to implement and their implementation status.
+
+[Check this link](https://flutter.dev/docs/development/platform-integration/platform-channels?tab=ios-channel-swift-tab#codec) for more information on platform channel data types support and codecs.
+
+### Events table
+Reference table of all the events the plugin targets to support and their native platform counter part.
+
+| Type              | Dart Event name              | Android                        | iOS                                     | Implemented  |
+| :---------------- | ---------------------------- | ------------------------------ | --------------------------------------- | ------------ |
+| LocalParticipant  | audioTrackPublished          | onAudioTrackPublished          | didPublishAudioTrack                    | Android Only |
+| LocalParticipant  | audioTrackPublicationFailed  | onAudioTrackPublicationFailed  | didFailToPublishAudioTrack              | Android Only |
+| LocalParticipant  | dataTrackPublished           | onDataTrackPublished           | didPublishDataTrack                     | Android Only |
+| LocalParticipant  | dataTrackPublicationFailed   | onDataTrackPublicationFailed   | didFailToPublishDataTrack               | Android Only |
+| LocalParticipant  | networkQualityLevelChanged   | onNetworkQualityLevelChanged   | networkQualityLevelDidChange            | No           |
+| LocalParticipant  | videoTrackPublished          | onVideoTrackPublished          | didPublishVideoTrack                    | Android Only |
+| LocalParticipant  | videoTrackPublicationFailed  | onVideoTrackPublicationFailed  | didFailToPublishVideoTrack              | Android Only |
+| RemoteDataTrack   | stringMessage                | onMessage                      | didReceiveString                        | Android Only |
+| RemoteDataTrack   | bufferMessage                | onMessage                      | didReceiveData                          | Android Only |
+| RemoteParticipant | audioTrackDisabled           | onAudioTrackDisabled           | remoteParticipantDidDisableAudioTrack   | Yes          |
+| RemoteParticipant | audioTrackEnabled            | onAudioTrackEnabled            | remoteParticipantDidEnableAudioTrack    | Yes          |
+| RemoteParticipant | audioTrackPublished          | onAudioTrackPublished          | remoteParticipantDidPublishAudioTrack   | Yes          |
+| RemoteParticipant | audioTrackSubscribed         | onAudioTrackSubscribed         | didSubscribeToAudioTrack                | Yes          |
+| RemoteParticipant | audioTrackSubscriptionFailed | onAudioTrackSubscriptionFailed | didFailToSubscribeToAudioTrack          | Yes          |
+| RemoteParticipant | audioTrackUnpublished        | onAudioTrackUnpublished        | remoteParticipantDidUnpublishAudioTrack | Yes          |
+| RemoteParticipant | audioTrackUnsubscribed       | onAudioTrackUnsubscribed       | didUnsubscribeFromAudioTrack            | Yes          |
+| RemoteParticipant | dataTrackPublished           | onDataTrackPublished           | remoteParticipantDidPublishDataTrack    | Android Only |
+| RemoteParticipant | dataTrackSubscribed          | onDataTrackSubscribed          | didSubscribeToDataTrack                 | Android Only |
+| RemoteParticipant | dataTrackSubscriptionFailed  | onDataTrackSubscriptionFailed  | didFailToSubscribeToDataTrack           | Android Only |
+| RemoteParticipant | dataTrackUnpublished         | onDataTrackUnpublished         | remoteParticipantDidUnpublishDataTrack  | Android Only |
+| RemoteParticipant | dataTrackUnsubscribed        | onDataTrackUnsubscribed        | didUnsubscribeFromDataTrack             | Android Only |
+| RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           | remoteParticipantDidDisableVideoTrack   | Yes          |
+| RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            | remoteParticipantDidEnableVideoTrack    | Yes          |
+| RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          | remoteParticipantDidPublishVideoTrack   | Yes          |
+| RemoteParticipant | vdeoTrackSubscribed          | onVideoTrackSubscribed         | didSubscribeToVideoTrack                | Yes          |
+| RemoteParticipant | videoTrackSubscriptionFailed | onVideoTrackSubscriptionFailed | didFailToSubscribeToVideoTrack          | Yes          |
+| RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        | remoteParticipantDidUnpublishVideoTrack | Yes          |
+| RemoteParticipant | videoTrackUnsubscribed       | onVideoTrackUnsubscribed       | didUnsubscribeFromVideoTrack            | Yes          |
+| Room              | connectFailure               | onConnectFailure               | roomDidFailToConnect                    | Yes          |
+| Room              | connected                    | onConnected                    | roomDidConnect                          | Yes          |
+| Room              | disconnected                 | onDisconnected                 | roomDidDisconnect                       | Yes          |
+| Room              | participantConnected         | onParticipantConnected         | participantDidConnect                   | Yes          |
+| Room              | participantDisconnected      | onParticipantDisconnected      | participantDidDisconnect                | Yes          |
+| Room              | reconnected                  | onReconnected                  | roomDidReconnect                        | Yes          |
+| Room              | reconnecting                 | onReconnecting                 | roomIsReconnecting                      | Yes          |
+| Room              | recordingStarted             | onRecordingStarted             | roomDidStartRecording                   | Yes          |
+| Room              | recordingStopped             | onRecordingStopped             | roomDidStopRecording                    | Yes          |
+

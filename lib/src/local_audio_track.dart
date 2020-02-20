@@ -9,9 +9,7 @@ class LocalAudioTrack extends AudioTrack {
   ///
   /// When the value is `false`, the local audio track is muted. When the value is `true` the local audio track is live.
   @override
-  bool get isEnabled {
-    return _enabled;
-  }
+  bool get isEnabled => _enabled;
 
   LocalAudioTrack(this._enabled, {String name = ''}) : super(_enabled, name);
 

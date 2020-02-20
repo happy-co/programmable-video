@@ -17,41 +17,29 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
 
   /// The SID of the published video track.
   @override
-  String get trackSid {
-    return _sid;
-  }
+  String get trackSid => _sid;
 
   /// The name of the published video track.
   @override
-  String get trackName {
-    return _name;
-  }
+  String get trackName => _name;
 
   /// Returns `true` if the published video track is enabled or `false` otherwise.
   @override
-  bool get isTrackEnabled {
-    return _enabled;
-  }
+  bool get isTrackEnabled => _enabled;
 
   /// Returns `true` if the published video track is subscribed by the local participant or `false` otherwise.
-  bool get isTrackSubscribed {
-    return _subscribed;
-  }
+  bool get isTrackSubscribed => _subscribed;
 
   /// Returns the published remote video track.
   ///
   /// Will return `null` if the track is not subscribed to.
-  RemoteVideoTrack get remoteVideoTrack {
-    return _remoteVideoTrack;
-  }
+  RemoteVideoTrack get remoteVideoTrack => _remoteVideoTrack;
 
   /// The base video track object of the published remote video track.
   ///
   /// Will return `null` if the track is not subscribed to.
   @override
-  VideoTrack get videoTrack {
-    return _remoteVideoTrack;
-  }
+  VideoTrack get videoTrack => _remoteVideoTrack;
 
   RemoteVideoTrackPublication(this._subscribed, this._enabled, this._sid, this._name, this._remoteParticipant)
       : assert(_sid != null),

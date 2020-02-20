@@ -2,9 +2,6 @@ part of twilio_unofficial_programmable_video;
 
 /// A local video track that gets video frames from a specified [VideoCapturer].
 class LocalVideoTrack extends VideoTrack {
-  @override
-  bool _enabled;
-
   Widget _widget;
 
   final VideoCapturer _videoCapturer;
@@ -13,18 +10,14 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraSource] are provided.
   @override
-  bool get isEnabled {
-    return _enabled;
-  }
+  bool get isEnabled => super._enabled;
 
   /// Retrieves the [VideoCapturer].
-  VideoCapturer get videoCapturer {
-    return _videoCapturer;
-  }
+  VideoCapturer get videoCapturer => _videoCapturer;
 
-  LocalVideoTrack(this._enabled, this._videoCapturer, {String name = ''})
+  LocalVideoTrack(enabled, this._videoCapturer, {String name = ''})
       : assert(_videoCapturer != null),
-        super(_enabled, name);
+        super(enabled, name);
 
   /// Construct from a map.
   factory LocalVideoTrack._fromMap(Map<String, dynamic> map) {

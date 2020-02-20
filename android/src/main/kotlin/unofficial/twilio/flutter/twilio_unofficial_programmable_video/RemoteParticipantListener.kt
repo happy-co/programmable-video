@@ -35,7 +35,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onAudioTrackPublished(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackPublished => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
-                "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}" +
+                "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
 
         sendEvent("audioTrackPublished", mapOf(
@@ -71,7 +71,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onAudioTrackUnpublished(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackUnpublished => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
-                "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}" +
+                "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
 
         sendEvent("audioTrackUnpublished", mapOf(
@@ -94,28 +94,65 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackPublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackPublished NOT IMPLEMENTED")
-        // NOT IMPLEMENTED
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackPublished => " +
+                "trackSid: ${remoteDataTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
+
+        sendEvent("dataTrackPublished", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
+        ))
     }
 
     override fun onDataTrackSubscribed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, remoteDataTrack: RemoteDataTrack) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscribed NOT IMPLEMENTED")
-        // NOT IMPLEMENTED
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscribed => " +
+                "trackSid: ${remoteDataTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
+
+        sendEvent("dataTrackSubscribed", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
+        ))
+        remoteDataTrackPublication.remoteDataTrack?.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteDataTrackListener)
     }
 
     override fun onDataTrackSubscriptionFailed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, twilioException: TwilioException) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscriptionFailed NOT IMPLEMENTED")
-        // NOT IMPLEMENTED
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscriptionFailed => " +
+                "trackSid: ${remoteDataTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
+
+        sendEvent("dataTrackSubscriptionFailed", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
+        ), twilioException)
     }
 
     override fun onDataTrackUnpublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnpublished NOT IMPLEMENTED")
-        // NOT IMPLEMENTED
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnpublished => " +
+                "trackSid: ${remoteDataTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
+
+        sendEvent("dataTrackUnpublished", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
+        ))
     }
 
     override fun onDataTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, remoteDataTrack: RemoteDataTrack) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnsubscribed NOT IMPLEMENTED")
-        // NOT IMPLEMENTED
+        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnsubscribed => " +
+                "trackSid: ${remoteDataTrackPublication.trackSid}, " +
+                "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
+                "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
+
+        sendEvent("dataTrackUnsubscribed", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication),
+                "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack)
+        ))
     }
 
     override fun onVideoTrackDisabled(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
@@ -143,7 +180,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onVideoTrackPublished(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackPublished => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
-                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}" +
+                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
 
         sendEvent("videoTrackPublished", mapOf(
@@ -167,7 +204,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onVideoTrackSubscriptionFailed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, twilioException: TwilioException) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackSubscriptionFailed => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
-                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}" +
+                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
 
         sendEvent("videoTrackSubscriptionFailed", mapOf(
@@ -179,7 +216,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     override fun onVideoTrackUnpublished(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnpublished => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
-                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}" +
+                "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
 
         sendEvent("videoTrackUnpublished", mapOf(
@@ -233,6 +270,33 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
                         "sid" to remoteAudioTrack.sid,
                         "name" to remoteAudioTrack.name,
                         "enabled" to remoteAudioTrack.isEnabled
+                )
+            }
+            return null
+        }
+
+        @JvmStatic
+        fun remoteDataTrackPublicationToMap(remoteDataTrackPublication: RemoteDataTrackPublication): Map<String, Any?> {
+            return mapOf(
+                    "sid" to remoteDataTrackPublication.trackSid,
+                    "name" to remoteDataTrackPublication.trackName,
+                    "enabled" to remoteDataTrackPublication.isTrackEnabled,
+                    "subscribed" to remoteDataTrackPublication.isTrackSubscribed,
+                    "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrackPublication.remoteDataTrack)
+            )
+        }
+
+        @JvmStatic
+        fun remoteDataTrackToMap(remoteDataTrack: RemoteDataTrack?): Map<String, Any>? {
+            if (remoteDataTrack != null) {
+                return mapOf(
+                        "sid" to remoteDataTrack.sid,
+                        "name" to remoteDataTrack.name,
+                        "enabled" to remoteDataTrack.isEnabled,
+                        "ordered" to remoteDataTrack.isOrdered,
+                        "reliable" to remoteDataTrack.isReliable,
+                        "maxPacketLifeTime" to remoteDataTrack.maxPacketLifeTime,
+                        "maxRetransmits" to remoteDataTrack.maxRetransmits
                 )
             }
             return null

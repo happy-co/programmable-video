@@ -2,6 +2,7 @@ library twilio_unofficial_programmable_video;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
@@ -32,9 +33,27 @@ part 'camera_state.dart';
 
 part 'connect_options.dart';
 
+part 'data_track.dart';
+
+part 'data_track_options.dart';
+
+part 'data_track_publication.dart';
+
+part 'events/local_participant_events.dart';
+
+part 'events/remote_data_track_events.dart';
+
+part 'events/remote_participant_events.dart';
+
+part 'events/room_events.dart';
+
 part 'local_audio_track.dart';
 
 part 'local_audio_track_publication.dart';
+
+part 'local_data_track.dart';
+
+part 'local_data_track_publication.dart';
 
 part 'local_participant.dart';
 
@@ -52,6 +71,10 @@ part 'remote_audio_track.dart';
 
 part 'remote_audio_track_publication.dart';
 
+part 'remote_data_track.dart';
+
+part 'remote_data_track_publication.dart';
+
 part 'remote_participant.dart';
 
 part 'remote_video_track.dart';
@@ -61,6 +84,8 @@ part 'remote_video_track_publication.dart';
 part 'room.dart';
 
 part 'room_state.dart';
+
+part 'track.dart';
 
 part 'track_publication.dart';
 

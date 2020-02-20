@@ -5,6 +5,61 @@ stages:
   - test
   - publish
 
+dartdoc:
+  stage: lint
+  script:
+    - flutter pub get
+    - dartdoc --no-auto-include-dependencies --quiet
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - lib/**/*
+      - README.md
+
+firebase_functions:
+  image: node:8.15.0-alpine
+  stage: lint
+  script:
+    - cd example/firebase/functions || exit 1
+    - apk add --update git
+    - npm i
+    - npm run lint
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - example/firebase/functions/**/*
+
+flutter_analyze:
+  stage: lint
+  script:
+    - cd example || exit 1
+    - flutter pub get
+    - cd .. || exit 1
+    - flutter analyze --pub
+    - flutter format -l 240 -n . --set-exit-if-changed
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - lib/**/*.dart
+      - test/**/*.dart
+      - example/lib/**/*.dart
+      - example/test/**/*.dart
+
+kotlin_analyze:
+  image: kkopper/ktlint:0.36.0
+  stage: lint
+  script:
+    - cd android || exit 1
+    - ktlint
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - android/**/*.kt
+
 pod_lint:
   image: ruby:2.7-slim-buster
   stage: lint
@@ -33,49 +88,6 @@ swift_analyze:
     changes:
       - ios/**/*.swift
 
-kotlin_analyze:
-  image: kkopper/ktlint:0.36.0
-  stage: lint
-  script:
-    - cd android || exit 1
-    - ktlint
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - android/**/*.kt
-
-flutter_analyze:
-  stage: lint
-  script:
-    - cd example || exit 1
-    - flutter pub get
-    - cd .. || exit 1
-    - flutter analyze --pub
-    - flutter format -l 240 -n . --set-exit-if-changed
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - lib/**/*.dart
-      - test/**/*.dart
-      - example/lib/**/*.dart
-      - example/test/**/*.dart
-
-firebase_functions:
-  image: node:8.15.0-alpine
-  stage: lint
-  script:
-    - cd example/firebase/functions || exit 1
-    - apk add --update git
-    - npm i
-    - npm run lint
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - example/firebase/functions/**/*
-
 unit_test:
   stage: test
   script:
@@ -99,42 +111,29 @@ dry-run:
   only:
     - merge_requests
 
-dartdoc:
+firebase:
+  image: andreysenov/firebase-tools
   stage: publish
   script:
-    - flutter pub get
-    - dartdoc --no-auto-include-dependencies --quiet
-  only:
-    refs:
-      - merge_requests
-    changes:
-      - lib/**/*
-      - README.md
-
-tag:
-  image: docker:stable
-  services:
-    - docker:stable-dind
-  stage: publish
-  script:
+    # Deploy of functions only
     - |
-      if [ -z "${GITLAB_API_TOKEN}" ]; then
-        echo "Missing GITLAB_API_TOKEN environment variable"
+      if [ -z "${FIREBASE_TOKEN}" ]; then
+        echo "Missing FIREBASE_TOKEN environment variable"
         exit 1
       fi
 
-      export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
-      docker run --rm curlimages/curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-        --data-urlencode "tag_name=v${TAG_NAME}" \
-        --data-urlencode "ref=master" \
-        --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/CHANGELOG.md)" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
+      cd example/firebase/functions || exit 1
+      npm i
+      npm run build
+      cd .. || exit 1
+      firebase use twilio-flutter-plugin-dev --token ${FIREBASE_TOKEN}
+      firebase deploy --only functions -m "Version ${CI_COMMIT_REF_NAME} - Pipeline ${CI_PIPELINE_ID} - Build ${CI_BUILD_ID}" --token ${FIREBASE_TOKEN} --force
   environment:
-    name: pub-dev
-    url: https://pub.dev/packages/twilio_unofficial_programmable_video
+    name: firebase
+    url: https://console.firebase.google.com/project/twilio-flutter-plugin-dev/overview
   when: manual
   only:
-    - master
+    - tags
 
 pub-dev:
   # https://robertohuertas.com/2019/01/20/publish-flutter-package-with-travis/
@@ -175,26 +174,25 @@ pub-dev:
   only:
     - tags
 
-firebase:
-  image: andreysenov/firebase-tools
+tag:
+  image: curlimages/curl
   stage: publish
   script:
-    # Deploy of functions only
     - |
-      if [ -z "${FIREBASE_TOKEN}" ]; then
-        echo "Missing FIREBASE_TOKEN environment variable"
+      if [ -z "${GITLAB_API_TOKEN}" ]; then
+        echo "Missing GITLAB_API_TOKEN environment variable"
         exit 1
       fi
 
-      cd example/firebase/functions || exit 1
-      npm i
-      npm run build
-      cd .. || exit 1
-      firebase use twilio-flutter-plugin-dev --token ${FIREBASE_TOKEN}
-      firebase deploy --only functions -m "Version ${CI_COMMIT_REF_NAME} - Pipeline ${CI_PIPELINE_ID} - Build ${CI_BUILD_ID}" --token ${FIREBASE_TOKEN} --force
+      export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
+      curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --data-urlencode "tag_name=v${TAG_NAME}" \
+        --data-urlencode "ref=master" \
+        --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/CHANGELOG.md)" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
-    name: firebase
-    url: https://console.firebase.google.com/project/twilio-flutter-plugin-dev/overview
+    name: pub-dev
+    url: https://pub.dev/packages/twilio_unofficial_programmable_video
   when: manual
   only:
-    - tags
+    - master

@@ -8,15 +8,11 @@ class CameraCapturer implements VideoCapturer {
   CameraSource _cameraSource;
 
   /// The current specified camera source.
-  CameraSource get cameraSource {
-    return _cameraSource;
-  }
+  CameraSource get cameraSource => _cameraSource;
 
   /// Indicates that the camera capturer is not a screen cast.
   @override
-  bool get isScreenCast {
-    return false;
-  }
+  bool get isScreenCast => false;
 
   /// Singleton factory.
   ///

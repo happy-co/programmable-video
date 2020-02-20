@@ -1,6 +1,8 @@
 ## 0.2.0
 
 * Implemented iOS functionality, matching the android side.
+* Added DataTrack API (Android only)
+* Added Local Participant Events (Android only)
 * Android: Route audio through Bluetooth headset
 
 ## 0.1.2

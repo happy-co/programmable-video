@@ -8,7 +8,11 @@ class TwilioUnofficialProgrammableVideo {
 
   static const EventChannel _remoteParticipantChannel = EventChannel('twilio_unofficial_programmable_video/remote');
 
+  static const EventChannel _localParticipantChannel = EventChannel('twilio_unofficial_programmable_video/local');
+
   static const EventChannel _loggingChannel = EventChannel('twilio_unofficial_programmable_video/logging');
+
+  static const EventChannel _remoteDataTrackChannel = EventChannel('twilio_unofficial_programmable_video/remote_data_track');
 
   static StreamSubscription _loggingStream;
 
@@ -83,7 +87,7 @@ class TwilioUnofficialProgrammableVideo {
     if (await requestPermissionForCameraAndMicrophone()) {
       final roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions._toMap()});
 
-      return Room(roomId, _roomChannel, _remoteParticipantChannel);
+      return Room(roomId);
     }
     throw Exception('Permissions not granted');
   }
