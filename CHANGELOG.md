@@ -1,10 +1,11 @@
 ## 0.2.0
 
 * Implemented iOS functionality, matching the android side.
+* Android: Route audio through Bluetooth headset
 
 ## 0.1.2
 
-* Switch speaker mode based on headset plug
+* Android: Switch speaker mode based on headset plug
 
 ## 0.1.1+1
 
@@ -13,7 +14,7 @@
 ## 0.1.1
 
 * Better error handling on denied permissions
-* Improved re-requesting permission and otherwise open App Settings (Android)
+* Android: Improved re-requesting permission and otherwise open App Settings
 
 ## 0.1.0+2
 

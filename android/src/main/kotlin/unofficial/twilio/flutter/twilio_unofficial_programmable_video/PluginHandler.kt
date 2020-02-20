@@ -1,6 +1,7 @@
 package unofficial.twilio.flutter.twilio_unofficial_programmable_video
 
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -46,17 +47,13 @@ class PluginHandler : MethodCallHandler, ActivityAware {
 
     private var applicationContext: Context
 
-    private var myNoisyAudioStreamReceiver: BecomingNoisyReceiver
+    private var myNoisyAudioStreamReceiver: BecomingNoisyReceiver? = null
 
     private var audioManager: AudioManager
-
-    private var headsetPlugIntent: IntentFilter
 
     constructor(applicationContext: Context) {
         this.applicationContext = applicationContext
         audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        myNoisyAudioStreamReceiver = BecomingNoisyReceiver(audioManager)
-        headsetPlugIntent = IntentFilter(Intent.ACTION_HEADSET_PLUG)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -294,6 +291,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             if (volumeControlStream != null) {
                 previousVolumeControlStream = volumeControlStream
             }
+            previousMicrophoneMute = audioManager.isMicrophoneMute
 
             // Request audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -318,15 +316,18 @@ class PluginHandler : MethodCallHandler, ActivityAware {
              * speaker mode if this is not set.
              */
             audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-            audioManager.setSpeakerphoneOn(!audioManager.isWiredHeadsetOn())
-            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, headsetPlugIntent)
+
             /*
              * Always disable microphone mute during a WebRTC call.
              */
-            previousMicrophoneMute = audioManager.isMicrophoneMute
 
             audioManager.isMicrophoneMute = false
             this.activity?.volumeControlStream = AudioManager.STREAM_VOICE_CALL
+
+            myNoisyAudioStreamReceiver = BecomingNoisyReceiver(audioManager, applicationContext)
+            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
+            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED))
+            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED))
         } else {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 audioManager.abandonAudioFocus(null)
@@ -339,6 +340,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             this.activity?.volumeControlStream = previousVolumeControlStream
             try {
                 applicationContext.unregisterReceiver(myNoisyAudioStreamReceiver)
+                myNoisyAudioStreamReceiver?.dispose()
+                myNoisyAudioStreamReceiver = null
             } catch (e: java.lang.Exception) {
                 TwilioUnofficialProgrammableVideoPlugin.debug("${e.message}")
                 e.printStackTrace()

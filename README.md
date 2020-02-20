@@ -41,6 +41,7 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 ...
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.BLUETOOTH"/>
 ...
 ```
 
@@ -70,7 +71,7 @@ Open the `Info.plist` file in your `ios/Runner` directory and add the following 
 ```
 
 ##### Setting minimal iOS target to 11
-1. In Xcode, open `Runner.xcworkspace` in your app's `ios` folder.  
+1. In Xcode, open `Runner.xcworkspace` in your app's `ios` folder.
 2. To view your app’s settings, select the **Runner** project in the Xcode project navigator. Then, in the main view sidebar, select the **Runner** target.
 3. Select the **General** tab.
 4. In the **Deployment Info** section, set the Target to iOS 11.
@@ -269,7 +270,7 @@ primaryVideoView.setMirror(cameraSource == CameraSource.BACK_CAMERA);
 ```
 
 ### Selecting a specific Audio output
-Using the `TwilioUnofficialProgrammableVideo` class, you can specify if audio is routed through the headset or speaker. 
+Using the `TwilioUnofficialProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
 
 **Note:**
 > Calling this method before being connected to a room on iOS will result in nothing. If you wish to route audio through the headset or speaker call this method in the `onConnected` event.
@@ -302,7 +303,7 @@ Reference table of all the events the plugin supports and their native platform 
 | Type              | Event name                   | Android                        | iOS                                     | Implemented |
 | :---------------- | ---------------------------- | ------------------------------ | --------------------------------------- | ----------- |
 | Room              | connectFailure               | onConnectFailure               | roomDidFailToConnect                    | X           |
-| Room              | connected                    | onConnected                    | roomDidConnect                          | X           | 
+| Room              | connected                    | onConnected                    | roomDidConnect                          | X           |
 | Room              | disconnected                 | onDisconnected                 | roomDidDisconnect                       | X           |
 | Room              | participantConnected         | onParticipantConnected         | participantDidConnect                   | X           |
 | Room              | participantDisconnected      | onParticipantDisconnected      | participantDidDisconnect                | X           |
