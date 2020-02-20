@@ -210,8 +210,8 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
             return mapOf(
                     "identity" to remoteParticipant.identity,
                     "sid" to remoteParticipant.sid,
-                    "remoteVideoTrackPublications" to remoteVideoTrackPublications,
-                    "remoteAudioTrackPublications" to remoteAudioTrackPublications
+                    "remoteAudioTrackPublications" to remoteAudioTrackPublications,
+                    "remoteVideoTrackPublications" to remoteVideoTrackPublications
             )
         }
 

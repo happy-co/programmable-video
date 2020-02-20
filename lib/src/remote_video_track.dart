@@ -36,14 +36,26 @@ class RemoteVideoTrack extends VideoTrack {
       'mirror': mirror,
     };
 
-    return _widget ??= AndroidView(
-      key: key,
-      viewType: 'twilio_unofficial_programmable_video/views',
-      creationParams: creationParams,
-      creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: (int viewId) {
-        TwilioUnofficialProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: $creationParams');
-      },
-    );
+    if (Platform.isAndroid) {
+      return _widget ??= AndroidView(
+        key: key,
+        viewType: 'twilio_unofficial_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (int viewId) {
+          TwilioUnofficialProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: $creationParams');
+        },
+      );
+    } else {
+      return _widget ??= UiKitView(
+        key: key,
+        viewType: 'twilio_unofficial_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (int viewId) {
+          TwilioUnofficialProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: $creationParams');
+        },
+      );
+    }
   }
 }

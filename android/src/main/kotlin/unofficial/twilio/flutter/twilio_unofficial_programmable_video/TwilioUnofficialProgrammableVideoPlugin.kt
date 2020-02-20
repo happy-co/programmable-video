@@ -15,9 +15,9 @@ import io.flutter.plugin.platform.PlatformViewRegistry
 
 /** TwilioUnofficialProgrammableVideoPlugin */
 class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
-    private lateinit var roomChannel: EventChannel
-
     private lateinit var methodChannel: MethodChannel
+
+    private lateinit var roomChannel: EventChannel
 
     private lateinit var remoteParticipantChannel: EventChannel
 

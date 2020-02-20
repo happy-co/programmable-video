@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Implemented iOS functionality, matching the android side.
+
 ## 0.1.2
 
 * Switch speaker mode based on headset plug

@@ -39,8 +39,11 @@ class CameraCapturer implements VideoCapturer {
   /// Switch the current [CameraSource].
   ///
   /// This method can be invoked while capturing frames or not.
-  Future<void> switchCamera() {
-    return const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('CameraCapturer#switchCamera');
+  Future<void> switchCamera() async {
+    final methodData = await MethodChannel('twilio_unofficial_programmable_video').invokeMethod('CameraCapturer#switchCamera');
+
+    final cameraCapturerMap = Map<String, dynamic>.from(methodData);
+    _updateFromMap(cameraCapturerMap);
   }
 
   /// Update properties from a map.

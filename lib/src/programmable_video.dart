@@ -42,6 +42,8 @@ class TwilioUnofficialProgrammableVideo {
   }
 
   /// Set the speaker mode on or off.
+  ///
+  /// Note: Call this method after the [Room.onConnected] event on iOS. Calling it before will not result in a audio routing change.
   static Future<bool> setSpeakerphoneOn(bool on) async {
     assert(on != null);
     return await _methodChannel.invokeMethod('setSpeakerphoneOn', {'on': on});

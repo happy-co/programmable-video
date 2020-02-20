@@ -49,7 +49,7 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
 
     override fun onReconnecting(room: Room, e: TwilioException) {
         TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnecting => room sid is '${room.sid}', exception is $e")
-        sendEvent("connected", mapOf("room" to roomToMap(room)), e)
+        sendEvent("reconnecting ", mapOf("room" to roomToMap(room)), e)
     }
 
     override fun onRecordingStarted(room: Room) {
@@ -119,20 +119,27 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
         return mapOf(
                 "name" to localVideoTrack.name,
                 "enabled" to localVideoTrack.isEnabled,
-                "videoCapturer" to videoCapturerToMap(localVideoTrack.videoCapturer)
+                "videoCapturer" to RoomListener.videoCapturerToMap(localVideoTrack.videoCapturer)
         )
     }
 
-    private fun videoCapturerToMap(videoCapturer: VideoCapturer): Map<String, Any> {
-        if (videoCapturer is CameraCapturer) {
-            return mapOf(
+    companion object {
+        @JvmStatic
+        fun videoCapturerToMap(videoCapturer: VideoCapturer, cameraSource: CameraCapturer.CameraSource? = null): Map<String, Any> {
+            if (videoCapturer is CameraCapturer) {
+                var source = videoCapturer.cameraSource.toString()
+                if (cameraSource != null) {
+                    source = cameraSource.toString()
+                }
+                return mapOf(
                     "type" to "CameraCapturer",
-                    "cameraSource" to videoCapturer.cameraSource.toString()
-            )
-        }
-        return mapOf(
+                    "cameraSource" to source
+                )
+            }
+            return mapOf(
                 "type" to "Unknown",
                 "isScreencast" to videoCapturer.isScreencast
-        )
+            )
+        }
     }
 }

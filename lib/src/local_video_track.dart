@@ -56,14 +56,29 @@ class LocalVideoTrack extends VideoTrack {
       'mirror': mirror,
     };
 
-    return _widget ??= AndroidView(
-      viewType: 'twilio_unofficial_programmable_video/views',
-      creationParams: creationParams,
-      creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: (int viewId) {
-        TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
-      },
-    );
+    if (Platform.isAndroid) {
+      return _widget ??= AndroidView(
+        viewType: 'twilio_unofficial_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (int viewId) {
+          TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
+        },
+      );
+    }
+
+    if (Platform.isIOS) {
+      return _widget ??= UiKitView(
+        viewType: 'twilio_unofficial_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (int viewId) {
+          TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
+        },
+      );
+    }
+
+    throw Exception('No widget implementation found for platform \'${Platform.operatingSystem}\'');
   }
 
   /// Update properties from a map.

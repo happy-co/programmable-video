@@ -16,7 +16,7 @@ Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter-unoffici
 
 ## Supported platforms
 * Android
-* ~~iOS~~ (not yet)
+* iOS
 * ~~Web~~ (not yet)
 
 ## Getting started
@@ -28,22 +28,13 @@ First add it as a [dependency in your pubspec.yaml file](https://flutter.dev/doc
 For example:
 ```yaml
 dependencies:
-  twilio_unofficial_programmable_video: ^0.1.1
+  twilio_unofficial_programmable_video: ^0.2.0
 ```
 
-#### Proguard (Android only)
-Add the following lines to your proguard-project.txt file.
+#### Android
+For this plugin to work for Android, you will have to tweak a few files.
 
-```
--keep class tvi.webrtc.** { *; }
--keep class com.twilio.video.** { *; }
--keepattributes InnerClasses
-```
-
-#### Permissions
-For this plugin to work you will have to add the right permissions for your platform.
-
-##### Android
+##### Permissions
 Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and add the following device permissions:
 
 ```xml
@@ -52,6 +43,40 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 <uses-permission android:name="android.permission.CAMERA"/>
 ...
 ```
+
+##### Proguard
+Add the following lines to your proguard-project.txt file.
+
+```
+-keep class tvi.webrtc.** { *; }
+-keep class com.twilio.video.** { *; }
+-keepattributes InnerClasses
+```
+
+#### iOS
+For this plugin to work for iOS, you will have to tweak a few files.
+
+##### Permissions
+Open the `Info.plist` file in your `ios/Runner` directory and add the following permissions:
+```
+...
+<key>NSCameraUsageDescription</key>
+<string>Your message to user when the camera is accessed for the first time</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Your message to user when the microphone is accessed for the first time</string>
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+...
+```
+
+##### Setting minimal iOS target to 11
+1. In Xcode, open `Runner.xcworkspace` in your app's `ios` folder.  
+2. To view your app’s settings, select the **Runner** project in the Xcode project navigator. Then, in the main view sidebar, select the **Runner** target.
+3. Select the **General** tab.
+4. In the **Deployment Info** section, set the Target to iOS 11.
+
+##### Background Modes
+To allow a connection to a Room to be persisted while an application is running in the background, you must select the Audio, AirPlay, and Picture in Picture background mode from the Capabilities project settings page. See [Twilio Docs](https://www.twilio.com/docs/video/ios-v3-getting-started#background-modes) for more information.
 
 ### Connect to a Room
 Call `TwilioUnofficialProgrammableVideo.connect()` to connect to a Room in your Flutter application. Once connected, you can send and receive audio and video streams with other Participants who are connected to the Room.
@@ -244,7 +269,10 @@ primaryVideoView.setMirror(cameraSource == CameraSource.BACK_CAMERA);
 ```
 
 ### Selecting a specific Audio output
-Using the `TwilioUnofficialProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
+Using the `TwilioUnofficialProgrammableVideo` class, you can specify if audio is routed through the headset or speaker. 
+
+**Note:**
+> Calling this method before being connected to a room on iOS will result in nothing. If you wish to route audio through the headset or speaker call this method in the `onConnected` event.
 
 ```dart
 // Route audio through speaker
@@ -271,36 +299,36 @@ You can easily generate an access token in the Twilio dashboard with the [Testin
 ## Events table
 Reference table of all the events the plugin supports and their native platform counter part.
 
-| Type              | Event name                   | Android                        | Implemented |
-| :---------------- | ---------------------------- | ------------------------------ | ----------- |
-| Room              | connectFailure               | onConnectFailure               | X           |
-| Room              | connected                    | onConnected                    | X           | 
-| Room              | disconnected                 | onDisconnected                 | X           |
-| Room              | participantConnected         | onParticipantConnected         | X           |
-| Room              | participantDisconnected      | onParticipantDisconnected      | X           |
-| Room              | reconnected                  | onReconnected                  | X           |
-| Room              | reconnecting                 | onReconnecting                 | X           |
-| Room              | recordingStarted             | onRecordingStarted             | X           |
-| Room              | recordingStopped             | onRecordingStopped             | X           |
-| RemoteParticipant | audioTrackDisabled           | onAudioTrackDisabled           | X           |
-| RemoteParticipant | audioTrackEnabled            | onAudioTrackEnabled            | X           |
-| RemoteParticipant | audioTrackPublished          | onAudioTrackPublished          | X           |
-| RemoteParticipant | audioTrackSubscribed         | onAudioTrackSubscribed         | X           |
-| RemoteParticipant | audioTrackSubscriptionFailed | onAudioTrackSubscriptionFailed | X           |
-| RemoteParticipant | audioTrackUnpublished        | onAudioTrackUnpublished        | X           |
-| RemoteParticipant | audioTrackUnsubscribed       | onAudioTrackUnsubscribed       | X           |
-| RemoteParticipant | dataTrackPublished           | onDataTrackPublished           |             |
-| RemoteParticipant | dataTrackSubscribed          | onDataTrackSubscribed          |             |
-| RemoteParticipant | dataTrackSubscriptionFailed  | onDataTrackSubscriptionFailed  |             |
-| RemoteParticipant | dataTrackUnpublished         | onDataTrackUnpublished         |             |
-| RemoteParticipant | dataTrackUnsubscribed        | onDataTrackUnsubscribed        |             |
-| RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           | X           |
-| RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            | X           |
-| RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          | X           |
-| RemoteParticipant | vdeoTrackSubscribed          | onVideoTrackSubscribed         | X           |
-| RemoteParticipant | videoTrackSubscriptionFailed | onVideoTrackSubscriptionFailed | X           |
-| RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        | X           |
-| RemoteParticipant | videoTrackUnsubscribed       | onVideoTrackUnsubscribed       | X           |
+| Type              | Event name                   | Android                        | iOS                                     | Implemented |
+| :---------------- | ---------------------------- | ------------------------------ | --------------------------------------- | ----------- |
+| Room              | connectFailure               | onConnectFailure               | roomDidFailToConnect                    | X           |
+| Room              | connected                    | onConnected                    | roomDidConnect                          | X           | 
+| Room              | disconnected                 | onDisconnected                 | roomDidDisconnect                       | X           |
+| Room              | participantConnected         | onParticipantConnected         | participantDidConnect                   | X           |
+| Room              | participantDisconnected      | onParticipantDisconnected      | participantDidDisconnect                | X           |
+| Room              | reconnected                  | onReconnected                  | roomDidReconnect                        | X           |
+| Room              | reconnecting                 | onReconnecting                 | roomIsReconnecting                      | X           |
+| Room              | recordingStarted             | onRecordingStarted             | roomDidStartRecording                   | X           |
+| Room              | recordingStopped             | onRecordingStopped             | roomDidStopRecording                    | X           |
+| RemoteParticipant | audioTrackDisabled           | onAudioTrackDisabled           | remoteParticipantDidDisableAudioTrack   | X           |
+| RemoteParticipant | audioTrackEnabled            | onAudioTrackEnabled            | remoteParticipantDidEnableAudioTrack    | X           |
+| RemoteParticipant | audioTrackPublished          | onAudioTrackPublished          | remoteParticipantDidPublishAudioTrack   | X           |
+| RemoteParticipant | audioTrackSubscribed         | onAudioTrackSubscribed         | didSubscribeToAudioTrack                | X           |
+| RemoteParticipant | audioTrackSubscriptionFailed | onAudioTrackSubscriptionFailed | didFailToSubscribeToAudioTrack          | X           |
+| RemoteParticipant | audioTrackUnpublished        | onAudioTrackUnpublished        | remoteParticipantDidUnpublishAudioTrack | X           |
+| RemoteParticipant | audioTrackUnsubscribed       | onAudioTrackUnsubscribed       | didUnsubscribeFromAudioTrack            | X           |
+| RemoteParticipant | dataTrackPublished           | onDataTrackPublished           | remoteParticipantDidPublishDataTrack    |             |
+| RemoteParticipant | dataTrackSubscribed          | onDataTrackSubscribed          | didSubscribeToDataTrack                 |             |
+| RemoteParticipant | dataTrackSubscriptionFailed  | onDataTrackSubscriptionFailed  | didFailToSubscribeToDataTrack           |             |
+| RemoteParticipant | dataTrackUnpublished         | onDataTrackUnpublished         | remoteParticipantDidUnpublishDataTrack  |             |
+| RemoteParticipant | dataTrackUnsubscribed        | onDataTrackUnsubscribed        | didUnsubscribeFromDataTrack             |             |
+| RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           | remoteParticipantDidDisableVideoTrack   | X           |
+| RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            | remoteParticipantDidEnableVideoTrack    | X           |
+| RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          | remoteParticipantDidPublishVideoTrack   | X           |
+| RemoteParticipant | vdeoTrackSubscribed          | onVideoTrackSubscribed         | didSubscribeToVideoTrack                | X           |
+| RemoteParticipant | videoTrackSubscriptionFailed | onVideoTrackSubscriptionFailed | didFailToSubscribeToVideoTrack          | X           |
+| RemoteParticipant | videoTrackUnpublished        | onVideoTrackUnpublished        | remoteParticipantDidUnpublishVideoTrack | X           |
+| RemoteParticipant | videoTrackUnsubscribed       | onVideoTrackUnsubscribed       | didUnsubscribeFromVideoTrack            | X           |
 
 # Development and Contributing
 Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/CONTRIBUTING.md) guidelines.
