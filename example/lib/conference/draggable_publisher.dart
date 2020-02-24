@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/clipped_video.dart';
+import 'package:twilio_programmable_video_example/conference/clipped_video.dart';
 
 class DraggablePublisher extends StatefulWidget {
   final Size availableScreenSize;

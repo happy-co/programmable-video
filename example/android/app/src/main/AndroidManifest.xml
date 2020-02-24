@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="unofficial.twilio.flutter.twilio_unofficial_programmable_video_example">
+    package="twilio.flutter.programmable_video_example">
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="twilio_unofficial_programmable_video_example"
+        android:label="twilio_programmable_video_example"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

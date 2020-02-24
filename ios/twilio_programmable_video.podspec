@@ -5,11 +5,11 @@ project = OpenStruct.new YAML.load_file("../pubspec.yaml")
 Pod::Spec.new do |s|
   s.name             = project.name
   s.version          = project.version
-  s.summary          = 'Unofficial Twilio Programmable Video Flutter package.'
+  s.summary          = 'Twilio Programmable Video Flutter package.'
   s.description      = project.description
   s.homepage         = project.homepage
   s.license          = { :file => '../LICENSE', :type => 'MIT' }
-  s.author           = 'Twilio Flutter Unofficial'
+  s.author           = 'Twilio Flutter'
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
 

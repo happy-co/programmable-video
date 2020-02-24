@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 class RemoteDataTrack extends DataTrack {
   final String _sid;
@@ -66,7 +66,7 @@ class RemoteDataTrack extends DataTrack {
         _onBufferMessage.add(RemoteDataTrackBufferMessageEvent(this, Uint8List.fromList(data['message']).buffer));
         break;
       default:
-        TwilioUnofficialProgrammableVideo._log('RemoteDataTrack($_sid) => Received unknown event with name: $eventName');
+        TwilioProgrammableVideo._log('RemoteDataTrack($_sid) => Received unknown event with name: $eventName');
         break;
     }
   }

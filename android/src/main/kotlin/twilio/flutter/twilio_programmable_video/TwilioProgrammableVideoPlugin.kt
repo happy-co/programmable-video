@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import android.content.Context
 import android.util.Log
@@ -13,8 +13,8 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformViewRegistry
 
-/** TwilioUnofficialProgrammableVideoPlugin */
-class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
+/** TwilioProgrammableVideoPlugin */
+class TwilioProgrammableVideoPlugin : FlutterPlugin {
     private lateinit var methodChannel: MethodChannel
 
     private lateinit var roomChannel: EventChannel
@@ -40,12 +40,12 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
         @Suppress("unused")
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val instance = TwilioUnofficialProgrammableVideoPlugin()
+            val instance = TwilioProgrammableVideoPlugin()
             instance.onAttachedToEngine(registrar.context(), registrar.messenger(), registrar.platformViewRegistry())
         }
 
         @JvmStatic
-        val LOG_TAG = "TwilioUnofficial_PVideo"
+        val LOG_TAG = "Twilio_PVideo"
 
         @JvmStatic
         val HARDWARE_AEC_BLACKLIST = hashSetOf(
@@ -93,77 +93,77 @@ class TwilioUnofficialProgrammableVideoPlugin : FlutterPlugin {
 
     private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger, platformViewRegistry: PlatformViewRegistry) {
         val pluginHandler = PluginHandler(applicationContext)
-        methodChannel = MethodChannel(messenger, "twilio_unofficial_programmable_video")
+        methodChannel = MethodChannel(messenger, "twilio_programmable_video")
         methodChannel.setMethodCallHandler(pluginHandler)
 
-        roomChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/room")
+        roomChannel = EventChannel(messenger, "twilio_programmable_video/room")
         roomChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel attached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel attached")
                 roomListener.events = events
                 roomListener.room = Video.connect(applicationContext, roomListener.connectOptions, roomListener)
             }
 
             override fun onCancel(arguments: Any) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel detached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel detached")
                 roomListener.events = null
             }
         })
 
-        remoteParticipantChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/remote")
+        remoteParticipantChannel = EventChannel(messenger, "twilio_programmable_video/remote")
         remoteParticipantChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel attached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel attached")
                 remoteParticipantListener.events = events
             }
 
             override fun onCancel(arguments: Any) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel detached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel detached")
                 remoteParticipantListener.events = null
             }
         })
 
-        localParticipantChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/local")
+        localParticipantChannel = EventChannel(messenger, "twilio_programmable_video/local")
         localParticipantChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel attached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel attached")
                 localParticipantListener.events = events
             }
 
             override fun onCancel(arguments: Any) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel detached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel detached")
                 localParticipantListener.events = null
             }
         })
 
-        loggingChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/logging")
+        loggingChannel = EventChannel(messenger, "twilio_programmable_video/logging")
         loggingChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel attached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel attached")
                 loggingSink = events
             }
 
             override fun onCancel(arguments: Any) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel detached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel detached")
                 loggingSink = null
             }
         })
 
-        remoteDataTrackChannel = EventChannel(messenger, "twilio_unofficial_programmable_video/remote_data_track")
+        remoteDataTrackChannel = EventChannel(messenger, "twilio_programmable_video/remote_data_track")
         remoteDataTrackChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel attached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel attached")
                 remoteDataTrackListener.events = events
             }
 
             override fun onCancel(arguments: Any) {
-                debug("TwilioUnofficialProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel detached")
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel detached")
                 remoteDataTrackListener.events = null
             }
         })
 
         val pvf = ParticipantViewFactory(StandardMessageCodec.INSTANCE, pluginHandler)
-        platformViewRegistry.registerViewFactory("twilio_unofficial_programmable_video/views", pvf)
+        platformViewRegistry.registerViewFactory("twilio_programmable_video/views", pvf)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

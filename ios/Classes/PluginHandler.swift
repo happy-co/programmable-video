@@ -4,15 +4,15 @@ import TwilioVideo
 
 public class PluginHandler {
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
-        return SwiftTwilioUnofficialProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
+        return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
 
     public func getLocalParticipant() -> LocalParticipant? {
-        return SwiftTwilioUnofficialProgrammableVideoPlugin.roomListener?.room?.localParticipant
+        return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.localParticipant
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.handle => received \(call.method)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.handle => received \(call.method)")
         switch call.method {
             case "debug":
                 debug(call, result: result)
@@ -34,8 +34,8 @@ public class PluginHandler {
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
-        if let cameraSource = SwiftTwilioUnofficialProgrammableVideoPlugin.cameraSource {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
+        if let cameraSource = SwiftTwilioProgrammableVideoPlugin.cameraSource {
             var captureDevice: AVCaptureDevice
             switch cameraSource.device?.position {
                 case .back:
@@ -73,7 +73,7 @@ public class PluginHandler {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
 
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackEnable => called for \(localVideoTrackName), enable=\(localVideoTrackEnable)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackEnable => called for \(localVideoTrackName), enable=\(localVideoTrackEnable)")
 
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
         if let localVideoTrack = localVideoTrack {
@@ -96,7 +96,7 @@ public class PluginHandler {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
 
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.localAudioTrackEnable => called for \(localAudioTrackName), enable=\(localAudioTrackEnable)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localAudioTrackEnable => called for \(localAudioTrackName), enable=\(localAudioTrackEnable)")
 
         let localAudioTrack = getLocalParticipant()?.localAudioTracks.first(where: {$0.trackName == localAudioTrackName})
         if let localAudioTrack = localAudioTrack {
@@ -107,7 +107,7 @@ public class PluginHandler {
     }
 
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.setSpeakerphoneOn => called")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setSpeakerphoneOn => called")
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'on' parameter", details: nil))
         }
@@ -117,9 +117,9 @@ public class PluginHandler {
         }
 
         // If it is nil then this method is called before the connect method, so we can just set it here as well.
-        if SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice == nil {
-            SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
-            TwilioVideoSDK.audioDevice = SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice!
+        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil {
+            SwiftTwilioProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
+            TwilioVideoSDK.audioDevice = SwiftTwilioProgrammableVideoPlugin.audioDevice!
         }
 
         do {
@@ -134,12 +134,12 @@ public class PluginHandler {
     }
 
     private func disconnect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.disconnect => called")
-        SwiftTwilioUnofficialProgrammableVideoPlugin.roomListener?.room?.disconnect()
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.disconnect => called")
+        SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.disconnect()
 
-        if let camera = SwiftTwilioUnofficialProgrammableVideoPlugin.cameraSource {
+        if let camera = SwiftTwilioProgrammableVideoPlugin.cameraSource {
             camera.stopCapture()
-            SwiftTwilioUnofficialProgrammableVideoPlugin.cameraSource = nil
+            SwiftTwilioProgrammableVideoPlugin.cameraSource = nil
         }
 
         result(true)
@@ -147,7 +147,7 @@ public class PluginHandler {
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => called")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => called")
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'connectOpotions' parameter", details: nil))
         }
@@ -161,21 +161,21 @@ public class PluginHandler {
         }
 
         // Override the device before creating any Rooms or Tracks.
-        if SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice == nil {
-            SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
-            TwilioVideoSDK.audioDevice = SwiftTwilioUnofficialProgrammableVideoPlugin.audioDevice!
+        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil {
+            SwiftTwilioProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
+            TwilioVideoSDK.audioDevice = SwiftTwilioProgrammableVideoPlugin.audioDevice!
         }
 
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
             // Set the room name if it has been passed.
             if let roomName = optionsObj["roomName"] as? String {
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting roomName to '\(roomName)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting roomName to '\(roomName)'")
                 builder.roomName = roomName
             }
 
             // Set the region if it has been passed.
             if let region = optionsObj["region"] as? String {
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting region to '\(region)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting region to '\(region)'")
                 builder.region = region
             }
 
@@ -196,7 +196,7 @@ public class PluginHandler {
                             audioCodecs.append(OpusCodec())
                     }
                 }
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredAudioCodecs to '\(audioCodecs)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredAudioCodecs to '\(audioCodecs)'")
                 builder.preferredAudioCodecs = audioCodecs
             }
 
@@ -213,7 +213,7 @@ public class PluginHandler {
                             videoCodecs.append(Vp8Codec())
                     }
                 }
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredVideoCodecs to '\(videoCodecs)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredVideoCodecs to '\(videoCodecs)'")
                 builder.preferredVideoCodecs = videoCodecs
             }
 
@@ -225,7 +225,7 @@ public class PluginHandler {
                     let name = audioTrack["name"] as? String
                     audioTracks.append(LocalAudioTrack(options: nil, enabled: enable ?? true, name: name ?? nil)!)
                 }
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioTracks to '\(audioTracks)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioTracks to '\(audioTracks)'")
                 builder.audioTracks = audioTracks
             }
 
@@ -254,16 +254,16 @@ public class PluginHandler {
 
                             videoSource.startCapture(device: cameraDevice)
                             videoTracks.append(localVideoTrack)
-                            SwiftTwilioUnofficialProgrammableVideoPlugin.cameraSource = videoSource
+                            SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
                 }
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '\(videoTracks)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '\(videoTracks)'")
                 builder.videoTracks = videoTracks
             }
         }
 
         let roomId = 1
-        SwiftTwilioUnofficialProgrammableVideoPlugin.roomListener = RoomListener(roomId, connectOptions)
+        SwiftTwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, connectOptions)
         result(roomId)
     }
 
@@ -276,7 +276,7 @@ public class PluginHandler {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'native' parameter", details: nil))
         }
 
-        SwiftTwilioUnofficialProgrammableVideoPlugin.nativeDebug = enableNative
+        SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
         result(enableNative)
     }
 }

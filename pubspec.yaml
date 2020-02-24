@@ -1,9 +1,9 @@
-name: twilio_unofficial_programmable_video
-description: Create real-time videocall applications (WebRTC), with this Unofficial Twilio Programmable Video Flutter plugin.
-version: 0.2.0
-homepage: https://gitlab.com/twilio-flutter-unofficial/programmable-video
-repository: https://gitlab.com/twilio-flutter-unofficial/programmable-video
-issue_tracker: https://gitlab.com/twilio-flutter-unofficial/programmable-video/issues
+name: twilio_programmable_video
+description: Flutter plugin for Twilio Programmable Video, which enables you to build real-time videocall applications (WebRTC)
+version: 0.3.0
+homepage: https://gitlab.com/twilio-flutter/programmable-video
+repository: https://gitlab.com/twilio-flutter/programmable-video
+issue_tracker: https://gitlab.com/twilio-flutter/programmable-video/issues
 
 environment:
   sdk: ">=2.5.0 <3.0.0"
@@ -35,8 +35,8 @@ flutter:
   # be modified. They are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
   plugin:
-    androidPackage: unofficial.twilio.flutter.twilio_unofficial_programmable_video
-    pluginClass: TwilioUnofficialProgrammableVideoPlugin
+    androidPackage: twilio.flutter.twilio_programmable_video
+    pluginClass: TwilioProgrammableVideoPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

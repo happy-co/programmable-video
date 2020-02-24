@@ -8,12 +8,12 @@
 //import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:twilio_unofficial_programmable_video_example/main.dart';
+import 'package:twilio_programmable_video_example/main.dart';
 
 void main() {
   testWidgets('Verify Platform version', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(TwilioUnofficialProgrammableVideoExample());
+    await tester.pumpWidget(TwilioProgrammableVideoExample());
 
     // Verify that platform version is retrieved.
 //    expect(

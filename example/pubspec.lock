@@ -315,13 +315,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.11"
-  twilio_unofficial_programmable_video:
+  twilio_programmable_video:
     dependency: "direct dev"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.2.0"
+    version: "0.3.0"
   typed_data:
     dependency: transitive
     description:

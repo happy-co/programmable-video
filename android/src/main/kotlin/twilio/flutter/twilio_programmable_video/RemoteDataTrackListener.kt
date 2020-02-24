@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.RemoteDataTrack
 import java.nio.ByteBuffer
@@ -6,7 +6,7 @@ import java.nio.ByteBuffer
 class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
 
     override fun onMessage(remoteDataTrack: RemoteDataTrack, message: ByteBuffer) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (ByteBuffer): $message ")
+        TwilioProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (ByteBuffer): $message ")
 
         sendEvent("bufferMessage", mapOf(
                 "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack),
@@ -15,7 +15,7 @@ class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
     }
 
     override fun onMessage(remoteDataTrack: RemoteDataTrack, message: String) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (String): $message")
+        TwilioProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (String): $message")
 
         sendEvent("stringMessage", mapOf(
                 "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack),

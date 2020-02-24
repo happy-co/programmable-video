@@ -1,18 +1,18 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
-/// Entry point for the Twilio Unofficial Programmable Video.
-class TwilioUnofficialProgrammableVideo {
-  static const MethodChannel _methodChannel = MethodChannel('twilio_unofficial_programmable_video');
+/// Entry point for the Twilio Programmable Video.
+class TwilioProgrammableVideo {
+  static const MethodChannel _methodChannel = MethodChannel('twilio_programmable_video');
 
-  static const EventChannel _roomChannel = EventChannel('twilio_unofficial_programmable_video/room');
+  static const EventChannel _roomChannel = EventChannel('twilio_programmable_video/room');
 
-  static const EventChannel _remoteParticipantChannel = EventChannel('twilio_unofficial_programmable_video/remote');
+  static const EventChannel _remoteParticipantChannel = EventChannel('twilio_programmable_video/remote');
 
-  static const EventChannel _localParticipantChannel = EventChannel('twilio_unofficial_programmable_video/local');
+  static const EventChannel _localParticipantChannel = EventChannel('twilio_programmable_video/local');
 
-  static const EventChannel _loggingChannel = EventChannel('twilio_unofficial_programmable_video/logging');
+  static const EventChannel _loggingChannel = EventChannel('twilio_programmable_video/logging');
 
-  static const EventChannel _remoteDataTrackChannel = EventChannel('twilio_unofficial_programmable_video/remote_data_track');
+  static const EventChannel _remoteDataTrackChannel = EventChannel('twilio_programmable_video/remote_data_track');
 
   static StreamSubscription _loggingStream;
 

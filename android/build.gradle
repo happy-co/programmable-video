@@ -1,4 +1,4 @@
-group 'unofficial.twilio.flutter.twilio_unofficial_programmable_video'
+group 'twilio.flutter.twilio_programmable_video'
 version '1.0-SNAPSHOT'
 
 buildscript {

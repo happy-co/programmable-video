@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// Twilio's Video SDKs, where possible, attempt to calculate a singular Network Quality Level describing the quality of a Participant's connection to a Room. This value ranges from unknown to 5, with unknown representing that the Network Quality Level can not be determined, 0 representing a failed network connection, 1 representing a poor network connection, and 5 representing an excellent network connection. The SDK calculates this metric only when connected to Group Rooms. In case of a connection to Peer-to-Peer Room the value is expected to be unknown at all times.
 ///

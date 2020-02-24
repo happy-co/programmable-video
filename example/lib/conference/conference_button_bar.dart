@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/widgets/circle_button.dart';
+import 'package:twilio_programmable_video_example/shared/widgets/circle_button.dart';
 
 class ConferenceButtonBar extends StatefulWidget {
   final VoidCallback onVideoEnabled;

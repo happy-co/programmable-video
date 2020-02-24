@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const channel = MethodChannel('twilio_unofficial_programmable_video');
+  const channel = MethodChannel('twilio_programmable_video');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -17,7 +17,7 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    // expect(await TwilioUnofficialProgrammableVideo.platformVersion, '42');
+    // expect(await TwilioProgrammableVideo.platformVersion, '42');
     expect(true, true);
   });
 }

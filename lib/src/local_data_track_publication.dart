@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// A local data track publication represents a [LocalDataTrack] that has been shared to a [Room].
 class LocalDataTrackPublication implements DataTrackPublication {

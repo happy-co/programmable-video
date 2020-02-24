@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -36,7 +36,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
                     audioManager.stopBluetoothSco()
                     audioManager.isBluetoothScoOn = false
                     audioManager.isSpeakerphoneOn = !hasWiredHeadset
-                    TwilioUnofficialProgrammableVideoPlugin.debug("bluetoothManager.adapter.getProfileProxy => onServiceDisconnected - hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
+                    TwilioProgrammableVideoPlugin.debug("bluetoothManager.adapter.getProfileProxy => onServiceDisconnected - hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
                 }
             }
 
@@ -48,7 +48,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
                         audioManager.isSpeakerphoneOn = false
                         audioManager.startBluetoothSco()
                         audioManager.isBluetoothScoOn = true
-                        TwilioUnofficialProgrammableVideoPlugin.debug("bluetoothManager.adapter.getProfileProxy => onServiceConnected - hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
+                        TwilioProgrammableVideoPlugin.debug("bluetoothManager.adapter.getProfileProxy => onServiceConnected - hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
                     }
                 }
             }
@@ -56,7 +56,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
     }
 
     override fun onReceive(context: Context?, intent: Intent) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("BecomingNoisyReceiver.onReceive => ${intent.action}")
+        TwilioProgrammableVideoPlugin.debug("BecomingNoisyReceiver.onReceive => ${intent.action}")
 
         /*
          * This intent should also switch back to Bluetooth when there are Bluetooth devices, but everything I try, does not work
@@ -66,7 +66,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
             hasWiredHeadset = audioManager.isWiredHeadsetOn
 
             audioManager.isSpeakerphoneOn = !hasWiredHeadset
-            TwilioUnofficialProgrammableVideoPlugin.debug("hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - getMode:${audioManager.mode}")
+            TwilioProgrammableVideoPlugin.debug("hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - getMode:${audioManager.mode}")
         }
 
         if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED == intent.action) {
@@ -85,7 +85,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
                             audioManager.isSpeakerphoneOn = false
                             audioManager.startBluetoothSco()
                             audioManager.isBluetoothScoOn = true
-                            TwilioUnofficialProgrammableVideoPlugin.debug("STATE_CONNECTED => hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
+                            TwilioProgrammableVideoPlugin.debug("STATE_CONNECTED => hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
                         }, 1000)
                     }
                 }
@@ -95,7 +95,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
                         audioManager.stopBluetoothSco()
                         audioManager.isBluetoothScoOn = false
                         audioManager.isSpeakerphoneOn = !hasWiredHeadset
-                        TwilioUnofficialProgrammableVideoPlugin.debug("STATE_DISCONNECTED => hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
+                        TwilioProgrammableVideoPlugin.debug("STATE_DISCONNECTED => hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
                     }
                 }
                 else -> {}

@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// Interface that represents user in a [Room].
 abstract class Participant {

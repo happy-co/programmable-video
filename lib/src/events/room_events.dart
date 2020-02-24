@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 class RoomConnectFailureEvent {
   /// The room that failed to be connected to.

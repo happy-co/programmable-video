@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/conference_button_bar.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/conference_room.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/draggable_publisher.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_widget.dart';
-import 'package:twilio_unofficial_programmable_video_example/debug.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/widgets/noise_box.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
+import 'package:twilio_programmable_video_example/conference/conference_button_bar.dart';
+import 'package:twilio_programmable_video_example/conference/conference_room.dart';
+import 'package:twilio_programmable_video_example/conference/draggable_publisher.dart';
+import 'package:twilio_programmable_video_example/conference/participant_widget.dart';
+import 'package:twilio_programmable_video_example/debug.dart';
+import 'package:twilio_programmable_video_example/shared/widgets/noise_box.dart';
+import 'package:twilio_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
 import 'package:wakelock/wakelock.dart';
 
 class ConferencePage extends StatefulWidget {

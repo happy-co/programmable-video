@@ -7,9 +7,9 @@ The Twilio library performs acoustic echo cancellation (AEC) using the device ha
 
 If you are experiencing echo on certain devices please create a ~"type::bug" issue and report your build model with it. After creating an issue, you may also provide a MR for it to get it merged sooner.
 
-You can add the following right before your `TwilioUnofficialProgrammableVideo.connect` call to see in your logging which build model your device has:
+You can add the following right before your `TwilioProgrammableVideo.connect` call to see in your logging which build model your device has:
 ```dart
-TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);
+TwilioProgrammableVideo.debug(dart: true, native: true);
 ```
 
 In the `flutter run` log you can search/filter on `Build.MODEL` to get the model.

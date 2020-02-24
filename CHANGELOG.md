@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Removed occurrence of the `unofficial` word
+
 ## 0.2.0
 
 * Implemented iOS functionality, matching the android side.

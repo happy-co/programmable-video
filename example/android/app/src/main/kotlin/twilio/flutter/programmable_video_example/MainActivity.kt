@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video_example
+package twilio.flutter.programmable_video_example
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

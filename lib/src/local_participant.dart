@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// Represents the local participant of a [Room] you are connected to.
 class LocalParticipant implements Participant {

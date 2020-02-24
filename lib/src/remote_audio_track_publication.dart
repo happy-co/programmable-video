@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// A remote audio track publication represents a [RemoteAudioTrack] that has been shared to a [Room].
 class RemoteAudioTrackPublication implements AudioTrackPublication {

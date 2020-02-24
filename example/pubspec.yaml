@@ -1,5 +1,5 @@
-name: twilio_unofficial_programmable_video_example
-description: Demonstrates how to use the twilio_unofficial_programmable_video plugin.
+name: twilio_programmable_video_example
+description: Demonstrates how to use the twilio_programmable_video plugin.
 publish_to: 'none'
 
 environment:
@@ -29,7 +29,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   pedantic: 1.8.0+1
-  twilio_unofficial_programmable_video:
+  twilio_programmable_video:
     path: ../
 
 dependency_overrides:

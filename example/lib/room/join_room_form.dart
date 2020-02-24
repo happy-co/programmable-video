@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/conference_page.dart';
-import 'package:twilio_unofficial_programmable_video_example/debug.dart';
-import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
-import 'package:twilio_unofficial_programmable_video_example/room/room_bloc.dart';
-import 'package:twilio_unofficial_programmable_video_example/room/room_model.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/services/backend_service.dart';
-import 'package:twilio_unofficial_programmable_video_example/shared/widgets/platform_exception_alert_dialog.dart';
+import 'package:twilio_programmable_video_example/conference/conference_page.dart';
+import 'package:twilio_programmable_video_example/debug.dart';
+import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
+import 'package:twilio_programmable_video_example/room/room_bloc.dart';
+import 'package:twilio_programmable_video_example/room/room_model.dart';
+import 'package:twilio_programmable_video_example/shared/services/backend_service.dart';
+import 'package:twilio_programmable_video_example/shared/widgets/platform_exception_alert_dialog.dart';
 
 class JoinRoomForm extends StatefulWidget {
   final RoomBloc roomBloc;

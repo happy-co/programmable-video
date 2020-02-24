@@ -1,4 +1,4 @@
-import 'package:twilio_unofficial_programmable_video_example/shared/validators/validators.dart';
+import 'package:twilio_programmable_video_example/shared/validators/validators.dart';
 
 mixin RoomValidators {
   final StringValidator nameValidator = NonEmptyStringValidator();

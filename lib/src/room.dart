@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// A [Room] represents a media session with zero or more remote participants. Media shared by any one [RemoteParticipant] is distributed equally to all other participants.
 class Room {
@@ -103,10 +103,10 @@ class Room {
   Stream<Room> onRecordingStopped;
 
   Room(this._internalId) : assert(_internalId != null) {
-    _roomStream = TwilioUnofficialProgrammableVideo._roomChannel.receiveBroadcastStream(_internalId).listen(_parseRoomEvents);
-    _remoteParticipantStream = TwilioUnofficialProgrammableVideo._remoteParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteParticipantEvents);
-    _localParticipantStream = TwilioUnofficialProgrammableVideo._localParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseLocalParticipantEvents);
-    _remoteDataTrackStream = TwilioUnofficialProgrammableVideo._remoteDataTrackChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteDataTrackEvents);
+    _roomStream = TwilioProgrammableVideo._roomChannel.receiveBroadcastStream(_internalId).listen(_parseRoomEvents);
+    _remoteParticipantStream = TwilioProgrammableVideo._remoteParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteParticipantEvents);
+    _localParticipantStream = TwilioProgrammableVideo._localParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseLocalParticipantEvents);
+    _remoteDataTrackStream = TwilioProgrammableVideo._remoteDataTrackChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteDataTrackEvents);
 
     onConnectFailure = _onConnectFailure.stream;
     onConnected = _onConnected.stream;
@@ -120,7 +120,7 @@ class Room {
 
   /// Disconnects from the room.
   Future<void> disconnect() async {
-    await const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('disconnect');
+    await const MethodChannel('twilio_programmable_video').invokeMethod('disconnect');
     await _roomStream.cancel();
     await _remoteParticipantStream.cancel();
     await _localParticipantStream.cancel();
@@ -152,7 +152,7 @@ class Room {
   /// Parse native room events to the right event streams.
   void _parseRoomEvents(dynamic event) {
     final String eventName = event['name'];
-    TwilioUnofficialProgrammableVideo._log("Room => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+    TwilioProgrammableVideo._log("Room => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
     final data = Map<String, dynamic>.from(event['data']);
 
     // If no room data is received, skip the event.
@@ -242,7 +242,7 @@ class Room {
   /// If the [RemoteParticipant] is not found, the event is buffered.
   void _parseRemoteParticipantEvents(dynamic event) {
     final eventName = event['name'];
-    TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+    TwilioProgrammableVideo._log("RemoteParticipant => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
 
     final data = Map<String, dynamic>.from(event['data']);
 
@@ -259,7 +259,7 @@ class Room {
       if (!_remoteParticipantsEventBuffer.containsKey(remoteParticipantMap['sid'])) {
         _remoteParticipantsEventBuffer[remoteParticipantMap['sid']] = [];
       }
-      TwilioUnofficialProgrammableVideo._log("RemoteParticipant => Buffering event '$eventName' for participant '${remoteParticipantMap['sid']}'");
+      TwilioProgrammableVideo._log("RemoteParticipant => Buffering event '$eventName' for participant '${remoteParticipantMap['sid']}'");
       return _remoteParticipantsEventBuffer[remoteParticipantMap['sid']].add(event);
     }
 
@@ -268,7 +268,7 @@ class Room {
 
   /// Parse native local participant events.
   void _parseLocalParticipantEvents(dynamic event) {
-    TwilioUnofficialProgrammableVideo._log("LocalParticipant => Event '${event['name']}' => ${event["data"]}, error: ${event["error"]}");
+    TwilioProgrammableVideo._log("LocalParticipant => Event '${event['name']}' => ${event["data"]}, error: ${event["error"]}");
 
     final data = Map<String, dynamic>.from(event['data']);
 
@@ -287,7 +287,7 @@ class Room {
   /// If the [RemoteDataTrack] is not found, the event is buffered.
   void _parseRemoteDataTrackEvents(dynamic event) {
     final eventName = event['name'];
-    TwilioUnofficialProgrammableVideo._log("RemoteDataTrack => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
+    TwilioProgrammableVideo._log("RemoteDataTrack => Event '$eventName' => ${event["data"]}, error: ${event["error"]}");
 
     final data = Map<String, dynamic>.from(event['data']);
 

@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 class DataTrackOptions {
   /// Default value for max packet life time.

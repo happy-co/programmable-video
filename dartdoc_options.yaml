@@ -1,5 +1,5 @@
 dartdoc:
-  include: ['twilio_unofficial_programmable_video']
+  include: ['twilio_programmable_video']
   errors:
     - ambiguous-doc-reference
     - ambiguous-reexport

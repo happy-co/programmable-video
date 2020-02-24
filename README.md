@@ -1,18 +1,18 @@
-# twilio_unofficial_programmable_video
-Create real-time videocall applications (WebRTC), with this Unofficial Twilio Programmable Video Flutter plugin.
+# twilio_programmable_video
+Create real-time videocall applications (WebRTC), with this Twilio Programmable Video Flutter plugin.
 
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
 
 # Example
-Check out our comprehensive [example](https://gitlab.com/twilio-flutter-unofficial/programmable-video/-/tree/master/example) provided with this plugin.
+Check out our comprehensive [example](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/example) provided with this plugin.
 
-[![Twilio Unofficial Programmable Video Example](https://j.gifs.com/5QEyOB.gif)](https://gitlab.com/twilio-flutter-unofficial/programmable-video/-/tree/master/example "Twilio Unofficial Programmable Video Example")
+[![Twilio Programmable Video Example](https://j.gifs.com/5QEyOB.gif)](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/example "Twilio Programmable Video Example")
 
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 
 ## FAQ
-Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/FAQ.md) first before creating a new issue.
+Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programmable-video/blob/master/FAQ.md) first before creating a new issue.
 
 ## Supported platforms
 * Android
@@ -28,7 +28,7 @@ First add it as a [dependency in your pubspec.yaml file](https://flutter.dev/doc
 For example:
 ```yaml
 dependencies:
-  twilio_unofficial_programmable_video: ^0.2.0
+  twilio_programmable_video: ^0.2.0
 ```
 
 #### Android
@@ -80,7 +80,7 @@ Open the `Info.plist` file in your `ios/Runner` directory and add the following 
 To allow a connection to a Room to be persisted while an application is running in the background, you must select the Audio, AirPlay, and Picture in Picture background mode from the Capabilities project settings page. See [Twilio Docs](https://www.twilio.com/docs/video/ios-v3-getting-started#background-modes) for more information.
 
 ### Connect to a Room
-Call `TwilioUnofficialProgrammableVideo.connect()` to connect to a Room in your Flutter application. Once connected, you can send and receive audio and video streams with other Participants who are connected to the Room.
+Call `TwilioProgrammableVideo.connect()` to connect to a Room in your Flutter application. Once connected, you can send and receive audio and video streams with other Participants who are connected to the Room.
 
 ```dart
 Room _room;
@@ -116,14 +116,14 @@ Future<Room> connectToRoom() async {
     ],                                    // Optional list of data tracks   
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
   );
-  _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+  _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
   _room.onConnectFailure.listen(_onConnectFailure);
   return _completer.future;
 }
 ```
 
-You **must** pass the [Access Token](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/README.md#access-tokens) when connecting to a Room.
+You **must** pass the [Access Token](https://gitlab.com/twilio-flutter/programmable-video/blob/master/README.md#access-tokens) when connecting to a Room.
 
 ### Join a Room
 If you'd like to join a Room you know already exists, you handle that exactly the same way as creating a room: just pass the Room name to the `connect` method. Once in a Room, you'll receive a `RoomParticipantConnectedEvent` for each Participant that successfully joins. Querying the `room.remoteParticipants` getter will return any existing Participants who have already joined the Room.
@@ -162,7 +162,7 @@ Future<Room> connectToRoom() async {
     ],                                    // Optional list of data tracks
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
   );
-  _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+  _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
   _room.onConnectFailure.listen(_onConnectFailure);
   return _completer.future;
@@ -183,7 +183,7 @@ var cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
 var localVideoTrack = LocalVideoTrack(true, cameraCapturer);
 
 // Getting the local video track widget.
-// This can only be called after the TwilioUnofficialProgrammableVideo.connect() is called.
+// This can only be called after the TwilioProgrammableVideo.connect() is called.
 var widget = localVideoTrack.widget();
 ```
 
@@ -197,7 +197,7 @@ When you join a Room, Participants may already be present. You can check for exi
 
 ```dart
 // Connect to a room.
-var room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+var room = await TwilioProgrammableVideo.connect(connectOptions);
 
 room.onConnected((Room room) {
   print('Connected to ${room.name}');
@@ -235,7 +235,7 @@ When Participants connect to or disconnect from a Room that you're connected to,
 
 ```dart
 // Connect to a room.
-var room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+var room = await TwilioProgrammableVideo.connect(connectOptions);
 
 room.onParticipantConnected((RoomParticipantConnectedEvent event) {
   print('Participant ${event.remoteParticipant.identity} has joined the room');
@@ -262,13 +262,13 @@ room.onParticipantConnected((RoomParticipantConnectedEvent roomEvent) {
 ### Using the DataTrack API
 The DataTrack API lets you create a DataTrack channel which can be used to send low latency messages to zero or more receivers subscribed to the data.
 
-Currently the only way you can start using a DataTrack is by specifying it in the ConnectOptions when [connecting to a room](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/README.md#connect-to-a-room)
+Currently the only way you can start using a DataTrack is by specifying it in the ConnectOptions when [connecting to a room](https://gitlab.com/twilio-flutter/programmable-video/blob/master/README.md#connect-to-a-room)
 
 After you have connected to the Room, you have to wait until you receive the `LocalDataTrackPublishedEvent` before you can start sending data to the track. You can start listening for this event once you have connected to the room using the `Room.onConnected` listener:
 
 ```dart
 // Connect to a room.
-var room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+var room = await TwilioProgrammableVideo.connect(connectOptions);
 
 room.onConnected((Room room) {
   // Once connected to the room start listening for the moment the LocalDataTrack gets published to the room.
@@ -289,7 +289,7 @@ If you want to receive data from a RemoteDataTrack you have to start listening t
 
 ```dart
 // Connect to a room.
-var room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+var room = await TwilioProgrammableVideo.connect(connectOptions);
 
 room.onParticipantConnected((RoomParticipantConnectedEvent event) {
   // A participant connected, now you can start listening to RemoteParticipant events
@@ -364,32 +364,32 @@ primaryVideoView.setMirror(cameraSource == CameraSource.BACK_CAMERA);
 ```
 
 ### Selecting a specific Audio output
-Using the `TwilioUnofficialProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
+Using the `TwilioProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
 
 **Note:**
 > Calling this method before being connected to a room on iOS will result in nothing. If you wish to route audio through the headset or speaker call this method in the `onConnected` event.
 
 ```dart
 // Route audio through speaker
-TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
+TwilioProgrammableVideo.setSpeakerphoneOn(true);
 
 // Route audio through headset
-TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(false);
+TwilioProgrammableVideo.setSpeakerphoneOn(false);
 ```
 
 ## Enable debug logging
-Using the `TwilioUnofficialProgrammableVideo` class, you can enable native and dart logging of the plugin.
+Using the `TwilioProgrammableVideo` class, you can enable native and dart logging of the plugin.
 
 ```dart
 var nativeEnabled = true;
 var dartEnabled = true;
-TwilioUnofficialProgrammableVideo.debug(native: nativeEnabled, dart: dartEnabled);
+TwilioProgrammableVideo.debug(native: nativeEnabled, dart: dartEnabled);
 ```
 
 ## Access Tokens
 Keep in mind, you can't generate access tokens for programmable-video using the [TestCredentials](https://www.twilio.com/docs/iam/test-credentials#supported-resources), make use of the LIVE credentials.
 
-You can easily generate an access token in the Twilio dashboard with the [Testing Tools](https://www.twilio.com/console/video/project/testing-tools) to start testing your code. But we recommend you setup a backend to generate these tokens for you and secure your Twilio credentials. Like we do in our [example app](https://gitlab.com/twilio-flutter-unofficial/programmable-video/tree/master/example).
+You can easily generate an access token in the Twilio dashboard with the [Testing Tools](https://www.twilio.com/console/video/project/testing-tools) to start testing your code. But we recommend you setup a backend to generate these tokens for you and secure your Twilio credentials. Like we do in our [example app](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/example).
 
 ## Events table
 Reference table of all the events the plugin currently supports
@@ -435,4 +435,4 @@ Reference table of all the events the plugin currently supports
 
 
 # Development and Contributing
-Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/CONTRIBUTING.md) guidelines.
+Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/blob/master/CONTRIBUTING.md) guidelines.

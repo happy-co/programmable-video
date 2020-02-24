@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
-import 'package:twilio_unofficial_programmable_video_example/debug.dart';
+import 'package:twilio_programmable_video_example/debug.dart';
 
 class CircleButton extends StatefulWidget {
   final VoidCallback onLongPress;

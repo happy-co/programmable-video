@@ -1,6 +1,6 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:recase/recase.dart';
-import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
+import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 
 class TwilioRoomLinks {
   final String participants;

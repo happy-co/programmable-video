@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// Represents a local audio source.
 class LocalAudioTrack extends AudioTrack {
@@ -25,7 +25,7 @@ class LocalAudioTrack extends AudioTrack {
   /// The results of this operation are signaled to other [Participant]s in the same [Room].
   Future<bool> enable(bool enabled) async {
     _enabled = enabled;
-    return const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('LocalAudioTrack#enable', <String, dynamic>{'name': name, 'enable': enabled});
+    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalAudioTrack#enable', <String, dynamic>{'name': name, 'enable': enabled});
   }
 
   /// Create map from properties.

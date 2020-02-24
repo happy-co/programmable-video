@@ -4,7 +4,7 @@ import TwilioVideo
 
 class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     func remoteParticipantDidDisableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidDisableAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidDisableAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)"
         )
@@ -15,7 +15,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidEnableAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidEnableAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)"
         )
@@ -26,7 +26,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidPublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidPublishAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidPublishAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -38,7 +38,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidUnpublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidUnpublishAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidUnpublishAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -50,7 +50,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didSubscribeToAudioTrack(audioTrack: RemoteAudioTrack, publication: RemoteAudioTrackPublication, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didSubscribeToAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didSubscribeToAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -62,7 +62,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didFailToSubscribeToAudioTrack(publication: RemoteAudioTrackPublication, error: Error, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didFailToSubscribeToAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didFailToSubscribeToAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -74,7 +74,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didUnsubscribeFromAudioTrack(audioTrack: RemoteAudioTrack, publication: RemoteAudioTrackPublication, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didUnsubscribeFromAudioTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didUnsubscribeFromAudioTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -107,7 +107,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidDisableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidDisableVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidDisableVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)"
         )
@@ -118,7 +118,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidEnableVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidEnableVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)"
         )
@@ -129,7 +129,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidPublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidPublishVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidPublishVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -141,7 +141,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func remoteParticipantDidUnpublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidUnpublishVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.remoteParticipantDidUnpublishVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -153,7 +153,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didSubscribeToVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didSubscribeToVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didSubscribeToVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -165,7 +165,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didFailToSubscribeToVideoTrack(publication: RemoteVideoTrackPublication, error: Error, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didFailToSubscribeToVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didFailToSubscribeToVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"
@@ -177,7 +177,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     }
 
     func didUnsubscribeFromVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
-        SwiftTwilioUnofficialProgrammableVideoPlugin.debug("RemoteParticipantListener.didUnsubscribeFromVideoTrack => " +
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didUnsubscribeFromVideoTrack => " +
             "trackSid: \(publication.trackSid)" +
             "isTrackEnabled: \(publication.isTrackEnabled)" +
             "isTrackSubscribed: \(publication.isTrackSubscribed)"

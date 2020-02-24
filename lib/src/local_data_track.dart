@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// Represents a local data track.
 class LocalDataTrack extends DataTrack {
@@ -21,12 +21,12 @@ class LocalDataTrack extends DataTrack {
   }
 
   Future<void> send(String message) async {
-    return const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('LocalDataTrack#sendString', <String, dynamic>{'name': name, 'message': message});
+    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalDataTrack#sendString', <String, dynamic>{'name': name, 'message': message});
   }
 
   Future<void> sendBuffer(ByteBuffer message) async {
     // Platform Channel Data types don't support ByteBuffer at the moment, so we need to convert it to
     // a data type the channels do understand (https://flutter.dev/docs/development/platform-integration/platform-channels#codec)
-    return const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('LocalDataTrack#sendByteBuffer', <String, dynamic>{'name': name, 'message': message.asUint8List()});
+    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalDataTrack#sendByteBuffer', <String, dynamic>{'name': name, 'message': message.asUint8List()});
   }
 }

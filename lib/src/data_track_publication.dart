@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// A published data track represents an data track that has been shared with a [Room].
 abstract class DataTrackPublication extends TrackPublication {

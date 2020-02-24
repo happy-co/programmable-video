@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.TwilioException
 import io.flutter.plugin.common.EventChannel.EventSink

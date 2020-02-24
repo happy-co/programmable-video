@@ -1,15 +1,15 @@
-# twilio_unofficial_programmable_video_example
+# twilio_programmable_video_example
 
-Demonstrates how to use the `twilio_unofficial_programmable_video` plugin in a save manner as you would production like.
+Demonstrates how to use the `twilio_programmable_video` plugin in a save manner as you would production like.
 
-![Twilio Unofficial Programmable Video Example](https://j.gifs.com/5QEyOB.gif)
+![Twilio Programmable Video Example](https://j.gifs.com/5QEyOB.gif)
 
 ## Join the community
 If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
 
 ## Supported platforms
 * Android
-* ~~iOS~~ (not yet)
+* iOS
 * ~~Web~~ (not yet)
 
 ## Prerequisites
@@ -91,7 +91,7 @@ Below we will take you through this setup for each platform.
 1. Open your [firebase console](https://console.firebase.google.com/)
 2. Open the project you created before
 3. On this project overview page click the Android icon to add an Android app or if you do not see this option, click the `Add app` button
-4. Android package name: `unofficial.twilio.flutter.twilio_unofficial_programmable_video_example`
+4. Android package name: `twilio.flutter.programmable_video_example`
 5. App nickname: `Twilio Programmable Video Example`
 6. Debug signing certificate SHA-1: leave empty
 7. Click `Register app`
@@ -105,7 +105,7 @@ Below we will take you through this setup for each platform.
 1. Open your [firebase console](https://console.firebase.google.com/)
 2. Open the project you created before
 3. On this project overview page click the iOS icon to add an iOS app or if you do not see this option, click the `Add app` button
-4. iOS bundle ID: `unofficial.twilio.flutter.twilioUnofficialProgrammableVideoExample`
+4. iOS bundle ID: `twilio.flutter.ProgrammableVideoExample`
 5. App nickname: `Twilio Programmable Video Example`
 6. App Store ID: leave empty
 7. Click `Register app`
@@ -117,4 +117,6 @@ Below we will take you through this setup for each platform.
 13. Finally hit `Continue to the console`
 
 ### Run the application
+Before opening XCode, run `flutter build ios` from the `example` directory.
+
 Connect a device and/or emulator and run the Flutter application on it. Join the same room on several devices to talk with each other.

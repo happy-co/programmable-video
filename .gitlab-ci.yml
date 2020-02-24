@@ -69,15 +69,15 @@ pod_lint:
     - gem install cocoapods -v 1.8.4
     - adduser --disabled-password --gecos "" cocoapods # Running as root is not allowed for CocoaPods
     - export RUBYOPT='-W0' # Disable ruby deprecation warnings
-    - su cocoapods -c "pod lib lint --allow-warnings twilio_unofficial_programmable_video.podspec"
+    - su cocoapods -c "pod lib lint --allow-warnings twilio_programmable_video.podspec"
   only:
     refs:
       - merge_requests
     changes:
-      - ios/twilio_unofficial_programmable_video.podspec
+      - ios/twilio_programmable_video.podspec
 
 swift_analyze:
-  image: registry.gitlab.com/twilio-flutter-unofficial/docker-swiftlint/docker-swiftlint:0.39.1
+  image: registry.gitlab.com/twilio-flutter/docker-swiftlint/docker-swiftlint:0.39.1
   stage: lint
   script:
     - cd ios || exit 1
@@ -188,11 +188,11 @@ tag:
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=v${TAG_NAME}" \
         --data-urlencode "ref=master" \
-        --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter-unofficial/programmable-video/blob/master/CHANGELOG.md)" \
+        --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter/programmable-video/blob/master/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
     name: pub-dev
-    url: https://pub.dev/packages/twilio_unofficial_programmable_video
+    url: https://pub.dev/packages/twilio_programmable_video
   when: manual
   only:
     - master

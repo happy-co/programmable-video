@@ -21,14 +21,14 @@ class ParticipantViewFactory: NSObject, FlutterPlatformViewFactory {
         if let params = args as? [String: Any] {
             shouldMirror = params["mirror"] as? Bool ?? false
             if let remoteParticipantSid = params["remoteParticipantSid"] as? String, let remoteVideoTrackSid = params["remoteVideoTrackSid"] as? String {
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing view with: '\(params)'")
+                SwiftTwilioProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing view with: '\(params)'")
                 if let remoteParticipant = plugin.getRemoteParticipant(remoteParticipantSid) {
                     if let remoteVideoTrack = remoteParticipant.remoteVideoTracks.first(where: { $0.trackSid == remoteVideoTrackSid }) {
                         videoTrack = remoteVideoTrack.remoteTrack!
                     }
                 }
             } else {
-                SwiftTwilioUnofficialProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing local view")
+                SwiftTwilioProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing local view")
            }
         }
 

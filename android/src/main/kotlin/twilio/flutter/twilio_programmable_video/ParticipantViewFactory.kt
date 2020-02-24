@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import android.content.Context
 import com.twilio.video.VideoTrack
@@ -14,13 +14,13 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
         if (args != null) {
             val params = args as Map<String, Any>
             if (params.containsKey("isLocal")) {
-                TwilioUnofficialProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing local view")
+                TwilioProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing local view")
                 val localParticipant = plugin.getLocalParticipant()
                 if (localParticipant != null && localParticipant.localVideoTracks != null && localParticipant.localVideoTracks?.size != 0) {
                     videoTrack = localParticipant.localVideoTracks!![0].localVideoTrack
                 }
             } else {
-                TwilioUnofficialProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing view with params: '${params.values.joinToString(", ")}'")
+                TwilioProgrammableVideoPlugin.debug("ParticipantViewFactory.create => constructing view with params: '${params.values.joinToString(", ")}'")
                 if (params.containsKey("remoteParticipantSid") && params.containsKey("remoteVideoTrackSid")) {
                     val remoteParticipant = plugin.getRemoteParticipant(params["remoteParticipantSid"] as String)
                     val remoteVideoTrack = remoteParticipant?.remoteVideoTracks?.find { it.trackSid == params["remoteVideoTrackSid"] }

@@ -1,4 +1,4 @@
-library twilio_unofficial_programmable_video;
+library twilio_programmable_video;
 
 import 'dart:async';
 import 'dart:io';

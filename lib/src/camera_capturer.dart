@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// The [CameraCapturer] is used to provide video frames for a [LocalVideoTrack] from a given [CameraSource].
 class CameraCapturer implements VideoCapturer {
@@ -36,7 +36,7 @@ class CameraCapturer implements VideoCapturer {
   ///
   /// This method can be invoked while capturing frames or not.
   Future<void> switchCamera() async {
-    final methodData = await MethodChannel('twilio_unofficial_programmable_video').invokeMethod('CameraCapturer#switchCamera');
+    final methodData = await MethodChannel('twilio_programmable_video').invokeMethod('CameraCapturer#switchCamera');
 
     final cameraCapturerMap = Map<String, dynamic>.from(methodData);
     _updateFromMap(cameraCapturerMap);

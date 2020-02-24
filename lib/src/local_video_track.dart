@@ -1,4 +1,4 @@
-part of twilio_unofficial_programmable_video;
+part of twilio_programmable_video;
 
 /// A local video track that gets video frames from a specified [VideoCapturer].
 class LocalVideoTrack extends VideoTrack {
@@ -34,7 +34,7 @@ class LocalVideoTrack extends VideoTrack {
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.
   Future<bool> enable(bool enabled) async {
     _enabled = enabled;
-    return const MethodChannel('twilio_unofficial_programmable_video').invokeMethod('LocalVideoTrack#enable', <String, dynamic>{'name': name, 'enable': enabled});
+    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalVideoTrack#enable', <String, dynamic>{'name': name, 'enable': enabled});
   }
 
   /// Returns a native widget.
@@ -51,22 +51,22 @@ class LocalVideoTrack extends VideoTrack {
 
     if (Platform.isAndroid) {
       return _widget ??= AndroidView(
-        viewType: 'twilio_unofficial_programmable_video/views',
+        viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
         onPlatformViewCreated: (int viewId) {
-          TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
+          TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
         },
       );
     }
 
     if (Platform.isIOS) {
       return _widget ??= UiKitView(
-        viewType: 'twilio_unofficial_programmable_video/views',
+        viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
         onPlatformViewCreated: (int viewId) {
-          TwilioUnofficialProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
+          TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
         },
       );
     }

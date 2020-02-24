@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
@@ -18,51 +18,51 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
     var room: Room? = null
 
     override fun onConnectFailure(room: Room, e: TwilioException) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onConnectFailure => room sid is '${room.sid}', exception is $e")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onConnectFailure => room sid is '${room.sid}', exception is $e")
         sendEvent("connectFailure", mapOf("room" to roomToMap(room)), e)
     }
 
     override fun onConnected(room: Room) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onConnected => room sid is '${room.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onConnected => room sid is '${room.sid}'")
         sendEvent("connected", mapOf("room" to roomToMap(room)))
-        room.remoteParticipants.forEach { it.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener) }
-        room.localParticipant?.setListener(TwilioUnofficialProgrammableVideoPlugin.localParticipantListener)
+        room.remoteParticipants.forEach { it.setListener(TwilioProgrammableVideoPlugin.remoteParticipantListener) }
+        room.localParticipant?.setListener(TwilioProgrammableVideoPlugin.localParticipantListener)
     }
 
     override fun onDisconnected(room: Room, e: TwilioException?) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onDisconnected => room sid is '${room.sid}', exception is $e")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onDisconnected => room sid is '${room.sid}', exception is $e")
         sendEvent("disconnected", mapOf("room" to roomToMap(room)), e)
     }
 
     override fun onParticipantConnected(room: Room, remoteParticipant: RemoteParticipant) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onParticipantConnected => room sid is '${room.sid}', remoteParticipant sid is '${remoteParticipant.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onParticipantConnected => room sid is '${room.sid}', remoteParticipant sid is '${remoteParticipant.sid}'")
         sendEvent("participantConnected", mapOf("room" to roomToMap(room), "remoteParticipant" to RemoteParticipantListener.remoteParticipantToMap(remoteParticipant)))
-        remoteParticipant.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener)
+        remoteParticipant.setListener(TwilioProgrammableVideoPlugin.remoteParticipantListener)
     }
 
     override fun onParticipantDisconnected(room: Room, remoteParticipant: RemoteParticipant) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onParticipantDisconnected => room sid is '${room.sid}', participant sid is '${remoteParticipant.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onParticipantDisconnected => room sid is '${room.sid}', participant sid is '${remoteParticipant.sid}'")
         sendEvent("participantDisconnected", mapOf("room" to roomToMap(room), "remoteParticipant" to RemoteParticipantListener.remoteParticipantToMap(remoteParticipant)))
     }
 
     override fun onReconnected(room: Room) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnected => room sid is '${room.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onReconnected => room sid is '${room.sid}'")
         sendEvent("reconnected", mapOf("room" to roomToMap(room)))
-        room.remoteParticipants.forEach { it.setListener(TwilioUnofficialProgrammableVideoPlugin.remoteParticipantListener) }
+        room.remoteParticipants.forEach { it.setListener(TwilioProgrammableVideoPlugin.remoteParticipantListener) }
     }
 
     override fun onReconnecting(room: Room, e: TwilioException) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onReconnecting => room sid is '${room.sid}', exception is $e")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onReconnecting => room sid is '${room.sid}', exception is $e")
         sendEvent("reconnecting", mapOf("room" to roomToMap(room)), e)
     }
 
     override fun onRecordingStarted(room: Room) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onRecordingStarted => room sid is '${room.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onRecordingStarted => room sid is '${room.sid}'")
         sendEvent("recordingStarted", mapOf("room" to roomToMap(room)))
     }
 
     override fun onRecordingStopped(room: Room) {
-        TwilioUnofficialProgrammableVideoPlugin.debug("RoomListener.onRecordingStopped => room sid is '${room.sid}'")
+        TwilioProgrammableVideoPlugin.debug("RoomListener.onRecordingStopped => room sid is '${room.sid}'")
         sendEvent("recordingStopped", mapOf("room" to roomToMap(room)))
     }
 

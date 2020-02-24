@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:twilio_unofficial_programmable_video/twilio_unofficial_programmable_video.dart';
-import 'package:twilio_unofficial_programmable_video_example/conference/participant_widget.dart';
-import 'package:twilio_unofficial_programmable_video_example/debug.dart';
+import 'package:twilio_programmable_video/twilio_programmable_video.dart';
+import 'package:twilio_programmable_video_example/conference/participant_widget.dart';
+import 'package:twilio_programmable_video_example/debug.dart';
 
 class ConferenceRoom with ChangeNotifier {
   final String name;
@@ -48,8 +48,8 @@ class ConferenceRoom with ChangeNotifier {
   Future<Room> connect() async {
     Debug.log('ConferenceRoom.connect()');
     try {
-      await TwilioUnofficialProgrammableVideo.debug(dart: true, native: true);
-      await TwilioUnofficialProgrammableVideo.setSpeakerphoneOn(true);
+      await TwilioProgrammableVideo.debug(dart: true, native: true);
+      await TwilioProgrammableVideo.setSpeakerphoneOn(true);
 
       _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
       var connectOptions = ConnectOptions(
@@ -61,7 +61,7 @@ class ConferenceRoom with ChangeNotifier {
         videoTracks: [LocalVideoTrack(true, _cameraCapturer)],
       );
 
-      _room = await TwilioUnofficialProgrammableVideo.connect(connectOptions);
+      _room = await TwilioProgrammableVideo.connect(connectOptions);
 
       _streamSubscriptions.add(_room.onConnected.listen(_onConnected));
       _streamSubscriptions.add(_room.onConnectFailure.listen(_onConnectFailure));

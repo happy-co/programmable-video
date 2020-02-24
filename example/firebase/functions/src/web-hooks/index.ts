@@ -25,7 +25,7 @@ export const webHooks = (): express.Application => {
         // Overriding settings like the 'x-powered-by' cannot be done on the [wHooks]
         // instance like you would normally do, but it needs to be done on the
         // [res] object.
-        res.set('x-powered-by', 'twilio-flutter-unofficial/programmable-video');
+        res.set('x-powered-by', 'twilio-flutter/programmable-video');
         next();
     });
 

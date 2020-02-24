@@ -1,4 +1,4 @@
-package unofficial.twilio.flutter.twilio_unofficial_programmable_video
+package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.VideoTrack
 import com.twilio.video.VideoView
@@ -20,6 +20,6 @@ class ParticipantView : PlatformView {
     }
 
     override fun dispose() {
-        TwilioUnofficialProgrammableVideoPlugin.debug("Disposing ParticipantView")
+        TwilioProgrammableVideoPlugin.debug("Disposing ParticipantView")
     }
 }

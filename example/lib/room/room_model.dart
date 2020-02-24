@@ -1,5 +1,5 @@
-import 'package:twilio_unofficial_programmable_video_example/models/twilio_enums.dart';
-import 'package:twilio_unofficial_programmable_video_example/room/room_validators.dart';
+import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
+import 'package:twilio_programmable_video_example/room/room_validators.dart';
 
 class RoomModel with RoomValidators {
   final String name;
