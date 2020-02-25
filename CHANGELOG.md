@@ -1,3 +1,7 @@
+## 0.3.0+1
+
+* Align `README.md` with Twilio OSS law
+
 ## 0.3.0
 
 * Removed occurrence of the `unofficial` word

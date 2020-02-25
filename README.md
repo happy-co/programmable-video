@@ -1,5 +1,6 @@
 # twilio_programmable_video
-Create real-time videocall applications (WebRTC), with this Twilio Programmable Video Flutter plugin.
+Flutter plugin for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin), which enables you to build real-time videocall applications (WebRTC) \
+This Flutter plugin is a community-maintained project for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin) and not maintained by Twilio. If you have any issues, please file an issue instead of contacting support.
 
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
 
@@ -23,13 +24,6 @@ Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programm
 
 ### Prerequisites
 Before you can start using the plugin you need to make sure you have everything setup for your project.
-
-First add it as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).  
-For example:
-```yaml
-dependencies:
-  twilio_programmable_video: ^0.2.0
-```
 
 #### Android
 For this plugin to work for Android, you will have to tweak a few files.
