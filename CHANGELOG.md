@@ -1,6 +1,9 @@
 ## 0.3.0+1
 
 * Align `README.md` with Twilio OSS law
+* Added workaround for build failure due to a bug in the Twilio SDK for Android
+* Upgraded Twilio SDK for Android from version 5.1.0 to 5.1.+
+* Upgraded Android Studio Gradle plugin from version 3.5.0 to 3.6.0
 
 ## 0.3.0
 

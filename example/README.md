@@ -71,6 +71,7 @@ project id down.
 | twilio.test.auth_token |  your_auth_token | [Twilio console - Dashboard](https://www.twilio.com/console)|
 | twilio.api_key |  SKXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create)
 | twilio.api_secret | your_api_secret | [Twilio Console - Settings -> API Keys](https://www.twilio.com/console/project/api-keys/create) |
+
 9. Configure [the environment variables](https://firebase.google.com/docs/functions/config-env) for the Cloud Functions
 ```
 firebase functions:config:set twilio.live.account_sid="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" \
@@ -80,6 +81,7 @@ firebase functions:config:set twilio.live.account_sid="ACXXXXXXXXXXXXXXXXXXXXXXX
                               twilio.api_key="SKXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" \
                               twilio.api_secret="your_api_secret"
 ```
+
 10. Deploy the firebase project: `firebase deploy`
 
 ### Configure Flutter app
@@ -117,6 +119,6 @@ Below we will take you through this setup for each platform.
 13. Finally hit `Continue to the console`
 
 ### Run the application
-Before opening XCode, run `flutter build ios` from the `example` directory.
+Before opening XCode, run `flutter build ios --debug` from the `example` directory.
 
 Connect a device and/or emulator and run the Flutter application on it. Join the same room on several devices to talk with each other.
