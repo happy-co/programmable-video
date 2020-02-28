@@ -29,7 +29,7 @@ class BecomingNoisyReceiver : BroadcastReceiver {
         bluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         // Start listening for changes in the Bluetooth service (enable/disable Bluetooth)
-        bluetoothManager.adapter.getProfileProxy(applicationContext, object : BluetoothProfile.ServiceListener {
+        bluetoothManager.adapter?.getProfileProxy(applicationContext, object : BluetoothProfile.ServiceListener {
             override fun onServiceDisconnected(profile: Int) {
                 if (hasBluetooth && profile == BluetoothProfile.HEADSET) {
                     hasBluetooth = false
@@ -98,13 +98,12 @@ class BecomingNoisyReceiver : BroadcastReceiver {
                         TwilioProgrammableVideoPlugin.debug("STATE_DISCONNECTED => hasWiredHeadset:$hasWiredHeadset and hasBluetooth:$hasBluetooth - isBluetoothScoOn:${audioManager.isBluetoothScoOn} - getMode:${audioManager.mode}")
                     }
                 }
-                else -> {}
             }
         }
     }
 
     fun dispose() {
-        bluetoothManager.adapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProxyProfile)
+        bluetoothManager.adapter?.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProxyProfile)
         bluetoothProxyProfile = null
     }
 }

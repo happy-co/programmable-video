@@ -98,7 +98,7 @@ Below we will take you through this setup for each platform.
 6. Debug signing certificate SHA-1: leave empty
 7. Click `Register app`
 8. Click `Download google-services.json`
-9. Move to downloaded `google-services.json` file to this folder `android/app/` and make sure to keep the filename exactly the same!
+9. Move the downloaded `google-services.json` file to this folder `android/app/` and make sure to keep the filename exactly the same!
 10. In the firebase console hit the `Next` button
 11. Add Firebase SDK, these steps are already done in this example, so just hit `Next`
 12. Finally hit `Continue to the console`
@@ -112,7 +112,7 @@ Below we will take you through this setup for each platform.
 6. App Store ID: leave empty
 7. Click `Register app`
 8. Click `Download GoogleService-Info.plist`
-9. Move to downloaded `GoogleService-Info.plist` file to this folder `ios/Runner/` and make sure to keep the filename exactly the same!
+9. Move the downloaded `GoogleService-Info.plist` file to this folder `ios/Runner/` and make sure to keep the filename exactly the same!
 10. In the firebase console hit the `Next` button
 11. Add Firebase SDK, these steps are already done in this example, so just hit `Next`
 12. Add initialisation code, these are handled with the cloud_functions package, just hit `Next`

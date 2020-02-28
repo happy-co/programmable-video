@@ -33,10 +33,7 @@ class _ConferencePageState extends State<ConferencePage> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    _lockInPortrait();
     _onConferenceRoomException = Provider.of<ConferenceRoom>(context, listen: false).onException.listen((err) async {
       await PlatformAlertDialog(
         title: err is PlatformException ? err.message : 'An error occured',
@@ -47,17 +44,28 @@ class _ConferencePageState extends State<ConferencePage> {
     _wakeLock(true);
   }
 
+  Future<void> _lockInPortrait() async {
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
   @override
   void dispose() {
-    SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    _freePortraitLock();
+    _wakeLock(false);
+    _disposeStreamsAndSubscriptions();
+    super.dispose();
+  }
+
+  Future<void> _freePortraitLock() async {
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    _wakeLock(false);
-    _disposeStreamsAndSubscriptions();
-    super.dispose();
   }
 
   Future<void> _disposeStreamsAndSubscriptions() async {

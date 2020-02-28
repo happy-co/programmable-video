@@ -44,8 +44,8 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
   int _remaining;
   var _videoEnabled = true;
   var _audioEnabled = true;
-  final double _hidden = -100.0;
-  final double _visible = 0.0;
+  double _hidden;
+  double _visible;
   final _keyButtonBarHeight = GlobalKey();
 
   final Duration timeout = const Duration(seconds: 5);
@@ -112,9 +112,17 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
   }
 
   @override
+  void didChangeDependencies() {
+    _visible = MediaQuery.of(context).viewPadding.bottom;
+    super.didChangeDependencies();
+  }
+
+  @override
   void afterFirstLayout(BuildContext context) {
     final RenderBox renderBoxButtonBar = _keyButtonBarHeight.currentContext.findRenderObject();
     final heightButtonBar = renderBoxButtonBar.size.height;
+    // Because the `didChangeDependencies` fires before the `afterFirstLayout`, we can use the `_visible` property here.
+    _hidden = -(heightButtonBar + _visible);
     widget.onHeight(heightButtonBar);
     _toggleBar();
   }

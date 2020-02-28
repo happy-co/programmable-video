@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:twilio_programmable_video_example/conference/clipped_video.dart';
@@ -36,7 +37,8 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
   double _height;
   double _top;
   double _left;
-  final double _heightStatusBar = 20.0;
+  double _viewPaddingTop;
+  double _viewPaddingBottom;
   final double _padding = 8.0;
   final Duration _duration300ms = const Duration(milliseconds: 300);
   final Duration _duration0ms = const Duration(milliseconds: 0);
@@ -55,6 +57,14 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
 
     _streamSubscription = widget.onButtonBarVisible.listen(_buttonBarVisible);
     _streamHeightSubscription = widget.onButtonBarHeight.listen(_getButtonBarHeight);
+  }
+
+  @override
+  void didChangeDependencies() {
+    final mediaQuery = MediaQuery.of(context);
+    _viewPaddingTop = mediaQuery.viewPadding.top;
+    _viewPaddingBottom = mediaQuery.viewPadding.bottom;
+    super.didChangeDependencies();
   }
 
   @override
@@ -100,10 +110,8 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
             _top = (_top + event.delta.dy).roundToDouble();
           });
         },
-        onPointerUp: (_) {
-          _duration = _duration300ms;
-          _positionWidget();
-        },
+        onPointerUp: (_) => _positionWidget(),
+        onPointerCancel: (_) => _positionWidget(),
         child: ClippedVideo(
           height: _height,
           width: _width,
@@ -111,6 +119,25 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
         ),
       ),
     );
+  }
+
+  double _getCurrentStatusBarHeight() {
+    if (_isButtonBarVisible) {
+      return _viewPaddingTop;
+    }
+    final _defaultViewPaddingTop = Platform.isIOS ? 20.0 : Platform.isAndroid ? 24.0 : 0.0;
+    if (_viewPaddingTop > _defaultViewPaddingTop) {
+      // There must be a hardware notch in the display.
+      return _viewPaddingTop;
+    }
+    return 0.0;
+  }
+
+  double _getCurrentButtonBarHeight() {
+    if (_isButtonBarVisible) {
+      return _buttonBarHeight + _viewPaddingBottom;
+    }
+    return _viewPaddingBottom;
   }
 
   void _positionWidget() {
@@ -121,26 +148,24 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
     var dy = (_height / 2) + _top;
     dy = dy < 0 ? 0 : dy >= widget.availableScreenSize.height ? widget.availableScreenSize.height - 1 : dy;
     final draggableCenter = Offset(dx, dy);
-    // We need a small delay here, because otherwise the property changes
-    // in the [_onDragEnd] function will also animate, and we don't want that!
 
     setState(() {
       _duration = _duration300ms;
       if (Rect.fromLTRB(0, 0, widget.availableScreenSize.width / 2, widget.availableScreenSize.height / 2).contains(draggableCenter)) {
         // Top-left
-        _top = (_isButtonBarVisible ? (_heightStatusBar + _padding) : _padding);
-        _left = 10;
+        _top = _getCurrentStatusBarHeight() + _padding;
+        _left = _padding;
       } else if (Rect.fromLTRB(widget.availableScreenSize.width / 2, 0, widget.availableScreenSize.width, widget.availableScreenSize.height / 2).contains(draggableCenter)) {
         // Top-right
-        _top = (_isButtonBarVisible ? (_heightStatusBar + _padding) : _padding);
+        _top = _getCurrentStatusBarHeight() + _padding;
         _left = widget.availableScreenSize.width - _padding - _width;
       } else if (Rect.fromLTRB(0, widget.availableScreenSize.height / 2, widget.availableScreenSize.width / 2, widget.availableScreenSize.height).contains(draggableCenter)) {
         // Bottom-left
-        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? (_buttonBarHeight + _padding) : _padding) - _height;
-        _left = 10;
+        _top = widget.availableScreenSize.height - (_getCurrentButtonBarHeight() + _padding) - _height;
+        _left = _padding;
       } else if (Rect.fromLTRB(widget.availableScreenSize.width / 2, widget.availableScreenSize.height / 2, widget.availableScreenSize.width, widget.availableScreenSize.height).contains(draggableCenter)) {
         // Bottom-right
-        _top = widget.availableScreenSize.height - (_isButtonBarVisible ? (_buttonBarHeight + _padding) : _padding) - _height;
+        _top = widget.availableScreenSize.height - (_getCurrentButtonBarHeight() + _padding) - _height;
         _left = widget.availableScreenSize.width - _padding - _width;
       }
     });
