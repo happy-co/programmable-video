@@ -6,6 +6,7 @@ import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_programmable_video_example/room/room_bloc.dart';
 import 'package:twilio_programmable_video_example/room/room_model.dart';
 import 'package:twilio_programmable_video_example/shared/services/backend_service.dart';
+import 'package:twilio_programmable_video_example/shared/widgets/button_to_progress.dart';
 import 'package:twilio_programmable_video_example/shared/widgets/platform_exception_alert_dialog.dart';
 
 class JoinRoomForm extends StatefulWidget {
@@ -109,24 +110,31 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
   }
 
   Widget _buildButton(RoomModel roomModel) {
-    return roomModel.isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : FlatButton(
-            onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
-            child: const Text('JOIN'),
-            color: Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor,
-            textColor: Theme.of(context).appBarTheme?.textTheme?.title?.color ?? Colors.white,
-            disabledColor: Colors.grey.shade300,
-          );
+    return ButtonToProgress(
+      onLoading: widget.roomBloc.onLoading,
+      loadingText: 'Creating the room...',
+      progressHeight: 2,
+      child: FlatButton(
+        color: Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor,
+        disabledColor: Colors.grey.shade300,
+        child: FittedBox(
+          child: Text(
+            'JOIN',
+            style: TextStyle(color: Theme.of(context).appBarTheme?.textTheme?.title?.color ?? Colors.white),
+          ),
+        ),
+        onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
+      ),
+    );
   }
 
   Future<void> _submit() async {
     try {
-      final conferenceRoom = await widget.roomBloc.submit();
+      final roomModel = await widget.roomBloc.submit();
       await Navigator.of(context).push(
         MaterialPageRoute<ConferencePage>(
           fullscreenDialog: true,
-          builder: (BuildContext context) => ConferencePage.create(conferenceRoom),
+          builder: (BuildContext context) => ConferencePage(roomModel: roomModel),
         ),
       );
     } catch (err) {

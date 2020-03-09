@@ -2,23 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:twilio_programmable_video_example/conference/conference_button_bar.dart';
 import 'package:twilio_programmable_video_example/conference/conference_room.dart';
 import 'package:twilio_programmable_video_example/conference/draggable_publisher.dart';
 import 'package:twilio_programmable_video_example/conference/participant_widget.dart';
 import 'package:twilio_programmable_video_example/debug.dart';
+import 'package:twilio_programmable_video_example/room/room_model.dart';
 import 'package:twilio_programmable_video_example/shared/widgets/noise_box.dart';
 import 'package:twilio_programmable_video_example/shared/widgets/platform_alert_dialog.dart';
 import 'package:wakelock/wakelock.dart';
 
 class ConferencePage extends StatefulWidget {
-  static Widget create(ConferenceRoom conferenceRoom) {
-    return ChangeNotifierProvider<ConferenceRoom>(
-      create: (context) => conferenceRoom,
-      child: ConferencePage(),
-    );
-  }
+  final RoomModel roomModel;
+
+  const ConferencePage({Key key, this.roomModel}) : super(key: key);
 
   @override
   _ConferencePageState createState() => _ConferencePageState();
@@ -34,14 +31,34 @@ class _ConferencePageState extends State<ConferencePage> {
   void initState() {
     super.initState();
     _lockInPortrait();
-    _onConferenceRoomException = Provider.of<ConferenceRoom>(context, listen: false).onException.listen((err) async {
-      await PlatformAlertDialog(
-        title: err is PlatformException ? err.message : 'An error occured',
-        content: err is PlatformException ? err.details : err.toString(),
-        defaultActionText: 'OK',
-      ).show(context);
-    });
+    _connectToRoom();
     _wakeLock(true);
+  }
+
+  void _connectToRoom() {
+    try {
+      final conferenceRoom = ConferenceRoom(
+        name: widget.roomModel.name,
+        token: widget.roomModel.token,
+        identity: widget.roomModel.identity,
+      );
+      conferenceRoom.connect().then((_) {
+        setState(() {
+          _conferenceRoom = conferenceRoom;
+          _onConferenceRoomException = _conferenceRoom.onException.listen((err) async {
+            await PlatformAlertDialog(
+              title: err is PlatformException ? err.message : 'An error occured',
+              content: err is PlatformException ? err.details : err.toString(),
+              defaultActionText: 'OK',
+            ).show(context);
+          });
+          _conferenceRoom.addListener(_conferenceRoomUpdated);
+        });
+      });
+    } catch (err) {
+      Debug.log(err);
+      rethrow;
+    }
   }
 
   Future<void> _lockInPortrait() async {
@@ -56,6 +73,7 @@ class _ConferencePageState extends State<ConferencePage> {
     _freePortraitLock();
     _wakeLock(false);
     _disposeStreamsAndSubscriptions();
+    _conferenceRoom.removeListener(_conferenceRoomUpdated);
     super.dispose();
   }
 
@@ -76,34 +94,54 @@ class _ConferencePageState extends State<ConferencePage> {
 
   @override
   Widget build(BuildContext context) {
-    _conferenceRoom = Provider.of<ConferenceRoom>(context, listen: true);
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return Stack(
-              children: <Widget>[
-                _buildParticipants(context, constraints.biggest, _conferenceRoom),
-                ConferenceButtonBar(
-                  audioEnabled: _conferenceRoom.onAudioEnabled,
-                  videoEnabled: _conferenceRoom.onVideoEnabled,
-                  onAudioEnabled: _conferenceRoom.toggleAudioEnabled,
-                  onVideoEnabled: _conferenceRoom.toggleVideoEnabled,
-                  onHangup: _onHangup,
-                  onSwitchCamera: _conferenceRoom.switchCamera,
-                  onPersonAdd: _onPersonAdd,
-                  onPersonRemove: _onPersonRemove,
-                  onHeight: _onHeightBar,
-                  onShow: _onShowBar,
-                  onHide: _onHideBar,
-                ),
-              ],
-            );
-          },
-        ),
+        body: _conferenceRoom == null ? showProgress() : buildLayout(),
       ),
+    );
+  }
+
+  LayoutBuilder buildLayout() {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Stack(
+          children: <Widget>[
+            _buildParticipants(context, constraints.biggest, _conferenceRoom),
+            ConferenceButtonBar(
+              audioEnabled: _conferenceRoom.onAudioEnabled,
+              videoEnabled: _conferenceRoom.onVideoEnabled,
+              onAudioEnabled: _conferenceRoom.toggleAudioEnabled,
+              onVideoEnabled: _conferenceRoom.toggleVideoEnabled,
+              onHangup: _onHangup,
+              onSwitchCamera: _conferenceRoom.switchCamera,
+              onPersonAdd: _onPersonAdd,
+              onPersonRemove: _onPersonRemove,
+              onHeight: _onHeightBar,
+              onShow: _onShowBar,
+              onHide: _onHideBar,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget showProgress() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Center(child: CircularProgressIndicator()),
+        SizedBox(
+          height: 10,
+        ),
+        Text(
+          'Connecting to the room...',
+          style: TextStyle(color: Colors.white),
+        ),
+      ],
     );
   }
 
@@ -198,14 +236,6 @@ class _ConferencePageState extends State<ConferencePage> {
 
   void _buildOverlayLayout(BuildContext context, Size size, List<Widget> children) {
     final participants = _conferenceRoom.participants;
-    if (participants.isEmpty) {
-      children.add(Container(
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      ));
-      return;
-    }
     if (participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
@@ -344,5 +374,9 @@ class _ConferencePageState extends State<ConferencePage> {
       Debug.log('Unable to change the Wakelock and set it to $enable');
       Debug.log(err);
     }
+  }
+
+  void _conferenceRoomUpdated() {
+    setState(() {});
   }
 }
