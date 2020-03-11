@@ -21,6 +21,8 @@ import com.twilio.video.LocalAudioTrack
 import com.twilio.video.LocalDataTrack
 import com.twilio.video.LocalParticipant
 import com.twilio.video.LocalVideoTrack
+import com.twilio.video.NetworkQualityConfiguration
+import com.twilio.video.NetworkQualityVerbosity
 import com.twilio.video.OpusCodec
 import com.twilio.video.PcmaCodec
 import com.twilio.video.PcmuCodec
@@ -301,8 +303,18 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                             dataTracks.add(LocalDataTrack.create(this.applicationContext))
                         }
                     }
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
+                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
                     optionsBuilder.dataTracks(dataTracks)
+                }
+
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting enableNetworkQuality to '${optionsObj["enableNetworkQuality"]}'")
+                optionsBuilder.enableNetworkQuality(optionsObj["enableNetworkQuality"] as Boolean)
+
+                if (optionsObj["networkQualityConfiguration"] != null) {
+                    val networkQualityConfigurationMap = optionsObj["networkQualityConfiguration"] as Map<*, *>
+                    val local: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["local"] as String)
+                    val remote: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["remote"] as String)
+                    optionsBuilder.networkQualityConfiguration(NetworkQualityConfiguration(local, remote))
                 }
 
                 // Set the local video tracks if it has been passed.
@@ -339,6 +351,14 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             }
         } else {
             result.error("INIT_ERROR", "Missing 'connectOptions' parameter", null)
+        }
+    }
+
+    private fun getNetworkQualityVerbosity(verbosity: String): NetworkQualityVerbosity {
+        return when (verbosity) {
+            "NETWORK_QUALITY_VERBOSITY_NONE" -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE
+            "NETWORK_QUALITY_VERBOSITY_MINIMAL" -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL
+            else -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE
         }
     }
 

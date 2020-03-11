@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Added Network Quality API (Android only)
+
 ## 0.3.0+1
 
 * Align `README.md` with Twilio OSS law

@@ -85,6 +85,21 @@ class RemoteDataTrackSubscriptionFailedEvent extends RemoteDataTrackEvent {
 
 //#endregion
 
+class RemoteNetworkQualityLevelChangedEvent implements NetworkQualityLevelChangedEvent {
+  /// The local participant
+  final RemoteParticipant remoteParticipant;
+
+  /// The new [NetworkQualityLevel]
+  @override
+  final NetworkQualityLevel networkQualityLevel;
+
+  RemoteNetworkQualityLevelChangedEvent(
+    this.remoteParticipant,
+    this.networkQualityLevel,
+  )   : assert(remoteParticipant != null),
+        assert(networkQualityLevel != null);
+}
+
 //#region VIDEO TRACK EVENTS
 
 class RemoteVideoTrackEvent extends RemoteParticipantEvent {

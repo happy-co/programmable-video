@@ -12,6 +12,8 @@ class RemoteParticipant implements Participant {
 
   final List<RemoteVideoTrackPublication> _remoteVideoTrackPublications = <RemoteVideoTrackPublication>[];
 
+  NetworkQualityLevel _networkQualityLevel;
+
   /// The SID of the [RemoteParticipant].
   @override
   String get sid => _sid;
@@ -19,6 +21,10 @@ class RemoteParticipant implements Participant {
   /// The identity of the [RemoteParticipant].
   @override
   String get identity => _identity;
+
+  /// The network quality of the [RemoteParticipant].
+  @override
+  NetworkQualityLevel get networkQualityLevel => _networkQualityLevel;
 
   /// Read-only list of [RemoteAudioTrackPublication].
   List<RemoteAudioTrackPublication> get remoteAudioTracks => [..._remoteAudioTrackPublications];
@@ -34,6 +40,7 @@ class RemoteParticipant implements Participant {
   List<AudioTrackPublication> get audioTracks => [..._remoteAudioTrackPublications];
 
   /// Read-only list of data track publications.
+  @override
   List<DataTrackPublication> get dataTracks => [..._remoteDataTrackPublications];
 
   /// Read-only list of [VideoTrackPublication].
@@ -103,6 +110,11 @@ class RemoteParticipant implements Participant {
   /// Notifies the listener that the [RemoteDataTrack] of the [RemoteParticipant] has been unsubscribed from.
   Stream<RemoteDataTrackSubscriptionEvent> onDataTrackUnsubscribed;
 
+  final StreamController<RemoteNetworkQualityLevelChangedEvent> _onNetworkQualityLevelChanged = StreamController<RemoteNetworkQualityLevelChangedEvent>.broadcast();
+
+  /// Notifies the listener that the [RemoteParticipant]'s [NetworkQualityLevel] has changed.
+  Stream<RemoteNetworkQualityLevelChangedEvent> onNetworkQualityLevelChanged;
+
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackDisabled = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] video track has been disabled.
@@ -158,6 +170,8 @@ class RemoteParticipant implements Participant {
     onDataTrackUnpublished = _onDataTrackUnpublished.stream;
     onDataTrackUnsubscribed = _onDataTrackUnsubscribed.stream;
 
+    onNetworkQualityLevelChanged = _onNetworkQualityLevelChanged.stream;
+
     onVideoTrackDisabled = _onVideoTrackDisabled.stream;
     onVideoTrackEnabled = _onVideoTrackEnabled.stream;
     onVideoTrackPublished = _onVideoTrackPublished.stream;
@@ -195,6 +209,8 @@ class RemoteParticipant implements Participant {
     await _onDataTrackUnpublished.close();
     await _onDataTrackUnsubscribed.close();
 
+    await _onNetworkQualityLevelChanged.close();
+
     await _onVideoTrackDisabled.close();
     await _onVideoTrackEnabled.close();
     await _onVideoTrackPublished.close();
@@ -206,6 +222,8 @@ class RemoteParticipant implements Participant {
 
   /// Update properties from a map.
   void _updateFromMap(Map<String, dynamic> map) {
+    _networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+
     if (map['remoteAudioTrackPublications'] != null) {
       final List<Map<String, dynamic>> remoteAudioTrackPublicationsList = map['remoteAudioTrackPublications'].map<Map<String, dynamic>>((r) => Map<String, dynamic>.from(r)).toList();
       for (final remoteAudioTrackPublicationMap in remoteAudioTrackPublicationsList) {
@@ -253,6 +271,10 @@ class RemoteParticipant implements Participant {
   void _parseEvents(dynamic event) {
     final String eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
+
+    if (data['networkQualityLevel'] != null) {
+      _networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, data['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+    }
 
     RemoteAudioTrackPublication remoteAudioTrackPublication;
     if (data['remoteAudioTrackPublication'] != null) {
@@ -385,6 +407,9 @@ class RemoteParticipant implements Participant {
         assert(remoteDataTrack != null);
         _remoteDataTrackPublications.remove(remoteDataTrackPublication);
         _onDataTrackUnsubscribed.add(RemoteDataTrackSubscriptionEvent(this, remoteDataTrackPublication, remoteDataTrack));
+        break;
+      case 'networkQualityLevelChanged':
+        _onNetworkQualityLevelChanged.add(RemoteNetworkQualityLevelChangedEvent(this, networkQualityLevel));
         break;
       case 'videoTrackDisabled':
         assert(remoteVideoTrackPublication != null);

@@ -132,6 +132,13 @@ Future<Room> connectToRoom() async {
       ),
     ],                                    // Optional list of data tracks   
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
+    enableNetworkQuality: true,           // Optional enable or disable the Network Quality API. Default is `false`
+    // The following is optional if you only want to monitor the LocalParticipant, but required if you
+    // want to monitor the Network Quality of RemoteParticipants
+    // It sets the verbosity level for network quality information returned by the Network Quality API
+    networkQualityConfiguration: NetworkQualityConfiguration(
+      remote: NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL,
+    ),
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -178,6 +185,13 @@ Future<Room> connectToRoom() async {
       ),
     ],                                    // Optional list of data tracks
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
+    enableNetworkQuality: true,           // Optional enable or disable the Network Quality API. Default is `false`
+    // The following is optional if you only want to monitor the LocalParticipant, but required if you
+    // want to monitor the Network Quality of RemoteParticipants
+    // It sets the verbosity level for network quality information returned by the Network Quality API
+    networkQualityConfiguration: NetworkQualityConfiguration(
+      remote: NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL,
+    ),
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -417,6 +431,7 @@ Reference table of all the events the plugin currently supports
 | LocalParticipant  | onAudioTrackPublicationFailed  | LocalAudioTrackPublicationFailedEvent     | Android Only |
 | LocalParticipant  | onDataTrackPublished           | LocalDataTrackPublishedEvent              | Android Only |
 | LocalParticipant  | onDataTrackPublicationFailed   | LocalDataTrackPublicationFailedEvent      | Android Only |
+| LocalParticipant  | onNetworkQualityLevelChanged   | LocalNetworkQualityLevelChangedEvent      | Android Only |
 | LocalParticipant  | onVideoTrackPublished          | LocalVideoTrackPublishedEvent             | Android Only |
 | LocalParticipant  | onVideoTrackPublicationFailed  | LocalVideoTrackPublicationFailedEvent     | Android Only |
 | RemoteDataTrack   | onStringMessage                | RemoteDataTrackStringMessageEvent         | Android Only |
@@ -433,6 +448,7 @@ Reference table of all the events the plugin currently supports
 | RemoteParticipant | onDataTrackSubscriptionFailed  | RemoteDataTrackSubscriptionFailedEvent    | Yes          |
 | RemoteParticipant | onDataTrackUnpublished         | RemoteDataTrackEvent                      | Yes          |
 | RemoteParticipant | onDataTrackUnsubscribed        | RemoteDataTrackSubscriptionEvent          | Yes          |
+| RemoteParticipant | onNetworkQualityLevelChanged   | RemoteNetworkQualityLevelChangedEvent     | Android Only |
 | RemoteParticipant | onVideoTrackDisabled           | RemoteVideoTrackEvent                     | Yes          |
 | RemoteParticipant | onVideoTrackEnabled            | RemoteVideoTrackEvent                     | Yes          |
 | RemoteParticipant | onVideoTrackPublished          | RemoteVideoTrackEvent                     | Yes          |

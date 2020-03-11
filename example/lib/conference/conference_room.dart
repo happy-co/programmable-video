@@ -18,6 +18,8 @@ class ConferenceRoom with ChangeNotifier {
   Stream<bool> onVideoEnabled;
   final StreamController<Exception> _onExceptionStreamController = StreamController<Exception>.broadcast();
   Stream<Exception> onException;
+  final StreamController<NetworkQualityLevel> _onNetworkQualityStreamController = StreamController<NetworkQualityLevel>.broadcast();
+  Stream<NetworkQualityLevel> onNetworkQualityLevel;
 
   final Completer<Room> _completer = Completer<Room>();
 
@@ -39,6 +41,7 @@ class ConferenceRoom with ChangeNotifier {
     onAudioEnabled = _onAudioEnabledStreamController.stream;
     onVideoEnabled = _onVideoEnabledStreamController.stream;
     onException = _onExceptionStreamController.stream;
+    onNetworkQualityLevel = _onNetworkQualityStreamController.stream;
   }
 
   List<ParticipantWidget> get participants {
@@ -59,6 +62,10 @@ class ConferenceRoom with ChangeNotifier {
         audioTracks: [LocalAudioTrack(true)],
         dataTracks: [LocalDataTrack()],
         videoTracks: [LocalVideoTrack(true, _cameraCapturer)],
+        enableNetworkQuality: true,
+        networkQualityConfiguration: NetworkQualityConfiguration(
+          remote: NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL,
+        ),
       );
 
       _room = await TwilioProgrammableVideo.connect(connectOptions);
@@ -92,6 +99,7 @@ class ConferenceRoom with ChangeNotifier {
     await _onAudioEnabledStreamController.close();
     await _onVideoEnabledStreamController.close();
     await _onExceptionStreamController.close();
+    await _onNetworkQualityStreamController.close();
     for (var streamSubscription in _streamSubscriptions) {
       await streamSubscription.cancel();
     }
@@ -215,11 +223,12 @@ class ConferenceRoom with ChangeNotifier {
     // Only add ourselves when connected for the first time too.
     _participants.add(
       _buildParticipant(
-        child: room.localParticipant.localVideoTracks[0].localVideoTrack.widget(),
-        id: identity,
-        audioEnabled: true,
-        videoEnabled: true,
-      ),
+          child: room.localParticipant.localVideoTracks[0].localVideoTrack.widget(),
+          id: identity,
+          audioEnabled: true,
+          videoEnabled: true,
+          networkQualityLevel: room.localParticipant.networkQualityLevel,
+          onNetworkQualityChanged: room.localParticipant.onNetworkQualityLevelChanged),
     );
     for (final remoteParticipant in room.remoteParticipants) {
       var participant = _participants.firstWhere((participant) => participant.id == remoteParticipant.sid, orElse: () => null);
@@ -274,6 +283,8 @@ class ConferenceRoom with ChangeNotifier {
     @required String id,
     @required bool audioEnabled,
     @required bool videoEnabled,
+    @required NetworkQualityLevel networkQualityLevel,
+    @required Stream<NetworkQualityLevelChangedEvent> onNetworkQualityChanged,
     RemoteParticipant remoteParticipant,
   }) {
     return ParticipantWidget(
@@ -282,6 +293,8 @@ class ConferenceRoom with ChangeNotifier {
       child: child,
       audioEnabled: audioEnabled,
       videoEnabled: videoEnabled,
+      networkQualityLevel: networkQualityLevel,
+      onNetworkQualityChanged: onNetworkQualityChanged,
     );
   }
 
@@ -300,6 +313,8 @@ class ConferenceRoom with ChangeNotifier {
     _streamSubscriptions.add(remoteParticipant.onDataTrackSubscriptionFailed.listen(_onDataTrackSubscriptionFailed));
     _streamSubscriptions.add(remoteParticipant.onDataTrackUnpublished.listen(_onDataTrackUnpublished));
     _streamSubscriptions.add(remoteParticipant.onDataTrackUnsubscribed.listen(_onDataTrackUnsubscribed));
+
+    _streamSubscriptions.add(remoteParticipant.onNetworkQualityLevelChanged.listen(_onNetworkQualityChanged));
 
     _streamSubscriptions.add(remoteParticipant.onVideoTrackDisabled.listen(_onVideoTrackDisabled));
     _streamSubscriptions.add(remoteParticipant.onVideoTrackEnabled.listen(_onVideoTrackEnabled));
@@ -377,6 +392,10 @@ class ConferenceRoom with ChangeNotifier {
 
   void _onDataTrackUnsubscribed(RemoteDataTrackSubscriptionEvent event) {
     Debug.log('ConferenceRoom._onDataTrackUnsubscribed(), ${event.remoteParticipant.sid}, ${event.remoteDataTrack.sid}');
+  }
+
+  void _onNetworkQualityChanged(RemoteNetworkQualityLevelChangedEvent event) {
+    Debug.log('ConferenceRoom._onDataTrackUnsubscribed(), ${event.remoteParticipant.sid}, ${event.networkQualityLevel}');
   }
 
   void _onVideoTrackDisabled(RemoteVideoTrackEvent event) {
@@ -500,6 +519,8 @@ class ConferenceRoom with ChangeNotifier {
             remoteParticipant: event.remoteParticipant,
             audioEnabled: bufferedParticipant?.audioEnabled ?? true,
             videoEnabled: event.remoteVideoTrackPublication?.remoteVideoTrack?.isEnabled ?? true,
+            networkQualityLevel: event.remoteParticipant.networkQualityLevel,
+            onNetworkQualityChanged: event.remoteParticipant.onNetworkQualityLevelChanged,
           ),
         );
       }

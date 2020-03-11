@@ -27,6 +27,20 @@ class ConnectOptions {
   /// Video tracks that will be published upon connection.
   final List<LocalVideoTrack> videoTracks;
 
+  /// Enable or disable the Network Quality API.
+  /// Set this to true to enable the Network Quality API when using Group Rooms.
+  /// This option has no effect in Peer-to-Peer Rooms. The default value is false.
+  final bool enableNetworkQuality;
+
+  /// Sets the verbosity level for network quality information returned by the
+  /// Network Quality API.
+  ///
+  /// If a [NetworkQualityConfiguration] is not provided, the default
+  /// configuration is used: [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL]
+  /// for the [LocalParticipant] and [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE]
+  /// for the [RemoteParticipant]s.
+  final NetworkQualityConfiguration networkQualityConfiguration;
+
   ConnectOptions(
     this.accessToken, {
     this.audioTracks,
@@ -36,6 +50,8 @@ class ConnectOptions {
     this.region,
     this.roomName,
     this.videoTracks,
+    this.enableNetworkQuality = false,
+    this.networkQualityConfiguration,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
@@ -43,7 +59,8 @@ class ConnectOptions {
         assert((preferredAudioCodecs != null && preferredAudioCodecs.isNotEmpty) || preferredAudioCodecs == null),
         assert((preferredVideoCodecs != null && preferredVideoCodecs.isNotEmpty) || preferredVideoCodecs == null),
         assert((region != null && region.isNotEmpty) || region == null),
-        assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null);
+        assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null),
+        assert(enableNetworkQuality != null);
 
   /// Create map from properties.
   Map<String, Object> _toMap() {
@@ -55,7 +72,9 @@ class ConnectOptions {
       'preferredVideoCodecs': preferredVideoCodecs != null ? Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)) : null,
       'audioTracks': audioTracks != null ? Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((LocalAudioTrack a) => a._toMap())) : null,
       'dataTracks': dataTracks != null ? Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrack d) => d._toMap())) : null,
-      'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v._toMap())) : null
+      'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v._toMap())) : null,
+      'enableNetworkQuality': enableNetworkQuality,
+      'networkQualityConfiguration': networkQualityConfiguration != null ? networkQualityConfiguration._toMap() : null
     };
   }
 }

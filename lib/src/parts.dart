@@ -41,6 +41,8 @@ part 'data_track_publication.dart';
 
 part 'events/local_participant_events.dart';
 
+part 'events/participant_events.dart';
+
 part 'events/remote_data_track_events.dart';
 
 part 'events/remote_participant_events.dart';
@@ -61,7 +63,11 @@ part 'local_video_track.dart';
 
 part 'local_video_track_publication.dart';
 
+part 'network_quality_configuration.dart';
+
 part 'network_quality_level.dart';
+
+part 'network_quality_verbosity.dart';
 
 part 'participant.dart';
 

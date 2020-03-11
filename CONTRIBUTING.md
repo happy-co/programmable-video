@@ -69,7 +69,7 @@ Reference table of all the events the plugin targets to support and their native
 | LocalParticipant  | audioTrackPublicationFailed  | onAudioTrackPublicationFailed  | didFailToPublishAudioTrack              | Android Only |
 | LocalParticipant  | dataTrackPublished           | onDataTrackPublished           | didPublishDataTrack                     | Android Only |
 | LocalParticipant  | dataTrackPublicationFailed   | onDataTrackPublicationFailed   | didFailToPublishDataTrack               | Android Only |
-| LocalParticipant  | networkQualityLevelChanged   | onNetworkQualityLevelChanged   | networkQualityLevelDidChange            | No           |
+| LocalParticipant  | networkQualityLevelChanged   | onNetworkQualityLevelChanged   | networkQualityLevelDidChange            | Android Only |
 | LocalParticipant  | videoTrackPublished          | onVideoTrackPublished          | didPublishVideoTrack                    | Android Only |
 | LocalParticipant  | videoTrackPublicationFailed  | onVideoTrackPublicationFailed  | didFailToPublishVideoTrack              | Android Only |
 | RemoteDataTrack   | stringMessage                | onMessage                      | didReceiveString                        | Android Only |
@@ -86,6 +86,7 @@ Reference table of all the events the plugin targets to support and their native
 | RemoteParticipant | dataTrackSubscriptionFailed  | onDataTrackSubscriptionFailed  | didFailToSubscribeToDataTrack           | Android Only |
 | RemoteParticipant | dataTrackUnpublished         | onDataTrackUnpublished         | remoteParticipantDidUnpublishDataTrack  | Android Only |
 | RemoteParticipant | dataTrackUnsubscribed        | onDataTrackUnsubscribed        | didUnsubscribeFromDataTrack             | Android Only |
+| RemoteParticipant | networkQualityLevelChanged   | onNetworkQualityLevelChanged   | networkQualityLevelDidChange            | Android Only |
 | RemoteParticipant | videoTrackDisabled           | onVideoTrackDisabled           | remoteParticipantDidDisableVideoTrack   | Yes          |
 | RemoteParticipant | videoTrackEnabled            | onVideoTrackEnabled            | remoteParticipantDidEnableVideoTrack    | Yes          |
 | RemoteParticipant | videoTrackPublished          | onVideoTrackPublished          | remoteParticipantDidPublishVideoTrack   | Yes          |
