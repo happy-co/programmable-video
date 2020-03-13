@@ -21,7 +21,7 @@
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
     "lodash": "^4.17.15",
-    "twilio": "git+https://github.com/Mediapioniers/twilio-node.git#faster-requires"
+    "twilio": "^3.4.0"
   },
   "devDependencies": {
     "@types/express": "~4.17.2",
