@@ -2,13 +2,6 @@ package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
-import com.twilio.video.LocalAudioTrack
-import com.twilio.video.LocalAudioTrackPublication
-import com.twilio.video.LocalDataTrack
-import com.twilio.video.LocalDataTrackPublication
-import com.twilio.video.LocalParticipant
-import com.twilio.video.LocalVideoTrack
-import com.twilio.video.LocalVideoTrackPublication
 import com.twilio.video.RemoteParticipant
 import com.twilio.video.Room
 import com.twilio.video.TwilioException

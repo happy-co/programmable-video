@@ -118,7 +118,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
         )
         sendEvent("dataTrackSubscribed", data: [
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
-            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication),
+            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication)
         ])
         publication.remoteTrack?.delegate = SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener
     }
@@ -131,7 +131,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
         )
         sendEvent("dataTrackSubscriptionFailed", data: [
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
-            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication),
+            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication)
         ], error: error)
     }
 

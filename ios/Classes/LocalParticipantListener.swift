@@ -40,7 +40,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
             "localDataTrack": LocalParticipantListener.localDataTrackToDict(dataTrack) as Any
         ], error: error)
     }
-    
+
     func didPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishVideoTrack => " +
             "trackSid: \(videoTrackPublication.trackSid), " +
