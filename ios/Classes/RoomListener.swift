@@ -23,6 +23,7 @@ class RoomListener: BaseListener, RoomDelegate {
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = SwiftTwilioProgrammableVideoPlugin.remoteParticipantListener
         }
+        room.localParticipant?.delegate = SwiftTwilioProgrammableVideoPlugin.localParticipantListener
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
@@ -42,7 +43,7 @@ class RoomListener: BaseListener, RoomDelegate {
     func roomIsReconnecting(room: Room, error: Error) {
         SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomIsReconnecting => room sid is '\(room.sid)', error is \(error)")
         sendEvent("reconnecting", data: [ "room": roomToDict(room) ], error: error)
-    }
+    }x
 
     func roomDidStartRecording(room: Room) {
         SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidStartRecording => room sid is '\(room.sid)'")
@@ -91,84 +92,9 @@ class RoomListener: BaseListener, RoomDelegate {
             "name": room.name,
             "state": roomState,
             "mediaRegion": room.mediaRegion as Any,
-            "localParticipant": localParticipantToDict(room.localParticipant) as Any,
+            "localParticipant": LocalParticipantListener.localParticipantToDict(room.localParticipant) as Any,
             "remoteParticipants": remoteParticipantsToArray(room.remoteParticipants)
         ]
-    }
-
-    private func localParticipantToDict(_ localParticipant: LocalParticipant?) -> [String: Any]? {
-        if let localParticipant = localParticipant {
-            var networkQualityLevel: String
-            switch localParticipant.networkQualityLevel {
-                case NetworkQualityLevel.zero:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_ZERO"
-                case NetworkQualityLevel.one:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_ONE"
-                case NetworkQualityLevel.two:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_TWO"
-                case NetworkQualityLevel.three:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_THREE"
-                case NetworkQualityLevel.four:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_FOUR"
-                case NetworkQualityLevel.five:
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_FIVE"
-                default: // or NetworkQualityLevel.unknown
-                    networkQualityLevel = "NETWORK_QUALITY_LEVEL_UNKNOWN"
-            }
-
-            let localAudioTrackPublications = localParticipant.localAudioTracks.map({ (it) -> [String: Any] in
-                return localAudioTrackPublicationToDict(it)
-            })
-
-            let localVideoTrackPublications = localParticipant.localVideoTracks.map({ (it) -> [String: Any] in
-                return localVideoTrackPublicationToDict(it)
-            })
-
-            return [
-                "identity": localParticipant.identity,
-                "sid": localParticipant.sid as Any,
-                "signalingRegion": localParticipant.signalingRegion,
-                "networkQualityLevel": networkQualityLevel,
-                "localAudioTrackPublications": localAudioTrackPublications,
-                "localVideoTrackPublications": localVideoTrackPublications
-            ]
-        }
-        return nil
-    }
-
-    private func localAudioTrackPublicationToDict(_ localAudioTrackPublication: LocalAudioTrackPublication) -> [String: Any] {
-        return [
-            "sid": localAudioTrackPublication.trackSid,
-            "localAudioTrack": localAudioTrackToDict(localAudioTrackPublication.localTrack) as Any
-        ]
-    }
-
-    private func localAudioTrackToDict(_ localAudioTrack: LocalAudioTrack?) -> [String: Any]? {
-        if let localAudioTrack = localAudioTrack {
-            return [
-                "name": localAudioTrack.name,
-                "enabled": localAudioTrack.isEnabled
-            ]
-        }
-        return nil
-    }
-
-    private func localVideoTrackPublicationToDict(_ localVideoTrackPublication: LocalVideoTrackPublication) -> [String: Any] {
-        return [
-            "sid": localVideoTrackPublication.trackSid,
-            "localVideoTrack": localVideoTrackToDict(localVideoTrackPublication.localTrack) as Any
-        ]
-    }
-
-    private func localVideoTrackToDict(_ localVideoTrack: LocalVideoTrack?) -> [String: Any]? {
-        if let localVideoTrack = localVideoTrack {
-            return [
-                "name": localVideoTrack.name,
-                "enabled": localVideoTrack.isEnabled,
-                "videoCapturer": RoomListener.videoSourceToDict(localVideoTrack.source)
-            ]
-        }
-        return nil
     }
 
     public static func videoSourceToDict(_ videoSource: VideoSource?) -> [String: Any] {

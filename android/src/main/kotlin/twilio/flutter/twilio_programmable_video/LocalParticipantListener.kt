@@ -58,8 +58,7 @@ class LocalParticipantListener : BaseListener(), LocalParticipant.Listener {
     override fun onVideoTrackPublished(localParticipant: LocalParticipant, localVideoTrackPublication: LocalVideoTrackPublication) {
         TwilioProgrammableVideoPlugin.debug("LocalParticipantListener.onVideoTrackPublished => " +
                 "trackSid: ${localVideoTrackPublication.trackSid}")
-        sendEvent(
-                "videoTrackPublished", mapOf(
+        sendEvent("videoTrackPublished", mapOf(
                 "localParticipant" to localParticipantToMap(localParticipant),
                 "localVideoTrackPublication" to localVideoTrackPublicationToMap(localVideoTrackPublication)
         ))

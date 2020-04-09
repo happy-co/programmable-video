@@ -128,7 +128,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
                 "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
                 "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
         ), twilioException)
-    }
+    }   
 
     override fun onDataTrackUnpublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
         TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnpublished => " +
@@ -151,7 +151,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
         sendEvent("dataTrackUnsubscribed", mapOf(
                 "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
                 "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication),
-                "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack)
+                "remoteDataTrack" to RemoteDataTrackListener.remoteDataTrackToMap(remoteDataTrack)
         ))
     }
 
@@ -282,24 +282,8 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
                     "name" to remoteDataTrackPublication.trackName,
                     "enabled" to remoteDataTrackPublication.isTrackEnabled,
                     "subscribed" to remoteDataTrackPublication.isTrackSubscribed,
-                    "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrackPublication.remoteDataTrack)
+                    "remoteDataTrack" to  RemoteDataTrackListener.remoteDataTrackToMap(remoteDataTrackPublication.remoteDataTrack)
             )
-        }
-
-        @JvmStatic
-        fun remoteDataTrackToMap(remoteDataTrack: RemoteDataTrack?): Map<String, Any>? {
-            if (remoteDataTrack != null) {
-                return mapOf(
-                        "sid" to remoteDataTrack.sid,
-                        "name" to remoteDataTrack.name,
-                        "enabled" to remoteDataTrack.isEnabled,
-                        "ordered" to remoteDataTrack.isOrdered,
-                        "reliable" to remoteDataTrack.isReliable,
-                        "maxPacketLifeTime" to remoteDataTrack.maxPacketLifeTime,
-                        "maxRetransmits" to remoteDataTrack.maxRetransmits
-                )
-            }
-            return null
         }
 
         @JvmStatic

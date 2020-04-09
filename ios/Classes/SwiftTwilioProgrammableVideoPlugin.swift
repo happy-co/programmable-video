@@ -7,6 +7,10 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     internal static var remoteParticipantListener = RemoteParticipantListener()
 
+    internal static var localParticipantListener = LocalParticipantListener()
+
+    internal static var remoteDataTrackListener = RemoteDataTrackListener()
+
     public static var cameraSource: CameraSource?
 
     public static var loggingSink: FlutterEventSink?
@@ -36,7 +40,11 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     private var remoteParticipantChannel: FlutterEventChannel?
 
+    private var localParticipantChannel: FlutterEventChannel?
+
     private var loggingChannel: FlutterEventChannel?
+
+    private var remoteDataTrackChannel: FlutterEventChannel?
 
     public func onRegister(_ registrar: FlutterPluginRegistrar) {
         let pluginHandler = PluginHandler()
@@ -49,8 +57,14 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         remoteParticipantChannel = FlutterEventChannel(name: "twilio_programmable_video/remote", binaryMessenger: registrar.messenger())
         remoteParticipantChannel?.setStreamHandler(RemoteParticipantStreamHandler())
 
+        localParticipantChannel = FlutterEventChannel(name:  "twilio_programmable_video/local", binaryMessenger: registrar.messenger())
+        localParticipantChannel?.setStreamHandler(LocalParticipantStreamHandler())
+
         loggingChannel = FlutterEventChannel(name: "twilio_programmable_video/logging", binaryMessenger: registrar.messenger())
         loggingChannel?.setStreamHandler(LoggingStreamHandler())
+
+        remoteDataTrackChannel = FlutterEventChannel(name: "twilio_programmable_video/remote_data_track", binaryMessenger: registrar.messenger())
+        remoteDataTrackChannel?.setStreamHandler(RemoteDataTrackStreamHandler())
 
         let pvf = ParticipantViewFactory(pluginHandler)
         registrar.register(pvf, withId: "twilio_programmable_video/views")
@@ -87,6 +101,20 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    class LocalParticipantStreamHandler: NSObject, FlutterStreamHandler {
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler.onListen => LocalParticipant eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.localParticipantListener.events = events
+            return nil
+        }
+
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler.onCancel => LocalParticipant eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.localParticipantListener.events = nil
+            return nil
+        }
+    }
+
     class LoggingStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
             SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler.onListen => Logging eventChannel attached")
@@ -97,6 +125,20 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
             SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler.onCancel => Logging eventChannel detached")
             SwiftTwilioProgrammableVideoPlugin.loggingSink = nil
+            return nil
+        }
+    }
+
+    class RemoteDataTrackStreamHandler: NSObject, FlutterStreamHandler {
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler.onListen => RemoteDataTrack eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener.events = events
+            return nil
+        }
+
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler.onCancel => RemoteDataTrack eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener.events = nil
             return nil
         }
     }
