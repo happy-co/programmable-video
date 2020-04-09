@@ -57,7 +57,7 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         remoteParticipantChannel = FlutterEventChannel(name: "twilio_programmable_video/remote", binaryMessenger: registrar.messenger())
         remoteParticipantChannel?.setStreamHandler(RemoteParticipantStreamHandler())
 
-        localParticipantChannel = FlutterEventChannel(name:  "twilio_programmable_video/local", binaryMessenger: registrar.messenger())
+        localParticipantChannel = FlutterEventChannel(name: "twilio_programmable_video/local", binaryMessenger: registrar.messenger())
         localParticipantChannel?.setStreamHandler(LocalParticipantStreamHandler())
 
         loggingChannel = FlutterEventChannel(name: "twilio_programmable_video/logging", binaryMessenger: registrar.messenger())

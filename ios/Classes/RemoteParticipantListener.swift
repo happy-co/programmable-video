@@ -94,7 +94,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
         )
         sendEvent("dataTrackPublished", data: [
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
-            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication),
+            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication)
         ])
     }
 
@@ -106,7 +106,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
         )
         sendEvent("dataTrackUnpublished", data: [
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
-            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication),
+            "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication)
         ])
     }
 

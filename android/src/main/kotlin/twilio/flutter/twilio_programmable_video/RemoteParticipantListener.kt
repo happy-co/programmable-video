@@ -128,7 +128,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
                 "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
                 "remoteDataTrackPublication" to remoteDataTrackPublicationToMap(remoteDataTrackPublication)
         ), twilioException)
-    }   
+    }
 
     override fun onDataTrackUnpublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
         TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnpublished => " +
@@ -282,7 +282,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
                     "name" to remoteDataTrackPublication.trackName,
                     "enabled" to remoteDataTrackPublication.isTrackEnabled,
                     "subscribed" to remoteDataTrackPublication.isTrackSubscribed,
-                    "remoteDataTrack" to  RemoteDataTrackListener.remoteDataTrackToMap(remoteDataTrackPublication.remoteDataTrack)
+                    "remoteDataTrack" to RemoteDataTrackListener.remoteDataTrackToMap(remoteDataTrackPublication.remoteDataTrack)
             )
         }
 

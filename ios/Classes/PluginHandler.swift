@@ -284,7 +284,7 @@ public class PluginHandler {
                 var dataTracks: [LocalDataTrack] = []
                 for (_, dataTrack) in dataTracksDict {
                     if let dataTrackOptionsDict = dataTrack["dataTrackOptions"] as? [AnyHashable: Any] {
-                        let dataTrackOptions = DataTrackOptions() { (builder) in
+                        let dataTrackOptions = DataTrackOptions { (builder) in
                             if let ordered = dataTrackOptionsDict["ordered"] as? Bool {
                                 builder.isOrdered = ordered
                             }
@@ -304,7 +304,7 @@ public class PluginHandler {
                     }
                 }
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '\(dataTracks)'")
-                builder.dataTracks = dataTracks;
+                builder.dataTracks = dataTracks
             }
 
             // Set the local video tracks if it has been passed.
