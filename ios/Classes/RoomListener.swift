@@ -43,7 +43,7 @@ class RoomListener: BaseListener, RoomDelegate {
     func roomIsReconnecting(room: Room, error: Error) {
         SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomIsReconnecting => room sid is '\(room.sid)', error is \(error)")
         sendEvent("reconnecting", data: [ "room": roomToDict(room) ], error: error)
-    }x
+    }
 
     func roomDidStartRecording(room: Room) {
         SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidStartRecording => room sid is '\(room.sid)'")

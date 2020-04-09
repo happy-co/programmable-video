@@ -120,7 +120,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
             "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication),
         ])
-        publication.remoteTrack?.delegate = SwiftTwilioProgrammableVideoPlugin.remoteD  ataTrackListener
+        publication.remoteTrack?.delegate = SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener
     }
 
     func didFailToSubscribeToDataTrack(publication: RemoteDataTrackPublication, error: Error, participant: RemoteParticipant) {
