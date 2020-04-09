@@ -57,9 +57,9 @@ class TwilioProgrammableVideo {
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.
   static Future<bool> requestPermissionForCameraAndMicrophone() async {
-    await PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.microphone, PermissionGroup.camera]);
-    final micPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
-    final camPermission = await PermissionHandler().checkPermissionStatus(PermissionGroup.camera);
+    await [Permission.camera, Permission.microphone].request();
+    final micPermission = await Permission.microphone.status;
+    final camPermission = await Permission.camera.status;
     _log('Permissions => Microphone: $micPermission, Camera: $camPermission');
 
     if (micPermission == PermissionStatus.granted && camPermission == PermissionStatus.granted) {
@@ -70,9 +70,9 @@ class TwilioProgrammableVideo {
       return requestPermissionForCameraAndMicrophone();
     }
 
-    if (micPermission == PermissionStatus.neverAskAgain || camPermission == PermissionStatus.neverAskAgain) {
+    if (micPermission == PermissionStatus.permanentlyDenied || camPermission == PermissionStatus.permanentlyDenied) {
       _log('Permissions => Opening App Settings');
-      await PermissionHandler().openAppSettings();
+      await openAppSettings();
     }
 
     return false;

@@ -1,3 +1,8 @@
+## 0.3.0+2
+
+* Android: Fix Bluetooth crash on emulators
+* Upgraded permission_handler to latest version
+
 ## 0.3.0+1
 
 * Align `README.md` with Twilio OSS law
