@@ -10,7 +10,7 @@ class ConnectOptions {
   final String roomName;
 
   /// The region of the signaling Server the Client will use.
-  final String region;
+  final Region region;
 
   /// Set preferred audio codecs.
   final List<AudioCodec> preferredAudioCodecs;
@@ -42,7 +42,7 @@ class ConnectOptions {
         assert((dataTracks != null && dataTracks.isNotEmpty) || dataTracks == null),
         assert((preferredAudioCodecs != null && preferredAudioCodecs.isNotEmpty) || preferredAudioCodecs == null),
         assert((preferredVideoCodecs != null && preferredVideoCodecs.isNotEmpty) || preferredVideoCodecs == null),
-        assert((region != null && region.isNotEmpty) || region == null),
+        assert((region != null && region is Region) || region == null),
         assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null);
 
   /// Create map from properties.
@@ -50,7 +50,7 @@ class ConnectOptions {
     return {
       'accessToken': accessToken,
       'roomName': roomName,
-      'region': region,
+      'region': EnumToString.parse(region),
       'preferredAudioCodecs': preferredAudioCodecs != null ? Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)) : null,
       'preferredVideoCodecs': preferredVideoCodecs != null ? Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)) : null,
       'audioTracks': audioTracks != null ? Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((LocalAudioTrack a) => a._toMap())) : null,

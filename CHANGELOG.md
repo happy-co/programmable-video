@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Added Region enums for both `ConnectOptions.region` and `Room.mediaRegion` instead of string values
+
 ## 0.3.0+2
 
 * Android: Fix Bluetooth crash on emulators

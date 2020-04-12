@@ -62,7 +62,7 @@ Execution failed for task ':app:processDebugResources'.
 
 To solve this issue create a file named `attrs.xml` to path
 `android/app/src/main/res/values/` with the following content:
-```
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <!-- this file is necessary until the bug below is solved! -->
 <!-- https://github.com/twilio/video-quickstart-android/issues/479 -->
@@ -103,8 +103,8 @@ Call `TwilioProgrammableVideo.connect()` to connect to a Room in your Flutter ap
 Room _room;
 final Completer<Room> _completer = Completer<Room>();
 
-void _onConnected(RoomConnectedEvent event) {
-  print('Connected to ${event.room.name}');
+void _onConnected(Room room) {
+  print('Connected to ${room.name}');
   _completer.complete(_room);
 }
 
@@ -117,7 +117,7 @@ Future<Room> connectToRoom() async {
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,                   // Optional name for the room
-    region: region,                       // Optional region.
+    region: Region.de1,                   // Optional region.
     preferAudioCodecs: [OpusCodec()],     // Optional list of preferred AudioCodecs
     preferVideoCodecs: [H264Codec()],     // Optional list of preferred VideoCodecs.
     audioTracks: [LocalAudioTrack(true)], // Optional list of audio tracks.
@@ -128,9 +128,9 @@ Future<Room> connectToRoom() async {
           maxPacketLifeTime: maxPacketLifeTime,  // Optional, Maximum retransmit time in milliseconds. Default is [DataTrackOptions.defaultMaxPacketLifeTime]
           maxRetransmits: maxRetransmits,        // Optional, Maximum number of retransmitted messages. Default is [DataTrackOptions.defaultMaxRetransmits]
           name: name                             // Optional
-        ),                                // Optional
+        ),                                       // Optional
       ),
-    ],                                    // Optional list of data tracks   
+    ],                                           // Optional list of data tracks   
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
@@ -163,7 +163,7 @@ Future<Room> connectToRoom() async {
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,
-    region: region,                       // Optional region.
+    region: Region.de1,                   // Optional region.
     preferAudioCodecs: [OpusCodec()],     // Optional list of preferred AudioCodecs
     preferVideoCodecs: [H264Codec()],     // Optional list of preferred VideoCodecs.
     audioTracks: [LocalAudioTrack(true)], // Optional list of audio tracks.
@@ -174,9 +174,9 @@ Future<Room> connectToRoom() async {
           maxPacketLifeTime: maxPacketLifeTime,  // Optional, Maximum retransmit time in milliseconds. Default is [DataTrackOptions.defaultMaxPacketLifeTime]
           maxRetransmits: maxRetransmits,        // Optional, Maximum number of retransmitted messages. Default is [DataTrackOptions.defaultMaxRetransmits]
           name: name                             // Optional
-        ),                                // Optional
+        ),                                       // Optional
       ),
-    ],                                    // Optional list of data tracks
+    ],                                           // Optional list of data tracks
     videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
@@ -449,7 +449,6 @@ Reference table of all the events the plugin currently supports
 | Room              | onReconnecting                 | RoomReconnectingEvent                     | Yes          |
 | Room              | onRecordingStarted             | Room                                      | Yes          |
 | Room              | onRecordingStopped             | Room                                      | Yes          |
-
 
 # Development and Contributing
 Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/blob/master/CONTRIBUTING.md) guidelines.

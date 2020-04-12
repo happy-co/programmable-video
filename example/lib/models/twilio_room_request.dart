@@ -1,5 +1,6 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:recase/recase.dart';
+import 'package:twilio_programmable_video/twilio_programmable_video.dart';
 import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 
 class TwilioRoomRequest {
@@ -11,7 +12,7 @@ class TwilioRoomRequest {
   final String statusCallback;
   final bool recordParticipantsOnConnect;
   final List<TwilioVideoCodec> videoCodecs;
-  final TwilioMediaRegion mediaRegion;
+  final Region mediaRegion;
 
   TwilioRoomRequest({
     this.type,
@@ -32,7 +33,7 @@ class TwilioRoomRequest {
     return TwilioRoomRequest(
       enableTurn: data['enableTurn'],
       maxParticipants: data['maxParticipants'],
-      mediaRegion: EnumToString.fromString(TwilioMediaRegion.values, data['mediaRegion']),
+      mediaRegion: EnumToString.fromString(Region.values, data['mediaRegion']),
       recordParticipantsOnConnect: data['recordParticipantsOnConnect'],
       statusCallback: data['statusCallback'],
       statusCallbackMethod: EnumToString.fromString(TwilioStatusCallbackMethod.values, data['statusCallbackMethod']),
