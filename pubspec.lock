@@ -63,7 +63,7 @@ packages:
       name: enum_to_string
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.8"
+    version: "1.0.9"
   flutter:
     dependency: "direct main"
     description: flutter

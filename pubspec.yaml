@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^5.0.0+hotfix.3
-  enum_to_string: ^1.0.8
+  enum_to_string: ^1.0.9
 
 # TODO: Remove the pendantic here and remove the override once the following issue is resolved:
 # https://github.com/flutter/flutter/issues/48246
