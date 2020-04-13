@@ -128,9 +128,7 @@ public class PluginHandler {
             DefaultAudioDevice.DefaultAVAudioSessionConfigurationBlock()
 
             let audioSession = AVAudioSession.sharedInstance()
-            SwiftTwilioProgrammableVideoPlugin.debug("audioSessionMode => old \(audioSession.mode)")
             try on ? audioSession.setMode(.videoChat) : audioSession.setMode(.voiceChat)
-            SwiftTwilioProgrammableVideoPlugin.debug("audioSessionMode => new \(audioSession.mode)")
             return result(on)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
