@@ -54,8 +54,7 @@ class TwilioProgrammableVideo {
   }
 
   static Future<bool> getSpeakerphoneOn() async {
-    var t = await _methodChannel.invokeMethod('getSpeakerphoneOn');
-    return false;
+    return _methodChannel.invokeMethod('getSpeakerphoneOn');
   }
 
   /// Request permission for camera and microphone.
