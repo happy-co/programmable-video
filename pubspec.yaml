@@ -1,6 +1,6 @@
 name: twilio_programmable_video
 description: Flutter plugin for Twilio Programmable Video, which enables you to build real-time videocall applications (WebRTC)
-version: 0.3.0+2
+version: 0.3.1
 homepage: https://gitlab.com/twilio-flutter/programmable-video
 repository: https://gitlab.com/twilio-flutter/programmable-video
 issue_tracker: https://gitlab.com/twilio-flutter/programmable-video/issues
@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^5.0.0+hotfix.3
-  enum_to_string: ^1.0.8
+  enum_to_string: ^1.0.9
 
 # TODO: Remove the pendantic here and remove the override once the following issue is resolved:
 # https://github.com/flutter/flutter/issues/48246

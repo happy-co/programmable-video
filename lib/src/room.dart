@@ -20,7 +20,7 @@ class Room {
 
   String _name;
 
-  String _mediaRegion;
+  Region _mediaRegion;
 
   RoomState _state;
 
@@ -43,7 +43,7 @@ class Room {
   /// It can be `null` under the following conditions:
   /// * The [Room] has not reached the [RoomState.CONNECTED] state.
   /// * The instance represents a peer-to-peer room.
-  String get mediaRegion => _mediaRegion;
+  Region get mediaRegion => _mediaRegion;
 
   /// The current room state.
   RoomState get state => _state;
@@ -162,7 +162,9 @@ class Room {
     _sid = roomMap['sid'];
     _name = roomMap['name'];
     _state = EnumToString.fromString(RoomState.values, roomMap['state']);
-    _mediaRegion = roomMap['mediaRegion'];
+    if (roomMap['mediaRegion'] != null) {
+      _mediaRegion = EnumToString.fromString(Region.values, roomMap['mediaRegion']);
+    }
 
     if (roomMap['localParticipant'] != null) {
       final localParticipantMap = Map<String, dynamic>.from(roomMap['localParticipant']);
