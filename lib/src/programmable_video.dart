@@ -53,6 +53,11 @@ class TwilioProgrammableVideo {
     return await _methodChannel.invokeMethod('setSpeakerphoneOn', {'on': on});
   }
 
+  /// Check if speaker mode is enabled.
+  static Future<bool> getSpeakerphoneOn() async {
+    return _methodChannel.invokeMethod('getSpeakerphoneOn');
+  }
+
   /// Request permission for camera and microphone.
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.

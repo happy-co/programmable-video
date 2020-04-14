@@ -85,9 +85,9 @@ PODS:
   - nanopb/encode (0.3.901)
   - native_device_orientation (0.0.1):
     - Flutter
-  - "permission_handler (4.2.0+hotfix.2)":
+  - "permission_handler (5.0.0+hotfix.3)":
     - Flutter
-  - twilio_programmable_video (0.3.0):
+  - "twilio_programmable_video (0.3.0+2)":
     - Flutter
     - TwilioVideo (= 3.2)
   - TwilioVideo (3.2.0)
@@ -164,11 +164,11 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: cea130bbfe5a7edc8d06d3f0d17288c32ffe9925
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   native_device_orientation: e24d00be281de72996640885d80e706142707660
-  permission_handler: de3abfc2aa31a5641a033ac33bc9cd75f4fcb148
-  twilio_programmable_video: 5d3818ab87005421ba07fdb992e80895102c7357
+  permission_handler: 4a985b5448897c27fdeadde84f7452520c0e6c58
+  twilio_programmable_video: 4ba9561928e868bc4c2a7f53765972b5e81a4401
   TwilioVideo: f398f1490c40c5129d3e4ba9837d1d7532616193
   wakelock: bd3dcc6a8bcf53a1c0309780ff192dcee67c6ccb
 
 PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
 
-COCOAPODS: 1.8.3
+COCOAPODS: 1.9.1

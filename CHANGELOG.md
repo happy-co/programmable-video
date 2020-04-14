@@ -1,3 +1,7 @@
+## 0.3.1+1
+
+* Add `getSpeakerphoneOn` method for reading the speakerphone mode
+
 ## 0.3.1
 
 * Added Region enums for both `ConnectOptions.region` and `Room.mediaRegion` instead of string values

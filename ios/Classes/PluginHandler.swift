@@ -22,6 +22,8 @@ public class PluginHandler {
                 disconnect(call, result: result)
             case "setSpeakerphoneOn":
                 setSpeakerphoneOn(call, result: result)
+            case "getSpeakerphoneOn":
+                getSpeakerphoneOn(result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
             case "LocalVideoTrack#enable":
@@ -131,6 +133,12 @@ public class PluginHandler {
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
+    }
+
+    private func getSpeakerphoneOn(result: @escaping FlutterResult) {
+        let speakerPhoneOn = AVAudioSession.sharedInstance().mode == .videoChat
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.getSpeakerphoneOn => called \(speakerPhoneOn)")
+        return result(speakerPhoneOn)
     }
 
     private func disconnect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

@@ -96,6 +96,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
+            "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
@@ -187,6 +188,10 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             return result.success(on)
         }
         return result.error("MISSING_PARAMS", "The parameter 'on' was not given", null)
+    }
+
+    private fun getSpeakerphoneOn(result: MethodChannel.Result) {
+        return result.success(audioManager.isSpeakerphoneOn())
     }
 
     private fun disconnect(call: MethodCall, result: MethodChannel.Result) {
