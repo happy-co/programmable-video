@@ -392,6 +392,9 @@ TwilioProgrammableVideo.setSpeakerphoneOn(true);
 
 // Route audio through headset
 TwilioProgrammableVideo.setSpeakerphoneOn(false);
+
+// Check if audio is routed through speaker
+var isSpeakerphoneOn = await TwilioProgrammableVideo.getSpeakerphoneOn();
 ```
 
 ## Enable debug logging
