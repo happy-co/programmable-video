@@ -336,6 +336,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     optionsBuilder.videoTracks(videoTracks)
                 }
 
+                optionsBuilder.enableDominantSpeaker(if (optionsObj["enableDominantSpeaker"] != null) optionsObj["enableDominantSpeaker"] as Boolean else false)
+
                 val roomId = 1 // Future preparation, for when we might want to support multiple rooms.
                 TwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, optionsBuilder.build())
                 result.success(roomId)

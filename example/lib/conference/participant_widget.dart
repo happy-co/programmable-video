@@ -20,6 +20,7 @@ class ParticipantWidget extends StatelessWidget {
   final bool videoEnabled;
   final bool isRemote;
   final bool isDummy;
+  final bool isDominant;
 
   const ParticipantWidget({
     Key key,
@@ -28,11 +29,13 @@ class ParticipantWidget extends StatelessWidget {
     @required this.videoEnabled,
     @required this.id,
     @required this.isRemote,
+    this.isDominant = false,
     this.isDummy = false,
   })  : assert(child != null),
         assert(audioEnabled != null),
         assert(videoEnabled != null),
         assert(isRemote != null),
+        assert(isDominant != null),
         assert(isDummy != null),
         super(key: key);
 
@@ -40,12 +43,14 @@ class ParticipantWidget extends StatelessWidget {
     Widget child,
     bool audioEnabled,
     bool videoEnabled,
+    bool isDominant,
   }) {
     return ParticipantWidget(
       id: id,
       child: child ?? this.child,
       audioEnabled: audioEnabled ?? this.audioEnabled,
       videoEnabled: videoEnabled ?? this.videoEnabled,
+      isDominant: isDominant ?? this.isDominant,
       isRemote: isRemote,
     );
   }
@@ -71,6 +76,17 @@ class ParticipantWidget extends StatelessWidget {
     } else {
       children.add(child);
     }
+    children.add(Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: AnimatedOpacity(
+        duration: Duration(milliseconds: 500),
+        opacity: isDominant ? 1 : 0,
+        child: Icon(
+          Icons.volume_up,
+          color: Colors.white,
+        ),
+      ),
+    ));
     if (!audioEnabled) {
       icons.add(_buildAudioEnabledIcon());
     }

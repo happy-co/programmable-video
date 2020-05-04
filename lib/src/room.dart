@@ -26,6 +26,8 @@ class Room {
 
   LocalParticipant _localParticipant;
 
+  RemoteParticipant _dominantSpeaker;
+
   final List<RemoteParticipant> _remoteParticipants = [];
 
   /// Map of buffered events for remote participants.
@@ -55,6 +57,14 @@ class Room {
 
   /// All currently connected participants.
   List<RemoteParticipant> get remoteParticipants => <RemoteParticipant>[..._remoteParticipants];
+
+  /// The remote participant with the loudest audio track.
+  RemoteParticipant get dominantSpeaker => _dominantSpeaker;
+
+  final StreamController<DominantSpeakerChangedEvent> _onDominantSpeakerChange = StreamController<DominantSpeakerChangedEvent>.broadcast();
+
+  /// Called when the participant with the loudest audio track changes.
+  Stream<DominantSpeakerChangedEvent> onDominantSpeakerChange;
 
   final StreamController<RoomConnectFailureEvent> _onConnectFailure = StreamController<RoomConnectFailureEvent>.broadcast();
 
@@ -108,6 +118,7 @@ class Room {
     _localParticipantStream = TwilioProgrammableVideo._localParticipantChannel.receiveBroadcastStream(_internalId).listen(_parseLocalParticipantEvents);
     _remoteDataTrackStream = TwilioProgrammableVideo._remoteDataTrackChannel.receiveBroadcastStream(_internalId).listen(_parseRemoteDataTrackEvents);
 
+    onDominantSpeakerChange = _onDominantSpeakerChange.stream;
     onConnectFailure = _onConnectFailure.stream;
     onConnected = _onConnected.stream;
     onDisconnected = _onDisconnected.stream;
@@ -183,6 +194,11 @@ class Room {
       }
     }
 
+    if (roomMap['dominantSpeaker'] != null) {
+      final dominantSpeakerMap = Map<String, dynamic>.from(roomMap['dominantSpeaker']);
+      _dominantSpeaker = _findOrCreateRemoteParticipant(dominantSpeakerMap);
+    }
+
     RemoteParticipant remoteParticipant;
     if (data['remoteParticipant'] != null) {
       final remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
@@ -235,6 +251,9 @@ class Room {
         break;
       case 'recordingStopped':
         _onRecordingStopped.add(this);
+        break;
+      case 'dominantSpeakerChanged':
+        _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, _dominantSpeaker));
         break;
     }
   }

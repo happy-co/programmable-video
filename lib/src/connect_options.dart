@@ -12,6 +12,9 @@ class ConnectOptions {
   /// The region of the signaling Server the Client will use.
   final Region region;
 
+  /// Enable detection of the loudest audio track
+  final bool enableDominantSpeaker;
+
   /// Set preferred audio codecs.
   final List<AudioCodec> preferredAudioCodecs;
 
@@ -36,6 +39,7 @@ class ConnectOptions {
     this.region,
     this.roomName,
     this.videoTracks,
+    this.enableDominantSpeaker,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
@@ -55,7 +59,8 @@ class ConnectOptions {
       'preferredVideoCodecs': preferredVideoCodecs != null ? Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)) : null,
       'audioTracks': audioTracks != null ? Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((LocalAudioTrack a) => a._toMap())) : null,
       'dataTracks': dataTracks != null ? Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrack d) => d._toMap())) : null,
-      'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v._toMap())) : null
+      'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v._toMap())) : null,
+      'enableDominantSpeaker': enableDominantSpeaker,
     };
   }
 }

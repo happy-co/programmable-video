@@ -102,4 +102,5 @@ Reference table of all the events the plugin targets to support and their native
 | Room              | reconnecting                 | onReconnecting                 | roomIsReconnecting                      | Yes          |
 | Room              | recordingStarted             | onRecordingStarted             | roomDidStartRecording                   | Yes          |
 | Room              | recordingStopped             | onRecordingStopped             | roomDidStopRecording                    | Yes          |
+| Room              | dominantSpeakerChanged       | onDominantSpeakerChanged       | dominantSpeakerDidChange                | Yes          |
 

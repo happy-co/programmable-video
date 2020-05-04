@@ -59,6 +59,7 @@ class ConferenceRoom with ChangeNotifier {
         audioTracks: [LocalAudioTrack(true)],
         dataTracks: [LocalDataTrack()],
         videoTracks: [LocalVideoTrack(true, _cameraCapturer)],
+        enableDominantSpeaker: true,
       );
 
       _room = await TwilioProgrammableVideo.connect(connectOptions);
@@ -212,6 +213,7 @@ class ConferenceRoom with ChangeNotifier {
     // When connected for the first time, add remote participant listeners
     _streamSubscriptions.add(_room.onParticipantConnected.listen(_onParticipantConnected));
     _streamSubscriptions.add(_room.onParticipantDisconnected.listen(_onParticipantDisconnected));
+    _streamSubscriptions.add(_room.onDominantSpeakerChange.listen(_onDominantSpeakerChanged));
     // Only add ourselves when connected for the first time too.
     _participants.add(
       _buildParticipant(
@@ -256,6 +258,20 @@ class ConferenceRoom with ChangeNotifier {
   void _onConnectFailure(RoomConnectFailureEvent event) {
     Debug.log('ConferenceRoom._onConnectFailure: ${event.exception}');
     _completer.completeError(event.exception);
+  }
+
+  void _onDominantSpeakerChanged(DominantSpeakerChangedEvent event) {
+    Debug.log('ConferenceRoom._onDominantSpeakerChanged: ${event.remoteParticipant.identity}');
+    var oldDominantParticipant = _participants.firstWhere((p) => p.isDominant, orElse: () => null);
+    if (oldDominantParticipant != null) {
+      var oldDominantParticipantIndex = _participants.indexOf(oldDominantParticipant);
+      _participants.replaceRange(oldDominantParticipantIndex, oldDominantParticipantIndex + 1, [oldDominantParticipant.copyWith(isDominant: false)]);
+    }
+
+    var newDominantParticipant = _participants.firstWhere((p) => p.id == event.remoteParticipant.sid);
+    var newDominantParticipantIndex = _participants.indexOf(newDominantParticipant);
+    _participants.replaceRange(newDominantParticipantIndex, newDominantParticipantIndex + 1, [newDominantParticipant.copyWith(isDominant: true)]);
+    notifyListeners();
   }
 
   void _onParticipantConnected(RoomParticipantConnectedEvent event) {

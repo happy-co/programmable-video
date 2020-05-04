@@ -328,14 +328,14 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.15"
+    version: "0.2.11"
   twilio_programmable_video:
     dependency: "direct dev"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.3.1+1"
+    version: "0.3.1+2"
   typed_data:
     dependency: transitive
     description:

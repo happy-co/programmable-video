@@ -1,3 +1,7 @@
+## 0.3.1+2
+
+* Added Dominant Speaker Changed Events
+
 ## 0.3.1+1
 
 * Add `getSpeakerphoneOn` method for reading the speakerphone mode
