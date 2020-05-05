@@ -26,6 +26,10 @@ public class PluginHandler {
                 getSpeakerphoneOn(result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
+            case "LocalDataTrack#sendString":
+                localDataTrackSendString(call, result: result)
+            case "LocalDataTrack#sendByteBuffer":
+                localDataTrackSendByteBuffer(call, result: result)
             case "LocalVideoTrack#enable":
                 localVideoTrackEnable(call, result: result)
             case "CameraCapturer#switchCamera":
@@ -106,6 +110,52 @@ public class PluginHandler {
             return result(true)
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalAudioTrack found with the name '\(localAudioTrackName)'", details: nil))
+    }
+
+    private func localDataTrackSendString(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'message' parameters", details: nil))
+        }
+
+        guard let localDataTrackName = arguments["name"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+        }
+
+        guard let localDataTrackMessage = arguments["message"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for \(localDataTrackName)")
+
+        let localDataTrack = getLocalParticipant()?.localDataTracks.first(where: {$0.trackName == localDataTrackName})
+        if let localDataTrack = localDataTrack {
+            localDataTrack.localTrack?.send(localDataTrackMessage)
+            return result(true)
+        }
+        return result(FlutterError(code: "NOT_FOUND", message: "No LocalDataTrack found with the name '\(localDataTrackName)'", details: nil))
+    }
+
+    private func localDataTrackSendByteBuffer(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'message' parameters", details: nil))
+        }
+
+        guard let localDataTrackName = arguments["name"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+        }
+
+        guard let localDataTrackMessage = arguments["message"] as? FlutterStandardTypedData else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for \(localDataTrackName)")
+
+        let localDataTrack = getLocalParticipant()?.localDataTracks.first(where: {$0.trackName == localDataTrackName})
+        if let localDataTrack = localDataTrack {
+            localDataTrack.localTrack?.send(localDataTrackMessage.data)
+            return result(true)
+        }
+        return result(FlutterError(code: "NOT_FOUND", message: "No LocalDataTrack found with the name '\(localDataTrackName)'", details: nil))
     }
 
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -235,6 +285,34 @@ public class PluginHandler {
                 }
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioTracks to '\(audioTracks)'")
                 builder.audioTracks = audioTracks
+            }
+
+            // Set the local data tracks if it has been passed.
+            if let dataTracksDict = optionsObj["dataTracks"] as? [AnyHashable: [String: Any]] {
+                var dataTracks: [LocalDataTrack] = []
+                for (_, dataTrack) in dataTracksDict {
+                    if let dataTrackOptionsDict = dataTrack["dataTrackOptions"] as? [AnyHashable: Any] {
+                        let dataTrackOptions = DataTrackOptions { (builder) in
+                            if let ordered = dataTrackOptionsDict["ordered"] as? Bool {
+                                builder.isOrdered = ordered
+                            }
+                            if let maxPacketLifeTime = dataTrackOptionsDict["maxPacketLifeTime"] as? Int32 {
+                                builder.maxPacketLifeTime = maxPacketLifeTime
+                            }
+                            if let maxRetransmits = dataTrackOptionsDict["maxRetransmits"] as? Int32 {
+                                builder.maxRetransmits = maxRetransmits
+                            }
+                            if let name = dataTrackOptionsDict["name"] as? String {
+                                builder.name = name
+                            }
+                        }
+                        dataTracks.append(LocalDataTrack(options: dataTrackOptions)!)
+                    } else {
+                        dataTracks.append(LocalDataTrack()!)
+                    }
+                }
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '\(dataTracks)'")
+                builder.dataTracks = dataTracks
             }
 
             // Set the local video tracks if it has been passed.

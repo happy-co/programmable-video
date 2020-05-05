@@ -25,16 +25,19 @@ class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
 
     companion object {
         @JvmStatic
-        fun remoteDataTrackToMap(remoteDataTrack: RemoteDataTrack): Map<String, Any> {
-            return mapOf(
-                    "sid" to remoteDataTrack.sid,
-                    "name" to remoteDataTrack.name,
-                    "enabled" to remoteDataTrack.isEnabled,
-                    "ordered" to remoteDataTrack.isOrdered,
-                    "reliable" to remoteDataTrack.isReliable,
-                    "maxPacketLifeTime" to remoteDataTrack.maxPacketLifeTime,
-                    "maxRetransmits" to remoteDataTrack.maxRetransmits
-            )
+        fun remoteDataTrackToMap(remoteDataTrack: RemoteDataTrack?): Map<String, Any>? {
+            if (remoteDataTrack != null) {
+                return mapOf(
+                        "sid" to remoteDataTrack.sid,
+                        "name" to remoteDataTrack.name,
+                        "enabled" to remoteDataTrack.isEnabled,
+                        "ordered" to remoteDataTrack.isOrdered,
+                        "reliable" to remoteDataTrack.isReliable,
+                        "maxPacketLifeTime" to remoteDataTrack.maxPacketLifeTime,
+                        "maxRetransmits" to remoteDataTrack.maxRetransmits
+                )
+            }
+            return null
         }
     }
 }

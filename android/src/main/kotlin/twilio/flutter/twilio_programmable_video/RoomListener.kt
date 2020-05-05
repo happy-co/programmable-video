@@ -2,13 +2,6 @@ package twilio.flutter.twilio_programmable_video
 
 import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
-import com.twilio.video.LocalAudioTrack
-import com.twilio.video.LocalAudioTrackPublication
-import com.twilio.video.LocalDataTrack
-import com.twilio.video.LocalDataTrackPublication
-import com.twilio.video.LocalParticipant
-import com.twilio.video.LocalVideoTrack
-import com.twilio.video.LocalVideoTrackPublication
 import com.twilio.video.RemoteParticipant
 import com.twilio.video.Room
 import com.twilio.video.TwilioException
@@ -76,73 +69,8 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
                 "name" to room.name,
                 "state" to room.state.toString(),
                 "mediaRegion" to room.mediaRegion,
-                "localParticipant" to localParticipantToMap(room.localParticipant),
+                "localParticipant" to LocalParticipantListener.localParticipantToMap(room.localParticipant),
                 "remoteParticipants" to remoteParticipantsToList(room.remoteParticipants)
-        )
-    }
-
-    private fun localParticipantToMap(localParticipant: LocalParticipant?): Map<String, Any?>? {
-        if (localParticipant != null) {
-            val localAudioTrackPublications = localParticipant.localAudioTracks?.map { localAudioTrackPublicationToMap(it) }
-            val localDataTrackPublications = localParticipant.localDataTracks?.map { localDataTrackPublicationToMap(it) }
-            val localVideoTrackPublications = localParticipant.localVideoTracks?.map { localVideoTrackPublicationToMap(it) }
-            return mapOf(
-                    "identity" to localParticipant.identity,
-                    "sid" to localParticipant.sid,
-                    "signalingRegion" to localParticipant.signalingRegion,
-                    "networkQualityLevel" to localParticipant.networkQualityLevel.toString(),
-                    "localAudioTrackPublications" to localAudioTrackPublications,
-                    "localDataTrackPublications" to localDataTrackPublications,
-                    "localVideoTrackPublications" to localVideoTrackPublications
-            )
-        }
-        return null
-    }
-
-    private fun localAudioTrackPublicationToMap(localVideoTrackPublication: LocalAudioTrackPublication): Map<String, Any> {
-        return mapOf(
-                "sid" to localVideoTrackPublication.trackSid,
-                "localAudioTrack" to localAudioTrackToMap(localVideoTrackPublication.localAudioTrack)
-        )
-    }
-
-    private fun localAudioTrackToMap(localAudioTrack: LocalAudioTrack): Map<String, Any> {
-        return mapOf(
-                "name" to localAudioTrack.name,
-                "enabled" to localAudioTrack.isEnabled
-        )
-    }
-
-    private fun localDataTrackPublicationToMap(localDataTrackPublication: LocalDataTrackPublication): Map<String, Any> {
-        return mapOf(
-                "sid" to localDataTrackPublication.trackSid,
-                "localDataTrack" to localDataTrackToMap(localDataTrackPublication.localDataTrack)
-        )
-    }
-
-    private fun localDataTrackToMap(localDataTrack: LocalDataTrack): Map<String, Any> {
-        return mapOf(
-                "name" to localDataTrack.name,
-                "enabled" to localDataTrack.isEnabled,
-                "ordered" to localDataTrack.isOrdered,
-                "reliable" to localDataTrack.isReliable,
-                "maxPacketLifeTime" to localDataTrack.maxPacketLifeTime,
-                "maxRetransmits" to localDataTrack.maxRetransmits
-        )
-    }
-
-    private fun localVideoTrackPublicationToMap(localVideoTrackPublication: LocalVideoTrackPublication): Map<String, Any> {
-        return mapOf(
-                "sid" to localVideoTrackPublication.trackSid,
-                "localVideoTrack" to localVideoTrackToMap(localVideoTrackPublication.localVideoTrack)
-        )
-    }
-
-    private fun localVideoTrackToMap(localVideoTrack: LocalVideoTrack): Map<String, Any> {
-        return mapOf(
-                "name" to localVideoTrack.name,
-                "enabled" to localVideoTrack.isEnabled,
-                "videoCapturer" to RoomListener.videoCapturerToMap(localVideoTrack.videoCapturer)
         )
     }
 
