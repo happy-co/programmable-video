@@ -12,33 +12,15 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.NonNull
-import com.twilio.video.AudioCodec
-import com.twilio.video.CameraCapturer
-import com.twilio.video.ConnectOptions
-import com.twilio.video.DataTrackOptions
-import com.twilio.video.G722Codec
-import com.twilio.video.H264Codec
-import com.twilio.video.IsacCodec
-import com.twilio.video.LocalAudioTrack
-import com.twilio.video.LocalDataTrack
-import com.twilio.video.LocalParticipant
-import com.twilio.video.LocalVideoTrack
-import com.twilio.video.OpusCodec
-import com.twilio.video.PcmaCodec
-import com.twilio.video.PcmuCodec
-import com.twilio.video.RemoteParticipant
-import com.twilio.video.VideoCapturer
-import com.twilio.video.VideoCodec
-import com.twilio.video.Vp8Codec
-import com.twilio.video.Vp9Codec
+import com.twilio.video.*
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 
 class PluginHandler : MethodCallHandler, ActivityAware {
     private var previousAudioMode: Int = 0
@@ -114,7 +96,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
         if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
             var byteArray = ByteArray(0)
-            TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object: CameraCapturer.PictureListener {
+            TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object : CameraCapturer.PictureListener {
                 override fun onPictureTaken(pictureData: ByteArray) {
                     val bitmap: Bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
                     val stream = ByteArrayOutputStream()
@@ -123,6 +105,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     bitmap.recycle()
                     return result.success(byteArray)
                 }
+
                 // Do nothing
                 override fun onShutter() {}
             })
@@ -330,7 +313,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                             dataTracks.add(LocalDataTrack.create(this.applicationContext))
                         }
                     }
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
+                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
                     optionsBuilder.dataTracks(dataTracks)
                 }
 
@@ -354,7 +337,14 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                         if (videoCapturer is CameraCapturer) {
                             TwilioProgrammableVideoPlugin.cameraCapturer = videoCapturer
                         }
-                        videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoTrack["name"] as String))
+
+                        val videoConstraints = VideoConstraints.Builder()
+                                .minVideoDimensions(VideoDimensions.HD_1080P_VIDEO_DIMENSIONS)
+                                .maxVideoDimensions(VideoDimensions.HD_1080P_VIDEO_DIMENSIONS)
+                                .maxFps(VideoConstraints.FPS_15).minFps(VideoConstraints.FPS_15)
+                                .build()
+
+                        videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoConstraints, videoTrack["name"] as String))
                     }
                     TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
                     optionsBuilder.videoTracks(videoTracks)
