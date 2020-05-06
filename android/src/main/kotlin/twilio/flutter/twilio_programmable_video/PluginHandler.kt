@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -36,6 +38,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
+import java.io.ByteArrayOutputStream
 
 class PluginHandler : MethodCallHandler, ActivityAware {
     private var previousAudioMode: Int = 0
