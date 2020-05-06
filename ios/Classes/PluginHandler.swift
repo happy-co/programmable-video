@@ -24,6 +24,8 @@ public class PluginHandler {
                 setSpeakerphoneOn(call, result: result)
             case "getSpeakerphoneOn":
                 getSpeakerphoneOn(result: result)
+            case "takePhoto":
+                takePhoto(result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
             case "LocalDataTrack#sendString":
@@ -37,6 +39,39 @@ public class PluginHandler {
             default:
                 result(FlutterMethodNotImplemented)
         }
+    }
+
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?) -> Data {
+        var ciImage: CIImage? = nil
+        if let imageBuffer = imageBuffer {
+            ciImage = CIImage(cvPixelBuffer: imageBuffer)
+        }
+        let temporaryContext = CIContext(options: nil)
+
+        var videoImage: CGImage? = nil
+        if let imageBuffer = imageBuffer, let ciImage = ciImage {
+            videoImage = temporaryContext.createCGImage(
+                ciImage,
+                from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageBuffer))))
+        }
+
+        var image: UIImage? = nil
+        if let videoImage = videoImage {
+            image = UIImage(cgImage: videoImage)
+        }
+        if let imageData = image?.jpegData(compressionQuality: 1.0) {
+            return imageData
+        }
+
+        return Data()
+    }
+
+    private func takePhoto(result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        if let data  = screenshotOfVideoStream(stillFrameRenderer.frameToKeep?.imageBuffer) {
+            return result(data)
+        }
+         return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -364,5 +399,17 @@ public class PluginHandler {
 
         SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
         result(enableNative)
+    }
+}
+
+class StillFrameRenderer: NSObject, VideoRenderer {
+    var frameToKeep: VideoFrame?
+
+    func renderFrame(_ frame: VideoFrame) {
+        frameToKeep = frame
+    }
+
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
+        //Do nothing
     }
 }

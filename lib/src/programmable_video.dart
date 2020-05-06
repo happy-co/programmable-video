@@ -58,6 +58,11 @@ class TwilioProgrammableVideo {
     return _methodChannel.invokeMethod('getSpeakerphoneOn');
   }
 
+  ///Takes a photo from the camera captuerer.
+  static Future<dynamic> takePhoto() async {
+    return _methodChannel.invokeMethod('takePhoto');
+  }
+
   /// Request permission for camera and microphone.
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.
@@ -90,7 +95,8 @@ class TwilioProgrammableVideo {
     assert(connectOptions != null);
 
     if (await requestPermissionForCameraAndMicrophone()) {
-      final roomId = await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions._toMap()});
+      final roomId =
+          await _methodChannel.invokeMethod('connect', <String, Object>{'connectOptions': connectOptions._toMap()});
 
       return Room(roomId);
     }
