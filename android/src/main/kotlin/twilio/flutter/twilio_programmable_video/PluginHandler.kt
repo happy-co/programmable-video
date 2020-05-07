@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -36,6 +38,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
+import java.io.ByteArrayOutputStream
 
 class PluginHandler : MethodCallHandler, ActivityAware {
     private var previousAudioMode: Int = 0
@@ -97,6 +100,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
+            "takePhoto" -> takePhoto(result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
@@ -104,6 +108,26 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
             else -> result.notImplemented()
         }
+    }
+
+    private fun takePhoto(result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
+            var byteArray = ByteArray(0)
+            TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object: CameraCapturer.PictureListener {
+                override fun onPictureTaken(pictureData: ByteArray) {
+                    val bitmap: Bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
+                    val stream = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                    byteArray = stream.toByteArray()
+                    bitmap.recycle()
+                    return result.success(byteArray)
+                }
+                // Do nothing
+                override fun onShutter() {}
+            })
+        }
+        return result.error("NOT FOUND", "No CameraCapturer has been initialized yet natively", null)
     }
 
     private fun switchCamera(call: MethodCall, result: MethodChannel.Result) {
