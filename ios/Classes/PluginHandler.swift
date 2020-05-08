@@ -3,6 +3,8 @@ import Foundation
 import TwilioVideo
 
 public class PluginHandler {
+    let stillFrameRenderer: StillFrameRenderer = StillFrameRenderer()
+
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -68,8 +70,8 @@ public class PluginHandler {
 
     private func takePhoto(result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
-        if let data  = screenshotOfVideoStream(stillFrameRenderer.frameToKeep?.imageBuffer) {
-            return result(data)
+        if let frameToKeep = stillFrameRenderer.frameToKeep {
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
         }
          return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -373,7 +375,11 @@ public class PluginHandler {
                             let videoSource = CameraSource()!
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
 
-                            videoSource.startCapture(device: cameraDevice)
+                            let videoFormat: VideoFormat = VideoFormat()
+                            videoFormat.dimensions  = CMVideoDimensions(width:1920, height: 1080)
+                            videoFormat.frameRate = 15
+
+                            videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
                             videoTracks.append(localVideoTrack)
                             SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
