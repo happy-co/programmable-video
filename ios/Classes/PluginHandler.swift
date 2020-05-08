@@ -74,7 +74,7 @@ public class PluginHandler {
 
         var image: UIImage? = nil
         if let videoImage = videoImage {
-            image = UIImage(cgImage: videoImage, scake:1.0, orientation: saveOrientation)
+            image = UIImage(cgImage: videoImage, scale:1.0, orientation: saveOrientation)
         }
         if let imageData = image?.jpegData(compressionQuality: 1.0) {
             return imageData
