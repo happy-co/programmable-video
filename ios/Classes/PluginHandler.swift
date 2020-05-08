@@ -393,6 +393,7 @@ public class PluginHandler {
                             let videoFormat: VideoFormat = VideoFormat()
                             videoFormat.dimensions  = CMVideoDimensions(width:1920, height: 1080)
                             videoFormat.frameRate = 15
+                            videoFormat.pixelFormat = PixelFormat.format32ARGB
 
                             videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
                             videoTracks.append(localVideoTrack)
