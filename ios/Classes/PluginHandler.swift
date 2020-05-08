@@ -3,6 +3,8 @@ import Foundation
 import TwilioVideo
 
 public class PluginHandler {
+    let stillFrameRenderer: StillFrameRenderer = StillFrameRenderer()
+
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -55,9 +57,24 @@ public class PluginHandler {
                 from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageBuffer))))
         }
 
+        var saveOrientation: UIImage.Orientation = UIImage.Orientation.right
+
+        switch UIDevice.current.orientation {
+            case UIDeviceOrientation.portrait:
+                saveOrientation = UIImage.Orientation.right
+            case UIDeviceOrientation.portraitUpsideDown:
+                saveOrientation = UIImage.Orientation.left
+            case UIDeviceOrientation.landscapeLeft:
+                saveOrientation = UIImage.Orientation.up
+            case UIDeviceOrientation.landscapeRight:
+                saveOrientation = UIImage.Orientation.down
+            default:
+                break
+        }
+
         var image: UIImage? = nil
         if let videoImage = videoImage {
-            image = UIImage(cgImage: videoImage)
+            image = UIImage(cgImage: videoImage, scake:1.0, orientation: saveOrientation)
         }
         if let imageData = image?.jpegData(compressionQuality: 1.0) {
             return imageData
@@ -68,8 +85,8 @@ public class PluginHandler {
 
     private func takePhoto(result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
-        if let data  = screenshotOfVideoStream(stillFrameRenderer.frameToKeep?.imageBuffer) {
-            return result(data)
+        if let frameToKeep = stillFrameRenderer.frameToKeep {
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
         }
          return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -373,7 +390,11 @@ public class PluginHandler {
                             let videoSource = CameraSource()!
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
 
-                            videoSource.startCapture(device: cameraDevice)
+                            let videoFormat: VideoFormat = VideoFormat()
+                            videoFormat.dimensions  = CMVideoDimensions(width:1920, height: 1080)
+                            videoFormat.frameRate = 15
+
+                            videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
                             videoTracks.append(localVideoTrack)
                             SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
