@@ -54,10 +54,15 @@ public class PluginHandler {
         if let imageBuffer = imageBuffer, let ciImage = ciImage {
             videoImage = temporaryContext.createCGImage(
                 ciImage,
-                from: CGRect(x: 0, y: 0, width: CGFloat(CVPixelBufferGetWidth(imageBuffer)), height: CGFloat(CVPixelBufferGetHeight(imageBuffer))))
+                from: CGRect(
+                    x: 0, y: 0,
+                    width: CGFloat(CVPixelBufferGetWidth(imageBuffer)),
+                    height: CGFloat(CVPixelBufferGetHeight(imageBuffer)
+                    )
+                )
+            )
         }
-
-        var saveOrientation: UIImage.Orientation = UIImage.Orientation.right
+        var saveOrientation:UIImage.Orientation = UIImage.Orientation.right
 
         switch UIDevice.current.orientation {
             case UIDeviceOrientation.portrait:
@@ -74,8 +79,9 @@ public class PluginHandler {
 
         var image: UIImage? = nil
         if let videoImage = videoImage {
-            image = UIImage(cgImage: videoImage, scale:1.0, orientation: saveOrientation)
+            image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
         }
+
         if let imageData = image?.jpegData(compressionQuality: 1.0) {
             return imageData
         }
@@ -389,11 +395,22 @@ public class PluginHandler {
                             }
                             let videoSource = CameraSource()!
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
+                            localVideoTrack.addRenderer(self.stillFrameRenderer)
+
+                            var dimensions: CMVideoDimensions = CMVideoDimensions(width:1920,height:1080)
+                            let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
+
+                            let hieghtestVideoFormat: VideoFormat = videoFormats.lastObject as! VideoFormat
+                            let pixelFormat = hieghtestVideoFormat.pixelFormat
+
+                            if(hieghtestVideoFormat.dimensions.height < 1080) {
+                                dimensions = hieghtestVideoFormat.dimensions
+                            }
 
                             let videoFormat: VideoFormat = VideoFormat()
-                            videoFormat.dimensions  = CMVideoDimensions(width:1920, height: 1080)
+                            videoFormat.dimensions  = dimensions
                             videoFormat.frameRate = 15
-                            videoFormat.pixelFormat = PixelFormat.format32ARGB
+                            videoFormat.pixelFormat = pixelFormat
 
                             videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
                             videoTracks.append(localVideoTrack)
