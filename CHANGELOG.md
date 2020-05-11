@@ -1,3 +1,7 @@
+## 0.3.1+5
+
+* Upgraded Twilio SDK for Android from version `5.1.+` to `5.6.+`
+
 ## 0.3.1+4
 
 * Fixes broken release `0.3.1+3`

@@ -48,28 +48,7 @@ Add the following lines to your proguard-project.txt file.
 -keepattributes InnerClasses
 ```
 
-##### Create an `attrs.xml` file
-Due to a [known bug](https://github.com/twilio/video-quickstart-android/issues/479) in the Twilio SDK for Android you could encounter the following error:
-```
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:processDebugResources'.
-  > A failure occurred while executing com.android.build.gradle.internal.tasks.Workers$ActionFacade
-    > Android resource linking failed
-     /home/username/.gradle/caches/transforms-2/files-2.1/f4e760f55cdecc03c707f67f08b08f3d/jetified-video-android-5.1.0/res/values/values.xml:13:5-17:25: AAPT: error: resource attr/overlaySurface (aka twilio.flutter.programmable_video_example:attr/overlaySurface) not found.
-```
-
-To solve this issue create a file named `attrs.xml` to path
-`android/app/src/main/res/values/` with the following content:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<!-- this file is necessary until the bug below is solved! -->
-<!-- https://github.com/twilio/video-quickstart-android/issues/479 -->
-<resources>
-    <attr name="overlaySurface" format="boolean" />
-</resources>
-```
+Do not forget to reference it in the [`build.gradle`](https://stackoverflow.com/questions/52428973/how-to-minify-a-flutter-app-with-proguard) file
 
 #### iOS
 For this plugin to work for iOS, you will have to tweak a few files.
