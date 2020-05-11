@@ -1,5 +1,11 @@
+## 0.3.1+4
+
+* Fixes broken release `0.3.1+3`
+* Added Flutter SDK constraint to meet new `pubspec.yaml` formatting
+
 ## 0.3.1+3
 
+* **Note:** This version is BROKEN, do not use
 * Added Automatic Subscription connection option
 
 ## 0.3.1+2
