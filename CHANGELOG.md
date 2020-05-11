@@ -1,3 +1,7 @@
+## 0.3.1+3
+
+* Added Automatic Subscription connection option
+
 ## 0.3.1+2
 
 * Added Dominant Speaker Changed Events

@@ -30,6 +30,9 @@ class ConnectOptions {
   /// Video tracks that will be published upon connection.
   final List<LocalVideoTrack> videoTracks;
 
+  /// Choosing between `subscribe-to-all` or `subscribe-to-none` subscription rule
+  final bool enableAutomaticSubscription;
+
   ConnectOptions(
     this.accessToken, {
     this.audioTracks,
@@ -40,6 +43,7 @@ class ConnectOptions {
     this.roomName,
     this.videoTracks,
     this.enableDominantSpeaker,
+    this.enableAutomaticSubscription,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
@@ -61,6 +65,7 @@ class ConnectOptions {
       'dataTracks': dataTracks != null ? Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrack d) => d._toMap())) : null,
       'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrack v) => v._toMap())) : null,
       'enableDominantSpeaker': enableDominantSpeaker,
+      'enableAutomaticSubscription': enableAutomaticSubscription
     };
   }
 }

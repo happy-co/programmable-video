@@ -269,6 +269,7 @@ public class PluginHandler {
                 builder.videoTracks = videoTracks
             }
             builder.isDominantSpeakerEnabled = optionsObj["enableDominantSpeaker"] as? Bool ?? false
+            builder.isAutomaticSubscriptionEnabled = optionsObj["enableAutomaticSubscription"] as? Bool ?? true
         }
 
         let roomId = 1

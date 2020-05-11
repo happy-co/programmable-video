@@ -205,8 +205,16 @@ var widget = localVideoTrack.widget();
 ```
 
 ### Connect as a publish-only Participant
-It is currently not possible to connect as a publish-only participant.
+For some use cases you may wish to connect as a publish-only Participant that is not subscribed to any Tracks. If you are connecting to a Group Room, you may disable automatic subscription passing `enableAutomaticSubscription` to false in the connection options.
 
+```dart
+var connectOptions = ConnectOptions(
+  accessToken,
+  //...//
+  enableAutomaticSubscription: false
+);
+var _room = await TwilioProgrammableVideo.connect(connectOptions);
+```
 ### Working with Remote Participants
 
 #### Handle Connected Participants

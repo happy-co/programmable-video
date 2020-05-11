@@ -120,7 +120,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
         child: FittedBox(
           child: Text(
             'JOIN',
-            style: TextStyle(color: Theme.of(context).appBarTheme?.textTheme?.title?.color ?? Colors.white),
+            style: TextStyle(color: Theme.of(context).appBarTheme?.textTheme?.headline6?.color ?? Colors.white),
           ),
         ),
         onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
