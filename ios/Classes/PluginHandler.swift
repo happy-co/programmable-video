@@ -3,6 +3,8 @@ import Foundation
 import TwilioVideo
 
 public class PluginHandler {
+    let stillFrameRenderer: StillFrameRenderer = StillFrameRenderer()
+
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -24,6 +26,8 @@ public class PluginHandler {
                 setSpeakerphoneOn(call, result: result)
             case "getSpeakerphoneOn":
                 getSpeakerphoneOn(result: result)
+            case "takePhoto":
+                takePhoto(result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
             case "LocalDataTrack#sendString":
@@ -37,6 +41,60 @@ public class PluginHandler {
             default:
                 result(FlutterMethodNotImplemented)
         }
+    }
+
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?) -> Data {
+        var ciImage: CIImage? = nil
+        if let imageBuffer = imageBuffer {
+            ciImage = CIImage(cvPixelBuffer: imageBuffer)
+        }
+        let temporaryContext = CIContext(options: nil)
+
+        var videoImage: CGImage? = nil
+        if let imageBuffer = imageBuffer, let ciImage = ciImage {
+            videoImage = temporaryContext.createCGImage(
+                ciImage,
+                from: CGRect(
+                    x: 0, y: 0,
+                    width: CGFloat(CVPixelBufferGetWidth(imageBuffer)),
+                    height: CGFloat(CVPixelBufferGetHeight(imageBuffer)
+                    )
+                )
+            )
+        }
+        var saveOrientation:UIImage.Orientation = UIImage.Orientation.right
+
+        switch UIDevice.current.orientation {
+            case UIDeviceOrientation.portrait:
+                saveOrientation = UIImage.Orientation.right
+            case UIDeviceOrientation.portraitUpsideDown:
+                saveOrientation = UIImage.Orientation.left
+            case UIDeviceOrientation.landscapeLeft:
+                saveOrientation = UIImage.Orientation.up
+            case UIDeviceOrientation.landscapeRight:
+                saveOrientation = UIImage.Orientation.down
+            default:
+                break
+        }
+
+        var image: UIImage? = nil
+        if let videoImage = videoImage {
+            image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
+        }
+
+        if let imageData = image?.jpegData(compressionQuality: 1.0) {
+            return imageData
+        }
+
+        return Data()
+    }
+
+    private func takePhoto(result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        if let frameToKeep = stillFrameRenderer.frameToKeep {
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
+        }
+         return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -337,8 +395,24 @@ public class PluginHandler {
                             }
                             let videoSource = CameraSource()!
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
+                            localVideoTrack.addRenderer(self.stillFrameRenderer)
 
-                            videoSource.startCapture(device: cameraDevice)
+                            var dimensions: CMVideoDimensions = CMVideoDimensions(width:1920,height:1080)
+                            let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
+
+                            let hieghtestVideoFormat: VideoFormat = videoFormats.lastObject as! VideoFormat
+                            let pixelFormat = hieghtestVideoFormat.pixelFormat
+
+                            if(hieghtestVideoFormat.dimensions.height < 1080) {
+                                dimensions = hieghtestVideoFormat.dimensions
+                            }
+
+                            let videoFormat: VideoFormat = VideoFormat()
+                            videoFormat.dimensions  = dimensions
+                            videoFormat.frameRate = 15
+                            videoFormat.pixelFormat = pixelFormat
+
+                            videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
                             videoTracks.append(localVideoTrack)
                             SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
@@ -364,5 +438,17 @@ public class PluginHandler {
 
         SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
         result(enableNative)
+    }
+}
+
+class StillFrameRenderer: NSObject, VideoRenderer {
+    var frameToKeep: VideoFrame?
+
+    func renderFrame(_ frame: VideoFrame) {
+        frameToKeep = frame
+    }
+
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
+        //Do nothing
     }
 }
