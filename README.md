@@ -97,8 +97,8 @@ Future<Room> connectToRoom() async {
     accessToken,
     roomName: roomName,                   // Optional name for the room
     region: Region.de1,                   // Optional region.
-    preferAudioCodecs: [OpusCodec()],     // Optional list of preferred AudioCodecs
-    preferVideoCodecs: [H264Codec()],     // Optional list of preferred VideoCodecs.
+    preferredAudioCodecs: [OpusCodec()],     // Optional list of preferred AudioCodecs
+    preferredVideoCodecs: [H264Codec()],     // Optional list of preferred VideoCodecs.
     audioTracks: [LocalAudioTrack(true)], // Optional list of audio tracks.
     dataTracks: [
       LocalDataTrack(
@@ -110,7 +110,7 @@ Future<Room> connectToRoom() async {
         ),                                       // Optional
       ),
     ],                                           // Optional list of data tracks   
-    videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
+    videoTracks: ([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
