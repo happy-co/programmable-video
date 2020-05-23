@@ -51,6 +51,7 @@ class LocalVideoTrack extends VideoTrack {
 
     if (Platform.isAndroid) {
       return _widget ??= AndroidView(
+        key: key,
         viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
@@ -62,6 +63,7 @@ class LocalVideoTrack extends VideoTrack {
 
     if (Platform.isIOS) {
       return _widget ??= UiKitView(
+        key: key,
         viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),

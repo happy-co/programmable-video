@@ -1,3 +1,7 @@
+## 0.3.2+1
+
+* Fix passing `key` into the local participant widget
+
 ## 0.3.2
 
 * Implemented DataTrack on IOS
