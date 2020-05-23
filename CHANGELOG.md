@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Implemented DataTrack on IOS
+
 ## 0.3.1+5
 
 * Upgraded Twilio SDK for Android from version `5.1.+` to `5.6.+`
