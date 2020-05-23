@@ -91,9 +91,11 @@ swift_analyze:
 unit_test:
   stage: test
   script:
-    - flutter test --pub test/*
+    - flutter test --coverage --pub test/*
     - cd example || exit 1
     - flutter test --pub test/*
+    - cd ../ || exit 1
+    - lcov --list ./coverage/lcov.info
   only:
     refs:
       - merge_requests
@@ -171,6 +173,52 @@ pub-dev:
       EOF
     - flutter pub get
     - flutter pub publish -f
+  only:
+    - tags
+
+changelog:
+  image: curlimages/curl
+  stage: publish
+  script:
+    - |
+      if [ -z "${DISCORD_WEBHOOK}" ]; then
+        echo "Missing DISCORD_WEBHOOK environment variable"
+        exit 1
+      fi
+
+      TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
+      PUB_SPEC_NAME="$(awk '/^name: /{print $NF}' pubspec.yaml)"
+      CHANGELOG_MESSAGE=$(sed '1,/^##/!d;/##/d' CHANGELOG.md | awk '{printf "%s\\n", $0}')
+
+      DATA='{
+        "embeds": [ {
+          "author": {
+            "name": "'"$CI_PROJECT_NAME"'",
+            "url": "https://pub.dev/packages/'"$PUB_SPEC_NAME"'/versions/'"$TAG_NAME"'",
+            "icon_url": "https://assets.gitlab-static.net/uploads/-/system/project/avatar/'"$CI_PROJECT_ID"'/'"$CI_PROJECT_NAME"'.png?width=64"
+          },
+          "description": "Version `'"$TAG_NAME"'` has just been released on pub.dev",
+          "fields": [
+            {
+              "name": "Changelog",
+              "value": "```markdown'"${CHANGELOG_MESSAGE}"'```",
+              "inline": false
+            },
+            {
+              "name": "Pipeline",
+              "value": "['"$CI_PIPELINE_IID"']('"$CI_PROJECT_URL/pipelines/$CI_PIPELINE_IID"')",
+              "inline": true
+            },
+            {
+              "name": "Commit",
+              "value": "['"$CI_COMMIT_SHORT_SHA"']('"$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"')",
+              "inline": true
+            }
+          ],
+        } ]
+      }'
+
+      curl -o --fail -H Content-Type:application/json -d "$DATA" $DISCORD_WEBHOOK
   only:
     - tags
 
