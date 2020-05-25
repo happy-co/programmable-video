@@ -342,6 +342,8 @@ tag_programmable_video:
   stage: publish
   script:
     - |
+      cd programmable_video || exit 1
+
       if [ -z "${GITLAB_API_TOKEN}" ]; then
         echo "Missing GITLAB_API_TOKEN environment variable"
         exit 1
@@ -369,6 +371,8 @@ tag_platform_interface:
   stage: publish
   script:
     - |
+      cd programmable_video_platform_interface || exit 1
+
       if [ -z "${GITLAB_API_TOKEN}" ]; then
         echo "Missing GITLAB_API_TOKEN environment variable"
         exit 1
