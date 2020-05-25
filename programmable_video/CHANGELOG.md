@@ -1,41 +1,6 @@
-## 0.3.2+1
+## 0.3.3+1
 
-* Fix passing `key` into the local participant widget
-
-## 0.3.2
-
-* Implemented DataTrack on IOS
-
-## 0.3.1+5
-
-* Upgraded Twilio SDK for Android from version `5.1.+` to `5.6.+`
-
-## 0.3.1+4
-
-* Fixes broken release `0.3.1+3`
-* Added Flutter SDK constraint to meet new `pubspec.yaml` formatting
-
-## 0.3.1+3
-
-* **Note:** This version is BROKEN, do not use
-* Added Automatic Subscription connection option
-
-## 0.3.1+2
-
-* Added Dominant Speaker Changed Events
-
-## 0.3.1+1
-
-* Add `getSpeakerphoneOn` method for reading the speakerphone mode
-
-## 0.3.1
-
-* Added Region enums for both `ConnectOptions.region` and `Room.mediaRegion` instead of string values
-
-## 0.3.0+2
-
-* Android: Fix Bluetooth crash on emulators
-* Upgraded permission_handler to latest version
+* More like a house-keeping release after platform release
 
 ## 0.3.3
 

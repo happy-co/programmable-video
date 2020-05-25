@@ -34,8 +34,6 @@ dev_dependencies:
 
 dependency_overrides:
   pedantic: ^1.9.0
-  twilio_programmable_video_platform_interface:
-    path: ../../programmable_video_platform_interface
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
