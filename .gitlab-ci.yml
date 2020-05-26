@@ -202,7 +202,7 @@ firebase_programmable_video:
   when: manual
   only:
     refs:
-      - /^programmable-video_v\d*\.\d*\.\d*$/
+      - /^programmable-video_v.*$/
   except:
     refs:
       - branches
@@ -247,7 +247,7 @@ pub-dev_platform_interface:
     - flutter pub publish -f
   only:
     refs:
-      - /^programmable-video-platform-interface_v\d*\.\d*\.\d*$/
+      - /^programmable-video-platform-interface_v.*$/
   except:
     refs:
       - branches
@@ -295,7 +295,7 @@ pub-dev_programmable_video:
     - flutter pub publish -f
   only:
     refs:
-      - /^programmable-video_v\d*\.\d*\.\d*$/
+      - /^programmable-video_v.*$/
   except:
     refs:
       - branches
@@ -348,7 +348,7 @@ changelog_programmable_video:
       curl --fail -H Content-Type:application/json -d "$DATA" $DISCORD_WEBHOOK
   only:
     refs:
-      - /^programmable-video_v\d*\.\d*\.\d*$/
+      - /^programmable-video_v.*$/
   except:
     refs:
       - branches
