@@ -338,10 +338,10 @@ changelog_programmable_video:
             },
             {
               "name": "Commit",
-              "value": "['"$CI_COMMIT_SHORT_SHA"']('"$CI_PROJECT_URL/commit/$CI_COMMIT_SHA"')",
+              "value": "['"$CI_COMMIT_SHORT_SHA"']('"$CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA"')",
               "inline": true
             }
-          ],
+          ]
         } ]
       }'
 
