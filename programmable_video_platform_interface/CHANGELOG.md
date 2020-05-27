@@ -1,3 +1,7 @@
+## 0.1.0+1
+
+- All the files are now correctly exported from the `twilio_programmable_video_platform_interface.dart` file
+
 ## 0.1.0
 
 - Get rid of pre-release version

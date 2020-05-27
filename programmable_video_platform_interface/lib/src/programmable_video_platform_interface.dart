@@ -4,8 +4,14 @@ import 'dart:typed_data';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'enums/enum_exports.dart';
-import 'method_channel_programmable_video.dart';
 import 'models/model_exports.dart';
+
+export 'enums/enum_exports.dart';
+export 'models/model_exports.dart';
+export 'audio_codecs/audio_codec.dart';
+export 'video_codecs/video_codec.dart';
+
+import 'method_channel_programmable_video.dart';
 
 /// The interface that implementations of programmable_video must implement.
 ///

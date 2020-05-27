@@ -1,3 +1,7 @@
+## 0.3.3+2
+
+* Stopped importing implementation files from the platform interface
+
 ## 0.3.3+1
 
 * More like a house-keeping release after platform release

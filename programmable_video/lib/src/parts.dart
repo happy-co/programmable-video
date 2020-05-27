@@ -7,19 +7,12 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:twilio_programmable_video/twilio_programmable_video.dart';
+
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
-import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
-import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
-
-import 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
-import 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
-
+export 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 export 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
 export 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
-
-export 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 
 part 'audio_track.dart';
 part 'audio_track_publication.dart';
