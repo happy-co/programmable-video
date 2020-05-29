@@ -15,7 +15,7 @@ class BaseListener: NSObject {
         return nil
     }
 
-    public func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
+    public func sendEvent(_ name: String, data: [String: Any?]? = nil, error: Error? = nil) {
         let eventData = ["name": name, "data": data, "error": errorToDict(error)] as [String: Any?]
 
         if let events = events {
