@@ -1,6 +1,7 @@
 ## 0.3.3+2
 
 * Stopped importing implementation files from the platform interface
+* Upgraded the platform interface version
 
 ## 0.3.3+1
 
