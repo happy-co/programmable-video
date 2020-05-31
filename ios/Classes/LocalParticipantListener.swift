@@ -3,7 +3,7 @@ import Foundation
 import TwilioVideo
 
 class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
-    func didPublishAudioTrack(participant: LocalParticipant, audioTrackPublication: LocalAudioTrackPublication) {
+    func localParticipantDidPublishAudioTrack(participant: LocalParticipant, audioTrackPublication: LocalAudioTrackPublication) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishAudioTrack => " +
             "trackSid: \(audioTrackPublication.trackSid), " +
             "isTrackEnabled: \(audioTrackPublication.isTrackEnabled)"
@@ -14,7 +14,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ])
     }
 
-    func didFailToPublishAudioTrack(participant: LocalParticipant, audioTrack: LocalAudioTrack, error: Error) {
+    func localParticipantDidFailToPublishAudioTrack(participant: LocalParticipant, audioTrack: LocalAudioTrack, error: Error) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishAudioTrack => \(error)")
         sendEvent("audioTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
@@ -22,7 +22,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ], error: error)
     }
 
-    func didPublishDataTrack(participant: LocalParticipant, dataTrackPublication: LocalDataTrackPublication) {
+    func localParticipantDidPublishDataTrack(participant: LocalParticipant, dataTrackPublication: LocalDataTrackPublication) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishDataTrack => " +
             "trackSid: \(dataTrackPublication.trackSid), " +
             "isTrackEnabled: \(dataTrackPublication.isTrackEnabled)"
@@ -33,7 +33,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ])
     }
 
-    func didFailToPublishDataTrack(participant: LocalParticipant, dataTrack: LocalDataTrack, error: Error) {
+    func localParticipantDidFailToPublishDataTrack(participant: LocalParticipant, dataTrack: LocalDataTrack, error: Error) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishDataTrack => \(error)")
         sendEvent("dataTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
@@ -41,7 +41,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ], error: error)
     }
 
-    func didPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
+    func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishVideoTrack => " +
             "trackSid: \(videoTrackPublication.trackSid), " +
             "isTrackEnabled: \(videoTrackPublication.isTrackEnabled)"
@@ -52,7 +52,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ])
     }
 
-    func didFailToPublishVideoTrack(participant: LocalParticipant, videoTrack: LocalVideoTrack, error: Error) {
+    func localParticipantDidFailToPublishVideoTrack(participant: LocalParticipant, videoTrack: LocalVideoTrack, error: Error) {
         SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishVideoTrack => \(error)")
         sendEvent("videoTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
