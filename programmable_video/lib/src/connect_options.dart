@@ -55,23 +55,29 @@ class ConnectOptions {
 
   /// Create a [ConnectOptionsModel] from properties.
   ConnectOptionsModel _toModel() {
-    final audioTrackModels = List<TrackModel>.from(
-      audioTracks.map<TrackModel>(
-        (e) => e._toModel(),
-      ),
-    );
+    final audioTrackModels = audioTracks == null
+        ? null
+        : List<TrackModel>.from(
+            audioTracks.map<TrackModel>(
+              (e) => e._toModel(),
+            ),
+          );
 
-    final dataTrackModels = List<DataTrackModel>.from(
-      dataTracks.map<DataTrackModel>(
-        (e) => e._toModel(),
-      ),
-    );
+    final dataTrackModels = dataTracks == null
+        ? null
+        : List<DataTrackModel>.from(
+            dataTracks.map<DataTrackModel>(
+              (e) => e._toModel(),
+            ),
+          );
 
-    final videoTrackModels = List<LocalVideoTrackModel>.from(
-      videoTracks.map<LocalVideoTrackModel>(
-        (e) => e._toModel(),
-      ),
-    );
+    final videoTrackModels = videoTracks == null
+        ? null
+        : List<LocalVideoTrackModel>.from(
+            videoTracks.map<LocalVideoTrackModel>(
+              (e) => e._toModel(),
+            ),
+          );
 
     return ConnectOptionsModel(
       accessToken,

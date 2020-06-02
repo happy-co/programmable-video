@@ -1,3 +1,8 @@
+## 0.3.3+3
+
+* AudioTracks, VideoTracks and DataTracks are optional in
+  `ConnectOptions`. Stopped mapping them when equals to `null`.
+
 ## 0.3.3+2
 
 * Stopped importing implementation files from the platform interface
