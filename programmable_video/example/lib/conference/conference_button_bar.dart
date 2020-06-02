@@ -193,6 +193,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
                     color: Colors.white,
                   );
                 }),
+            key: Key('camera-button'),
             onPressed: () => _onPressed(widget.onVideoEnabled),
           ),
           CircleButton(
@@ -206,6 +207,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
                     color: Colors.white,
                   );
                 }),
+            key: Key('microphone-button'),
             onPressed: () => _onPressed(widget.onAudioEnabled),
           ),
           CircleButton(
@@ -219,14 +221,17 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
               ),
             ),
             color: Colors.red.withAlpha(200),
+            key: Key('hangup-button'),
             onPressed: () => _onPressed(widget.onHangup),
           ),
           CircleButton(
             child: const Icon(Icons.switch_camera, color: Colors.white),
+            key: Key('switch-camera-button'),
             onPressed: () => _onPressed(widget.onSwitchCamera),
           ),
           CircleButton(
             child: const Icon(Icons.person_add, color: Colors.white),
+            key: Key('add-person-button'),
             onPressed: () => _onPressed(widget.onPersonAdd),
             onLongPress: () => _onPressed(widget.onPersonRemove),
           ),

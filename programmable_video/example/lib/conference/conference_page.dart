@@ -248,6 +248,7 @@ class _ConferencePageState extends State<ConferencePage> {
     final localParticipant = participants.firstWhere((ParticipantWidget participant) => !participant.isRemote, orElse: () => null);
     if (localParticipant != null) {
       children.add(DraggablePublisher(
+        key: Key('publisher'),
         child: localParticipant,
         availableScreenSize: size,
         onButtonBarVisible: _onButtonBarVisibleStreamController.stream,
@@ -320,6 +321,7 @@ class _ConferencePageState extends State<ConferencePage> {
           child: Center(
             child: Text(
               'Waiting for another participant to connect to the room...',
+              key: Key('text-wait'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white),
             ),

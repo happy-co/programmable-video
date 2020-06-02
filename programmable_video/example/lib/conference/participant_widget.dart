@@ -170,6 +170,7 @@ class ParticipantWidget extends StatelessWidget {
           child: Icon(
             Icons.mic_off,
             color: Colors.black,
+            key: Key('microphone-off-icon'),
           ),
         ),
         backgroundColor: Colors.white24,
@@ -186,6 +187,7 @@ class ParticipantWidget extends StatelessWidget {
           child: Icon(
             Icons.videocam_off,
             color: Colors.black,
+            key: Key('videocam-off-icon'),
           ),
         ),
         backgroundColor: Colors.white24,

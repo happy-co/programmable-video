@@ -57,6 +57,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
   List<Widget> _buildChildren(RoomModel roomModel) {
     return <Widget>[
       TextField(
+        key: Key('enter-room-name'),
         decoration: InputDecoration(
           labelText: 'Enter room name',
           errorText: roomModel.nameErrorText,
@@ -115,6 +116,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
       loadingText: 'Creating the room...',
       progressHeight: 2,
       child: FlatButton(
+        key: Key('join-button'),
         color: Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor,
         disabledColor: Colors.grey.shade300,
         child: FittedBox(
