@@ -1,5 +1,4 @@
 import * as express     from 'express';
-import * as bodyParser  from 'body-parser';
 import * as bearerToken from 'express-bearer-token';
 import {routes}         from './routes';
 
@@ -33,10 +32,10 @@ export const webHooks = (): express.Application => {
     wHooks.use(bearerToken());
 
     // Parse Query String
-    wHooks.use(bodyParser.urlencoded({extended: false}));
+    wHooks.use(express.urlencoded({extended: false}));
 
     // Parse posted body as JSON
-    wHooks.use(bodyParser.json());
+    wHooks.use(express.json());
 
     // Configure the routes
     wHooks.use('/webHooksApi/web-hooks', routes());

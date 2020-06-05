@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source_files = 'Classes/**/*'
 
   s.dependency 'Flutter'
-  s.dependency 'TwilioVideo', '3.2'
+  s.dependency 'TwilioVideo', '~> 3.3'
 
   s.platform = :ios, '11.0'
   s.ios.deployment_target = '11.0'

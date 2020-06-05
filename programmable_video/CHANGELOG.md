@@ -1,3 +1,9 @@
+## 0.3.3+4
+
+* Upgraded Twilio SDK for Android from version `5.6.+` to `5.7.+`
+* Upgraded Twilio SDK for iOS from version `3.2` to `3.3`
+* Upgraded `permission_handler` to latest version
+
 ## 0.3.3+3
 
 * AudioTracks, VideoTracks and DataTracks are optional in
@@ -53,14 +59,14 @@
 ## 0.3.0+2
 
 * Android: Fix Bluetooth crash on emulators
-* Upgraded permission_handler to latest version
+* Upgraded `permission_handler` to latest version
 
 ## 0.3.0+1
 
 * Align `README.md` with Twilio OSS law
 * Added workaround for build failure due to a bug in the Twilio SDK for Android
-* Upgraded Twilio SDK for Android from version 5.1.0 to 5.1.+
-* Upgraded Android Studio Gradle plugin from version 3.5.0 to 3.6.0
+* Upgraded Twilio SDK for Android from version `5.1.0` to `5.1.+`
+* Upgraded Android Studio Gradle plugin from version `3.5.0` to `3.6.0`
 
 ## 0.3.0
 
