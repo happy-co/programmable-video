@@ -59,5 +59,8 @@ Yes this is possible, but not included into any example. But for an heads-up you
 ## I need to develop a high quality video calling/broadcasting application, is it possible?
 Yes it is, we recommend you start reading from [this point](https://www.twilio.com/docs/video/tutorials/developing-high-quality-video-applications).
 
+## When I build for release mode the app crashes after joining a room, what should I do?
+Follow the guidelines for adding the [`proguard-rules.pro`](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video#proguard) file.
+
 ## Other questions?
 Didn't find what you need? Please head over to our [Discord](https://discord.gg/42x46NH) where the community might be able to answer your questions.

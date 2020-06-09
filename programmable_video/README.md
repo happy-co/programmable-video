@@ -40,12 +40,37 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 ```
 
 ##### Proguard
-Add the following lines to your proguard-project.txt file.
+Add the following lines to your `android/app/proguard-rules.pro` file.
 
 ```
 -keep class tvi.webrtc.** { *; }
 -keep class com.twilio.video.** { *; }
+-keep class com.twilio.common.** { *; }
 -keepattributes InnerClasses
+```
+
+Also do not forget to reference this `proguard-rules.pro` in your
+`android/app/build.gradle` file.
+
+```
+android {
+
+    ...
+
+    buildTypes {
+
+        release {
+
+            ...    
+
+            minifyEnabled true
+            useProguard true
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        }
+    }
+}
 ```
 
 #### iOS
