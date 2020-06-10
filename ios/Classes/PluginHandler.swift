@@ -397,22 +397,23 @@ public class PluginHandler {
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
                             localVideoTrack.addRenderer(self.stillFrameRenderer)
 
-                            var dimensions: CMVideoDimensions = CMVideoDimensions(width:1920,height:1080)
                             let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
 
-                            let hieghtestVideoFormat: VideoFormat = videoFormats.lastObject as! VideoFormat
-                            let pixelFormat = hieghtestVideoFormat.pixelFormat
-
-                            if(hieghtestVideoFormat.dimensions.height < 1080) {
-                                dimensions = hieghtestVideoFormat.dimensions
+                            guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
+                                $0.dimensions.height <= 1080 }) else {
+                                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
+                                return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
                             }
 
-                            let videoFormat: VideoFormat = VideoFormat()
-                            videoFormat.dimensions  = dimensions
-                            videoFormat.frameRate = 15
-                            videoFormat.pixelFormat = pixelFormat
+                            videoSource.startCapture(device: cameraDevice)
 
-                            videoSource.startCapture(device: cameraDevice, format: videoFormat, completion: nil)
+                            // Sometimes capture does not work when first initlaized on iOS 13.4+
+                            // re-selecting the capture device fixes this problem
+                            videoSource.selectCaptureDevice(cameraDevice, format: videoFormat, completion: { (_, _, error) in
+                                if let error = error {
+                                    SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting video format errored - code: \((error as NSError).code) message: \((error as NSError).description)")
+                                }
+                            })
                             videoTracks.append(localVideoTrack)
                             SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
