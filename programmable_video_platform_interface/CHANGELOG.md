@@ -1,3 +1,7 @@
+## 0.1.0+3
+
+- Removed wrong assertion of `localParticipant` in `Room` model
+
 ## 0.1.0+2
 
 - Removed wrong assertion of `mediaRegion` in `Room` model

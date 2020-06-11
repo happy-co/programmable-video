@@ -35,29 +35,34 @@ class _ConferencePageState extends State<ConferencePage> {
     _wakeLock(true);
   }
 
-  void _connectToRoom() {
+  void _connectToRoom() async {
     try {
       final conferenceRoom = ConferenceRoom(
         name: widget.roomModel.name,
         token: widget.roomModel.token,
         identity: widget.roomModel.identity,
       );
-      conferenceRoom.connect().then((_) {
-        setState(() {
-          _conferenceRoom = conferenceRoom;
-          _onConferenceRoomException = _conferenceRoom.onException.listen((err) async {
-            await PlatformAlertDialog(
-              title: err is PlatformException ? err.message : 'An error occured',
-              content: err is PlatformException ? err.details : err.toString(),
-              defaultActionText: 'OK',
-            ).show(context);
-          });
-          _conferenceRoom.addListener(_conferenceRoomUpdated);
+      await conferenceRoom.connect();
+      setState(() {
+        _conferenceRoom = conferenceRoom;
+        _onConferenceRoomException = _conferenceRoom.onException.listen((err) async {
+          await PlatformAlertDialog(
+            title: err is PlatformException ? err.message : 'An error occured',
+            content: err is PlatformException ? err.details : err.toString(),
+            defaultActionText: 'OK',
+          ).show(context);
         });
+        _conferenceRoom.addListener(_conferenceRoomUpdated);
       });
     } catch (err) {
       Debug.log(err);
-      rethrow;
+      await PlatformAlertDialog(
+        title: err is PlatformException ? err.message : 'An error occured',
+        content: err is PlatformException ? err.details : err.toString(),
+        defaultActionText: 'OK',
+      ).show(context);
+
+      Navigator.of(context).pop();
     }
   }
 
@@ -73,7 +78,7 @@ class _ConferencePageState extends State<ConferencePage> {
     _freePortraitLock();
     _wakeLock(false);
     _disposeStreamsAndSubscriptions();
-    _conferenceRoom.removeListener(_conferenceRoomUpdated);
+    if (_conferenceRoom != null) _conferenceRoom.removeListener(_conferenceRoomUpdated);
     super.dispose();
   }
 
@@ -87,9 +92,9 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   Future<void> _disposeStreamsAndSubscriptions() async {
-    await _onButtonBarVisibleStreamController.close();
-    await _onButtonBarHeightStreamController.close();
-    await _onConferenceRoomException.cancel();
+    if (_onButtonBarVisibleStreamController != null) await _onButtonBarVisibleStreamController.close();
+    if (_onButtonBarHeightStreamController != null) await _onButtonBarHeightStreamController.close();
+    if (_onConferenceRoomException != null) await _onConferenceRoomException.cancel();
   }
 
   @override

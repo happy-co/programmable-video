@@ -17,7 +17,6 @@ class RoomModel {
       : assert(sid != null),
         assert(name != null),
         assert(state != null),
-        assert(localParticipant != null),
         assert(remoteParticipants != null);
 
   @override
