@@ -34,10 +34,14 @@
 lib/generated_plugin_registrant.dart
 
 # Android related
-**/android/**/gradle-wrapper.jar
+# Disabled gradle-wrapper.jar in this ignore due to Codemagic
+# https://docs.codemagic.io/troubleshooting/common-issues/#version-inconsistency-between-local-and-codemagic
+#**/android/**/gradle-wrapper.jar
 **/android/.gradle
 **/android/captures/
-**/android/gradlew
+# Disabled gradlew in this ignore due to Codemagic
+# https://docs.codemagic.io/troubleshooting/common-issues/#version-inconsistency-between-local-and-codemagic
+#**/android/gradlew
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java

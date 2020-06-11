@@ -12,6 +12,8 @@ void main() {
     final joinButton = find.byValueKey('join-button');
     final hangupButton = find.byValueKey('hangup-button');
     final waitForParticipantText = find.byValueKey('text-wait');
+    final showHideButtonBarGesture = find.byValueKey('show-hide-button-bar-gesture');
+    final buttonBar = find.byValueKey('button-bar');
     final publisherWidget = find.byValueKey('publisher');
     final localParticipantVideo = find.byValueKey('Twilio_LocalParticipant');
     final cameraButton = find.byValueKey('camera-button');
@@ -24,6 +26,11 @@ void main() {
     final androidPackageName = 'twilio.flutter.programmable_video_example';
     final iosPackageName = 'twilioflutterProgrammableVideoExample';
 
+    final envVars = Platform.environment;
+    // Check if we need a specific timeout (in seconds) otherwise default to 30.
+    final timeout = envVars['E2E_TEST_TIMEOUT_SECS'] != null ? int.tryParse(envVars['E2E_TEST_TIMEOUT_SECS']) : 30;
+    print('Using a timeout of $timeout seconds');
+
     FlutterDriver driver;
     ProcessResult micPermResult;
     ProcessResult camPermResult;
@@ -31,7 +38,6 @@ void main() {
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
       // Grant permissions for microphone and camera for Android and iOS
-      final envVars = Platform.environment;
       if (envVars['ANDROID_SDK_ROOT'] == null && envVars['APPLESIMUTILS_PATH'] == null) {
         throw Exception('ANDROID_SDK_ROOT and APPLESIMUTILS_PATH can\'t be null. Please set one of them.');
       }
@@ -84,11 +90,11 @@ void main() {
 
     test('sould have started up the app and have an empty room field', () async {
       // Use the `driver.getText` method to verify the field is empty
+      await driver.waitFor(enterRoomNameTextField, timeout: Duration(seconds: timeout));
       expect(await driver.getText(enterRoomNameTextField), '');
     });
 
     test('should enter room name', () async {
-      // Enter a room name in the text field
       await driver.tap(enterRoomNameTextField);
       await driver.enterText(roomName);
       await driver.waitFor(find.text(roomName));
@@ -96,13 +102,19 @@ void main() {
     });
 
     test('should join the room', () async {
-      // Enter a room name in the text field
       await driver.tap(joinButton);
       // Needed for stuff wrapped in animations, otherwise it can't be found during the tests
       await driver.runUnsynchronized(() async {
-        await driver.waitFor(waitForParticipantText);
+        await driver.waitFor(waitForParticipantText, timeout: Duration(seconds: timeout));
         await driver.waitFor(publisherWidget);
         await driver.waitFor(localParticipantVideo);
+      });
+    });
+
+    test('should have a button bar', () async {
+      await driver.runUnsynchronized(() async {
+        await driver.waitFor(buttonBar);
+        await driver.waitFor(showHideButtonBarGesture);
         await driver.waitFor(cameraButton);
         await driver.waitFor(microphoneButton);
         await driver.waitFor(hangupButton);

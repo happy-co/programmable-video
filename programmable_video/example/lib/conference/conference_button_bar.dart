@@ -144,6 +144,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
       right: 0,
       bottom: 0,
       child: GestureDetector(
+        key: Key('show-hide-button-bar-gesture'),
         behavior: HitTestBehavior.translucent,
         onTapDown: (_) => _pauseTimer(),
         onTapUp: (_) => _toggleBar(),
@@ -151,6 +152,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
         child: Stack(
           children: <Widget>[
             AnimatedPositioned(
+              key: Key('button-bar'),
               bottom: _bottom,
               left: 0,
               right: 0,

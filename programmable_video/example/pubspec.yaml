@@ -1,5 +1,6 @@
 name: twilio_programmable_video_example
 description: Demonstrates how to use the twilio_programmable_video plugin.
+version: 1.0.0
 publish_to: 'none'
 
 environment:
