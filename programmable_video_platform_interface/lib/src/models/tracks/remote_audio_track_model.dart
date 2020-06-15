@@ -16,7 +16,11 @@ class RemoteAudioTrackModel extends TrackModel {
         super(name: name, enabled: enabled);
 
   factory RemoteAudioTrackModel.fromEventChannelMap(Map<String, dynamic> map) {
-    return RemoteAudioTrackModel(name: map['name'], enabled: map['enabled'], sid: map['sid']);
+    return RemoteAudioTrackModel(
+      name: map['name'],
+      enabled: map['enabled'],
+      sid: map['sid'],
+    );
   }
 
   @override

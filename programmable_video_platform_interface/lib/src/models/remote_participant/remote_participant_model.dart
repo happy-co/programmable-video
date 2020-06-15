@@ -11,8 +11,13 @@ class RemoteParticipantModel {
   final List<RemoteDataTrackPublicationModel> remoteDataTrackPublications;
   final List<RemoteVideoTrackPublicationModel> remoteVideoTrackPublications;
 
-  const RemoteParticipantModel({@required this.identity, @required this.sid, @required this.remoteAudioTrackPublications, @required this.remoteDataTrackPublications, @required this.remoteVideoTrackPublications})
-      : assert(identity != null),
+  const RemoteParticipantModel({
+    @required this.identity,
+    @required this.sid,
+    @required this.remoteAudioTrackPublications,
+    @required this.remoteDataTrackPublications,
+    @required this.remoteVideoTrackPublications,
+  })  : assert(identity != null),
         assert(sid != null),
         assert(remoteAudioTrackPublications != null),
         assert(remoteDataTrackPublications != null),
@@ -47,32 +52,37 @@ class RemoteParticipantModel {
     }
 
     return RemoteParticipantModel(
-        identity: map['identity'], sid: map['sid'], remoteAudioTrackPublications: remoteAudioTrackPublications, remoteDataTrackPublications: remoteDataTrackPublications, remoteVideoTrackPublications: remoteVideoTrackPublications);
+      identity: map['identity'],
+      sid: map['sid'],
+      remoteAudioTrackPublications: remoteAudioTrackPublications,
+      remoteDataTrackPublications: remoteDataTrackPublications,
+      remoteVideoTrackPublications: remoteVideoTrackPublications,
+    );
   }
 
   @override
   String toString() {
     var remoteAudioTrackPublicationsString = '';
     for (var remoteAudioTrackPublication in remoteAudioTrackPublications) {
-      remoteAudioTrackPublicationsString += remoteAudioTrackPublication.toString() + ', ';
+      remoteAudioTrackPublicationsString += remoteAudioTrackPublication.toString() + ',';
     }
 
     var remoteDataTrackPublicationsString = '';
     for (var remoteDataTrackPublication in remoteDataTrackPublications) {
-      remoteDataTrackPublicationsString += remoteDataTrackPublication.toString() + ', ';
+      remoteDataTrackPublicationsString += remoteDataTrackPublication.toString() + ',';
     }
 
     var remoteVideoTrackPublicationsString = '';
     for (var remoteVideoTrackPublication in remoteVideoTrackPublications) {
-      remoteVideoTrackPublicationsString += remoteVideoTrackPublication.toString() + ', ';
+      remoteVideoTrackPublicationsString += remoteVideoTrackPublication.toString() + ',';
     }
 
     return '''{ 
       identity: $identity,
       sid: $sid,
-      remoteAudioTrackPublications: [$remoteAudioTrackPublicationsString],
-      remoteDataTrackPublications: [$remoteDataTrackPublicationsString],
-      remoteVideoTrackPublications: [$remoteVideoTrackPublicationsString]
+      remoteAudioTrackPublications: [ $remoteAudioTrackPublicationsString ],
+      remoteDataTrackPublications: [ $remoteDataTrackPublicationsString ],
+      remoteVideoTrackPublications: [ $remoteVideoTrackPublicationsString ]
       }''';
   }
 }

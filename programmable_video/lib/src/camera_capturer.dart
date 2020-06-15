@@ -35,6 +35,7 @@ class CameraCapturer implements VideoCapturer {
   /// Switch the current [CameraSource].
   ///
   /// This method can be invoked while capturing frames or not.
+  /// Throws a [FormatException] if the result could not be parsed to a [CameraSource].
   Future<void> switchCamera() async {
     _cameraSource = await ProgrammableVideoPlatform.instance.switchCamera();
   }

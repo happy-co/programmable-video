@@ -16,7 +16,10 @@ abstract class BaseRemoteDataTrackEvent {
 class StringMessage extends BaseRemoteDataTrackEvent {
   final String message;
 
-  const StringMessage(RemoteDataTrackModel remoteDataTrackModel, this.message) : super(remoteDataTrackModel);
+  const StringMessage(
+    RemoteDataTrackModel remoteDataTrackModel,
+    this.message,
+  ) : super(remoteDataTrackModel);
 
   @override
   String toString() => 'StringMessage: { remoteDataTrackModel: $remoteDataTrackModel, message: $message }';
@@ -26,7 +29,10 @@ class StringMessage extends BaseRemoteDataTrackEvent {
 class BufferMessage extends BaseRemoteDataTrackEvent {
   final ByteBuffer message;
 
-  const BufferMessage(RemoteDataTrackModel remoteDataTrackModel, this.message) : super(remoteDataTrackModel);
+  const BufferMessage(
+    RemoteDataTrackModel remoteDataTrackModel,
+    this.message,
+  ) : super(remoteDataTrackModel);
 
   @override
   String toString() => 'StringMessage: { remoteDataTrackModel: $remoteDataTrackModel, message: $message }';
@@ -36,7 +42,10 @@ class BufferMessage extends BaseRemoteDataTrackEvent {
 class UnknownEvent extends BaseRemoteDataTrackEvent {
   final String eventName;
 
-  const UnknownEvent(RemoteDataTrackModel remoteDataTrackModel, this.eventName) : super(remoteDataTrackModel);
+  const UnknownEvent(
+    RemoteDataTrackModel remoteDataTrackModel,
+    this.eventName,
+  ) : super(remoteDataTrackModel);
 
   @override
   String toString() => 'UnknownEvent: { eventName: $eventName }';

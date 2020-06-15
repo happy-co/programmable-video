@@ -5,17 +5,24 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 /// Model that a plugin implementation can use to construct a LocalDataTrackPublication.
 class LocalDataTrackPublicationModel {
   final String sid;
-  final DataTrackModel localDataTrack;
+  final LocalDataTrackModel localDataTrack;
 
-  const LocalDataTrackPublicationModel({@required this.sid, @required this.localDataTrack})
-      : assert(sid != null),
+  const LocalDataTrackPublicationModel({
+    @required this.sid,
+    @required this.localDataTrack,
+  })  : assert(sid != null),
         assert(localDataTrack != null);
 
   factory LocalDataTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
-    if (map['localDataTrack'] == null) {
-      return LocalDataTrackPublicationModel(sid: map['sid'], localDataTrack: null);
-    }
-    return LocalDataTrackPublicationModel(sid: map['sid'], localDataTrack: DataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['localDataTrack'])));
+    assert(map['localDataTrack'] != null);
+    return LocalDataTrackPublicationModel(
+      sid: map['sid'],
+      localDataTrack: LocalDataTrackModel.fromEventChannelMap(
+        Map<String, dynamic>.from(
+          map['localDataTrack'],
+        ),
+      ),
+    );
   }
 
   @override

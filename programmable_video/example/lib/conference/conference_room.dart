@@ -172,7 +172,13 @@ class ConferenceRoom with ChangeNotifier {
 
   Future<void> switchCamera() async {
     Debug.log('ConferenceRoom.switchCamera()');
-    await _cameraCapturer.switchCamera();
+    try {
+      await _cameraCapturer.switchCamera();
+    } on FormatException catch (e) {
+      Debug.log(
+        'ConferenceRoom.switchCamera() failed because of FormatException with message: ${e.message}',
+      );
+    }
   }
 
   void addDummy({Widget child}) {

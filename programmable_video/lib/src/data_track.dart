@@ -26,17 +26,4 @@ abstract class DataTrack extends Track {
   int get maxRetransmits => _maxRetransmits;
 
   DataTrack() : super(true, '');
-
-  /// Update properties from a [TrackModel].
-  @override
-  void _updateFromModel(TrackModel model) {
-    if (model is DataTrackModel) {
-      super._updateFromModel(model);
-      _name = model.name;
-      _ordered = model.ordered;
-      _reliable = model.reliable;
-      _maxPacketLifeTime = model.maxPacketLifeTime;
-      _maxRetransmits = model.maxRetransmits;
-    }
-  }
 }

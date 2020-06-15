@@ -11,8 +11,13 @@ class RemoteDataTrackPublicationModel {
 
   final RemoteDataTrackModel remoteDataTrack;
 
-  RemoteDataTrackPublicationModel({this.subscribed, this.enabled, @required this.sid, @required this.name, @required this.remoteDataTrack})
-      : assert(sid != null),
+  const RemoteDataTrackPublicationModel({
+    this.subscribed,
+    this.enabled,
+    @required this.sid,
+    @required this.name,
+    @required this.remoteDataTrack,
+  })  : assert(sid != null),
         assert(name != null);
 
   factory RemoteDataTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
@@ -21,7 +26,13 @@ class RemoteDataTrackPublicationModel {
       remoteDataTrack = RemoteDataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['remoteDataTrack']));
     }
 
-    return RemoteDataTrackPublicationModel(sid: map['sid'], name: map['name'], enabled: map['enabled'], subscribed: map['subscribed'], remoteDataTrack: remoteDataTrack);
+    return RemoteDataTrackPublicationModel(
+      sid: map['sid'],
+      name: map['name'],
+      enabled: map['enabled'],
+      subscribed: map['subscribed'],
+      remoteDataTrack: remoteDataTrack,
+    );
   }
 
   @override

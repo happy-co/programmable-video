@@ -8,37 +8,46 @@ abstract class BaseRemoteParticipantEvent {
   const BaseRemoteParticipantEvent(this.remoteParticipantModel);
 
   @override
-  String toString() => 'BaseRemoteParticipantEvent: { remoteParticipantModel: $remoteParticipantModel}';
+  String toString() => 'BaseRemoteParticipantEvent: { remoteParticipantModel: $remoteParticipantModel }';
 }
 
 /// Use this event if a RemoteAudioTrack was disabled.
 class RemoteAudioTrackDisabled extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
 
-  const RemoteAudioTrackDisabled(RemoteParticipantModel remoteParticipantModel, this.remoteAudioTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteAudioTrackDisabled(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteAudioTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteAudioTrackDisabled: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel}';
+  String toString() => 'RemoteAudioTrackDisabled: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteAudioTrack was enabled.
 class RemoteAudioTrackEnabled extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
 
-  const RemoteAudioTrackEnabled(RemoteParticipantModel remoteParticipantModel, this.remoteAudioTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteAudioTrackEnabled(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteAudioTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteAudioTrackEnabled: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel}';
+  String toString() => 'RemoteAudioTrackEnabled: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteAudioTrack was enabled.
 class RemoteAudioTrackPublished extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
 
-  const RemoteAudioTrackPublished(RemoteParticipantModel remoteParticipantModel, this.remoteAudioTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteAudioTrackPublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteAudioTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteAudioTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel}';
+  String toString() => 'RemoteAudioTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteAudioTrack was subscribed to.
@@ -46,8 +55,11 @@ class RemoteAudioTrackSubscribed extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
   final RemoteAudioTrackModel remoteAudioTrackModel;
 
-  const RemoteAudioTrackSubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteAudioTrackPublicationModel, @required this.remoteAudioTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteAudioTrackSubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteAudioTrackPublicationModel,
+    @required this.remoteAudioTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteAudioTrackPublicationModel != null),
         assert(remoteAudioTrackModel != null),
         super(remoteParticipantModel);
@@ -63,8 +75,11 @@ class RemoteAudioTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
   final TwilioExceptionModel exception;
 
-  const RemoteAudioTrackSubscriptionFailed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteAudioTrackPublicationModel, @required this.exception})
-      : assert(remoteParticipantModel != null),
+  const RemoteAudioTrackSubscriptionFailed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteAudioTrackPublicationModel,
+    @required this.exception,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteAudioTrackPublicationModel != null),
         assert(exception != null),
         super(remoteParticipantModel);
@@ -79,10 +94,13 @@ class RemoteAudioTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
 class RemoteAudioTrackUnpublished extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
 
-  const RemoteAudioTrackUnpublished(RemoteParticipantModel remoteParticipantModel, this.remoteAudioTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteAudioTrackUnpublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteAudioTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteAudioTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel}';
+  String toString() => 'RemoteAudioTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteAudioTrackPublicationModel: $remoteAudioTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteAudioTrack was unsubscribed to.
@@ -90,8 +108,11 @@ class RemoteAudioTrackUnsubscribed extends BaseRemoteParticipantEvent {
   final RemoteAudioTrackPublicationModel remoteAudioTrackPublicationModel;
   final RemoteAudioTrackModel remoteAudioTrackModel;
 
-  const RemoteAudioTrackUnsubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteAudioTrackPublicationModel, @required this.remoteAudioTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteAudioTrackUnsubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteAudioTrackPublicationModel,
+    @required this.remoteAudioTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteAudioTrackPublicationModel != null),
         assert(remoteAudioTrackModel != null),
         super(remoteParticipantModel);
@@ -106,10 +127,13 @@ class RemoteAudioTrackUnsubscribed extends BaseRemoteParticipantEvent {
 class RemoteDataTrackPublished extends BaseRemoteParticipantEvent {
   final RemoteDataTrackPublicationModel remoteDataTrackPublicationModel;
 
-  const RemoteDataTrackPublished(RemoteParticipantModel remoteParticipantModel, this.remoteDataTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteDataTrackPublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteDataTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteDataTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteDataTrackPublicationModel: $remoteDataTrackPublicationModel}';
+  String toString() => 'RemoteDataTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteDataTrackPublicationModel: $remoteDataTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteDataTrack was subscibed to.
@@ -117,8 +141,11 @@ class RemoteDataTrackSubscribed extends BaseRemoteParticipantEvent {
   final RemoteDataTrackPublicationModel remoteDataTrackPublicationModel;
   final RemoteDataTrackModel remoteDataTrackModel;
 
-  const RemoteDataTrackSubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteDataTrackPublicationModel, @required this.remoteDataTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteDataTrackSubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteDataTrackPublicationModel,
+    @required this.remoteDataTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteDataTrackPublicationModel != null),
         assert(remoteDataTrackModel != null),
         super(remoteParticipantModel);
@@ -134,8 +161,11 @@ class RemoteDataTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
   final RemoteDataTrackPublicationModel remoteDataTrackPublicationModel;
   final TwilioExceptionModel exception;
 
-  const RemoteDataTrackSubscriptionFailed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteDataTrackPublicationModel, @required this.exception})
-      : assert(remoteParticipantModel != null),
+  const RemoteDataTrackSubscriptionFailed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteDataTrackPublicationModel,
+    @required this.exception,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteDataTrackPublicationModel != null),
         assert(exception != null),
         super(remoteParticipantModel);
@@ -150,10 +180,13 @@ class RemoteDataTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
 class RemoteDataTrackUnpublished extends BaseRemoteParticipantEvent {
   final RemoteDataTrackPublicationModel remoteDataTrackPublicationModel;
 
-  const RemoteDataTrackUnpublished(RemoteParticipantModel remoteParticipantModel, this.remoteDataTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteDataTrackUnpublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteDataTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteDataTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteDataTrackPublicationModel: $remoteDataTrackPublicationModel}';
+  String toString() => 'RemoteDataTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteDataTrackPublicationModel: $remoteDataTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteDataTrack was unsubscribed to.
@@ -161,8 +194,11 @@ class RemoteDataTrackUnsubscribed extends BaseRemoteParticipantEvent {
   final RemoteDataTrackPublicationModel remoteDataTrackPublicationModel;
   final RemoteDataTrackModel remoteDataTrackModel;
 
-  const RemoteDataTrackUnsubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteDataTrackPublicationModel, @required this.remoteDataTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteDataTrackUnsubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteDataTrackPublicationModel,
+    @required this.remoteDataTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteDataTrackPublicationModel != null),
         assert(remoteDataTrackModel != null),
         super(remoteParticipantModel);
@@ -177,30 +213,39 @@ class RemoteDataTrackUnsubscribed extends BaseRemoteParticipantEvent {
 class RemoteVideoTrackDisabled extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
 
-  const RemoteVideoTrackDisabled(RemoteParticipantModel remoteParticipantModel, this.remoteVideoTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteVideoTrackDisabled(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteVideoTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteVideoTrackDisabled: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel}';
+  String toString() => 'RemoteVideoTrackDisabled: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteVideoTrack was enabled.
 class RemoteVideoTrackEnabled extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
 
-  const RemoteVideoTrackEnabled(RemoteParticipantModel remoteParticipantModel, this.remoteVideoTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteVideoTrackEnabled(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteVideoTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteVideoTrackEnabled: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel}';
+  String toString() => 'RemoteVideoTrackEnabled: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteVideoTrack was published.
 class RemoteVideoTrackPublished extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
 
-  const RemoteVideoTrackPublished(RemoteParticipantModel remoteParticipantModel, this.remoteVideoTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteVideoTrackPublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteVideoTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteVideoTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel}';
+  String toString() => 'RemoteVideoTrackPublished: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteVideoTrack was subscribed to.
@@ -208,8 +253,11 @@ class RemoteVideoTrackSubscribed extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
   final RemoteVideoTrackModel remoteVideoTrackModel;
 
-  const RemoteVideoTrackSubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteVideoTrackPublicationModel, @required this.remoteVideoTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteVideoTrackSubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteVideoTrackPublicationModel,
+    @required this.remoteVideoTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteVideoTrackPublicationModel != null),
         assert(remoteVideoTrackModel != null),
         super(remoteParticipantModel);
@@ -225,8 +273,11 @@ class RemoteVideoTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
   final TwilioExceptionModel exception;
 
-  const RemoteVideoTrackSubscriptionFailed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteVideoTrackPublicationModel, @required this.exception})
-      : assert(remoteParticipantModel != null),
+  const RemoteVideoTrackSubscriptionFailed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteVideoTrackPublicationModel,
+    @required this.exception,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteVideoTrackPublicationModel != null),
         assert(exception != null),
         super(remoteParticipantModel);
@@ -241,10 +292,13 @@ class RemoteVideoTrackSubscriptionFailed extends BaseRemoteParticipantEvent {
 class RemoteVideoTrackUnpublished extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
 
-  const RemoteVideoTrackUnpublished(RemoteParticipantModel remoteParticipantModel, this.remoteVideoTrackPublicationModel) : super(remoteParticipantModel);
+  const RemoteVideoTrackUnpublished(
+    RemoteParticipantModel remoteParticipantModel,
+    this.remoteVideoTrackPublicationModel,
+  ) : super(remoteParticipantModel);
 
   @override
-  String toString() => 'RemoteVideoTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel}';
+  String toString() => 'RemoteVideoTrackUnpublished: { remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel }';
 }
 
 /// Use this event if a RemoteVideoTrack was unsubscribed to.
@@ -252,8 +306,11 @@ class RemoteVideoTrackUnsubscribed extends BaseRemoteParticipantEvent {
   final RemoteVideoTrackPublicationModel remoteVideoTrackPublicationModel;
   final RemoteVideoTrackModel remoteVideoTrackModel;
 
-  const RemoteVideoTrackUnsubscribed({@required RemoteParticipantModel remoteParticipantModel, @required this.remoteVideoTrackPublicationModel, @required this.remoteVideoTrackModel})
-      : assert(remoteParticipantModel != null),
+  const RemoteVideoTrackUnsubscribed({
+    @required RemoteParticipantModel remoteParticipantModel,
+    @required this.remoteVideoTrackPublicationModel,
+    @required this.remoteVideoTrackModel,
+  })  : assert(remoteParticipantModel != null),
         assert(remoteVideoTrackPublicationModel != null),
         assert(remoteVideoTrackModel != null),
         super(remoteParticipantModel);

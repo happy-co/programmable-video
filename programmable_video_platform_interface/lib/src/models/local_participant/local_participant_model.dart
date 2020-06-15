@@ -16,20 +16,20 @@ class LocalParticipantModel {
   final List<LocalDataTrackPublicationModel> localDataTrackPublications;
   final List<LocalVideoTrackPublicationModel> localVideoTrackPublications;
 
-  const LocalParticipantModel(
-      {@required this.identity,
-      @required this.sid,
-      @required this.signalingRegion,
-      @required this.networkQualityLevel,
-      @required this.localAudioTrackPublications,
-      @required this.localDataTrackPublications,
-      @required this.localVideoTrackPublications})
-      : assert(identity != null),
+  const LocalParticipantModel({
+    @required this.identity,
+    @required this.sid,
+    @required this.signalingRegion,
+    @required this.networkQualityLevel,
+    @required this.localAudioTrackPublications,
+    @required this.localDataTrackPublications,
+    @required this.localVideoTrackPublications,
+  })  : assert(identity != null),
         assert(sid != null),
         assert(signalingRegion != null),
         assert(networkQualityLevel != null),
         assert(localAudioTrackPublications != null),
-        assert(localAudioTrackPublications != null),
+        assert(localDataTrackPublications != null),
         assert(localVideoTrackPublications != null);
 
   factory LocalParticipantModel.fromEventChannelMap(Map<String, dynamic> map) {
@@ -61,30 +61,31 @@ class LocalParticipantModel {
     }
 
     return LocalParticipantModel(
-        identity: map['identity'],
-        sid: map['sid'],
-        signalingRegion: map['signalingRegion'],
-        networkQualityLevel: EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN,
-        localAudioTrackPublications: localAudioTrackPublications,
-        localDataTrackPublications: localDataTrackPublications,
-        localVideoTrackPublications: localVideoTrackPublications);
+      identity: map['identity'],
+      sid: map['sid'],
+      signalingRegion: map['signalingRegion'],
+      networkQualityLevel: EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN,
+      localAudioTrackPublications: localAudioTrackPublications,
+      localDataTrackPublications: localDataTrackPublications,
+      localVideoTrackPublications: localVideoTrackPublications,
+    );
   }
 
   @override
   String toString() {
     var localAudioTrackPublicationsString = '';
     for (var localAudioTrackPublication in localAudioTrackPublications) {
-      localAudioTrackPublicationsString += localAudioTrackPublication.toString() + ', ';
+      localAudioTrackPublicationsString += localAudioTrackPublication.toString() + ',';
     }
 
     var localDataTrackPublicationsString = '';
     for (var localDataTrackPublication in localDataTrackPublications) {
-      localDataTrackPublicationsString += localDataTrackPublication.toString() + ', ';
+      localDataTrackPublicationsString += localDataTrackPublication.toString() + ',';
     }
 
     var localVideoTrackPublicationsString = '';
     for (var localVideoTrackPublication in localVideoTrackPublications) {
-      localVideoTrackPublicationsString += localVideoTrackPublication.toString() + ', ';
+      localVideoTrackPublicationsString += localVideoTrackPublication.toString() + ',';
     }
 
     return '''{ 

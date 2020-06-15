@@ -57,16 +57,16 @@ class ConnectOptions {
   ConnectOptionsModel _toModel() {
     final audioTrackModels = audioTracks == null
         ? null
-        : List<TrackModel>.from(
-            audioTracks.map<TrackModel>(
+        : List<LocalAudioTrackModel>.from(
+            audioTracks.map<LocalAudioTrackModel>(
               (e) => e._toModel(),
             ),
           );
 
     final dataTrackModels = dataTracks == null
         ? null
-        : List<DataTrackModel>.from(
-            dataTracks.map<DataTrackModel>(
+        : List<LocalDataTrackModel>.from(
+            dataTracks.map<LocalDataTrackModel>(
               (e) => e._toModel(),
             ),
           );

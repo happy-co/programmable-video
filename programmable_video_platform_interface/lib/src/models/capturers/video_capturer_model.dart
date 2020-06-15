@@ -2,7 +2,9 @@
 class VideoCapturerModel {
   final bool isScreencast;
 
-  const VideoCapturerModel(this.isScreencast);
+  const VideoCapturerModel(
+    this.isScreencast,
+  );
 
   @override
   String toString() {

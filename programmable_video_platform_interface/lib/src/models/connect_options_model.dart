@@ -27,10 +27,10 @@ class ConnectOptionsModel {
   final List<VideoCodec> preferredVideoCodecs;
 
   /// Audio tracks that will be published upon connection.
-  final List<TrackModel> audioTracks;
+  final List<LocalAudioTrackModel> audioTracks;
 
   /// Data tracks that will be published upon connection.
-  final List<DataTrackModel> dataTracks;
+  final List<LocalDataTrackModel> dataTracks;
 
   /// Video tracks that will be published upon connection.
   final List<LocalVideoTrackModel> videoTracks;
@@ -68,7 +68,7 @@ class ConnectOptionsModel {
         'preferredAudioCodecs': preferredAudioCodecs != null ? Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)) : null,
         'preferredVideoCodecs': preferredVideoCodecs != null ? Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)) : null,
         'audioTracks': audioTracks != null ? Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((TrackModel a) => a.toMap())) : null,
-        'dataTracks': dataTracks != null ? Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((DataTrackModel d) => d.toMap())) : null,
+        'dataTracks': dataTracks != null ? Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrackModel d) => d.toMap())) : null,
         'videoTracks': videoTracks != null ? Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrackModel v) => v.toMap())) : null,
         'enableDominantSpeaker': enableDominantSpeaker,
         'enableAutomaticSubscription': enableAutomaticSubscription

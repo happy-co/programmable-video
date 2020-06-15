@@ -11,8 +11,13 @@ class RemoteAudioTrackPublicationModel {
 
   final RemoteAudioTrackModel remoteAudioTrack;
 
-  RemoteAudioTrackPublicationModel({this.subscribed, this.enabled, @required this.sid, @required this.name, @required this.remoteAudioTrack})
-      : assert(sid != null),
+  const RemoteAudioTrackPublicationModel({
+    this.subscribed,
+    this.enabled,
+    @required this.sid,
+    @required this.name,
+    @required this.remoteAudioTrack,
+  })  : assert(sid != null),
         assert(name != null);
 
   factory RemoteAudioTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
@@ -21,7 +26,13 @@ class RemoteAudioTrackPublicationModel {
       remoteAudioTrack = RemoteAudioTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['remoteAudioTrack']));
     }
 
-    return RemoteAudioTrackPublicationModel(sid: map['sid'], name: map['name'], enabled: map['enabled'], subscribed: map['subscribed'], remoteAudioTrack: remoteAudioTrack);
+    return RemoteAudioTrackPublicationModel(
+      sid: map['sid'],
+      name: map['name'],
+      enabled: map['enabled'],
+      subscribed: map['subscribed'],
+      remoteAudioTrack: remoteAudioTrack,
+    );
   }
 
   @override

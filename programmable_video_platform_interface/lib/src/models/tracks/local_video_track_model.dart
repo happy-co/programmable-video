@@ -18,11 +18,15 @@ class LocalVideoTrackModel extends TrackModel {
         super(name: name, enabled: enabled);
 
   factory LocalVideoTrackModel.fromEventChannelMap(Map<String, dynamic> map) {
+    assert(map['videoCapturer'] != null);
     var videoCapturerMap = Map<String, dynamic>.from(map['videoCapturer'] as Map<dynamic, dynamic>);
     return LocalVideoTrackModel(
       name: map['name'],
       enabled: map['enabled'],
-      cameraCapturer: CameraCapturerModel(EnumToString.fromString(CameraSource.values, videoCapturerMap['cameraSource']), videoCapturerMap['type']),
+      cameraCapturer: CameraCapturerModel(
+        EnumToString.fromString(CameraSource.values, videoCapturerMap['cameraSource']),
+        videoCapturerMap['type'],
+      ),
     );
   }
 
@@ -38,7 +42,10 @@ class LocalVideoTrackModel extends TrackModel {
     return <String, Object>{
       'enable': enabled,
       'name': name,
-      'videoCapturer': {'cameraSource': EnumToString.parse(cameraCapturer.source), 'type': 'CameraCapturer'},
+      'videoCapturer': {
+        'cameraSource': EnumToString.parse(cameraCapturer.source),
+        'type': 'CameraCapturer',
+      },
     };
   }
 }

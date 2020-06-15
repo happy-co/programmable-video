@@ -6,9 +6,9 @@ class LocalDataTrack extends DataTrack {
 
   LocalDataTrack([this._dataTrackOptions]) : super();
 
-  /// Construct from a [DataTrackModel].
-  factory LocalDataTrack._fromModel(DataTrackModel model) {
-    var localDataTrack = LocalDataTrack();
+  /// Construct from a [LocalDataTrackModel].
+  factory LocalDataTrack._fromModel(LocalDataTrackModel model) {
+    final localDataTrack = LocalDataTrack();
     localDataTrack._updateFromModel(model);
     return localDataTrack;
   }
@@ -22,14 +22,25 @@ class LocalDataTrack extends DataTrack {
   }
 
   /// Create [DataTrackModel] from properties.
-  DataTrackModel _toModel() {
-    return DataTrackModel(
-      reliable: _reliable,
-      name: _name,
-      enabled: _enabled,
-      maxPacketLifeTime: _maxPacketLifeTime,
-      maxRetransmits: _maxRetransmits,
-      ordered: _ordered,
+  LocalDataTrackModel _toModel() {
+    return LocalDataTrackModel(
+      name: _dataTrackOptions?.name,
+      maxPacketLifeTime: _dataTrackOptions?.maxPacketLifeTime,
+      maxRetransmits: _dataTrackOptions?.maxRetransmits,
+      ordered: _dataTrackOptions?.ordered,
     );
+  }
+
+  /// Update properties from a [LocalDataTrackModel].
+  @override
+  void _updateFromModel(TrackModel model) {
+    if (model is LocalDataTrackModel) {
+      super._updateFromModel(model);
+      _name = model.name;
+      _ordered = model.ordered;
+      _reliable = model.reliable;
+      _maxPacketLifeTime = model.maxPacketLifeTime;
+      _maxRetransmits = model.maxRetransmits;
+    }
   }
 }

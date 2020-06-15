@@ -126,9 +126,9 @@ unit_test:
   stage: test
   script:
     - cd programmable_video || exit 1
-    - flutter test --coverage --pub test/*
+    - flutter test --coverage --pub test
     - cd ../programmable_video_platform_interface || exit 1
-    - flutter test --coverage --pub test/*
+    - flutter test --coverage --pub test
     - cd ../ || exit 1
     - sed -i 's/SF:/SF:programmable_video\//g' programmable_video/coverage/lcov.info
     - sed -i 's/SF:/SF:programmable_video_platform_interface\//g' programmable_video_platform_interface/coverage/lcov.info

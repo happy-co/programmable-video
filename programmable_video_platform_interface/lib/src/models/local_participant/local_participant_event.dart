@@ -5,7 +5,9 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 abstract class BaseLocalParticipantEvent {
   final LocalParticipantModel localParticipantModel;
 
-  const BaseLocalParticipantEvent(this.localParticipantModel);
+  const BaseLocalParticipantEvent(
+    this.localParticipantModel,
+  );
 
   @override
   String toString() => 'BaseLocalParticipantEvent: { localParticipantModel: $localParticipantModel}';
@@ -15,7 +17,10 @@ abstract class BaseLocalParticipantEvent {
 class LocalAudioTrackPublished extends BaseLocalParticipantEvent {
   final LocalAudioTrackPublicationModel publicationModel;
 
-  const LocalAudioTrackPublished(LocalParticipantModel localParticipantModel, this.publicationModel) : super(localParticipantModel);
+  const LocalAudioTrackPublished(
+    LocalParticipantModel localParticipantModel,
+    this.publicationModel,
+  ) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalAudioTrackPublished: { localParticipantModel: $localParticipantModel, publicationModel: $publicationModel }';
@@ -23,11 +28,14 @@ class LocalAudioTrackPublished extends BaseLocalParticipantEvent {
 
 /// Use this event if publishing a LocalAudioTrack failed.
 class LocalAudioTrackPublicationFailed extends BaseLocalParticipantEvent {
-  final TrackModel localAudioTrack;
+  final LocalAudioTrackModel localAudioTrack;
   final TwilioExceptionModel exception;
 
-  const LocalAudioTrackPublicationFailed({@required this.localAudioTrack, @required this.exception, @required LocalParticipantModel localParticipantModel})
-      : assert(localAudioTrack != null),
+  const LocalAudioTrackPublicationFailed({
+    @required this.localAudioTrack,
+    @required this.exception,
+    @required LocalParticipantModel localParticipantModel,
+  })  : assert(localAudioTrack != null),
         assert(exception != null),
         assert(localParticipantModel != null),
         super(localParticipantModel);
@@ -40,7 +48,10 @@ class LocalAudioTrackPublicationFailed extends BaseLocalParticipantEvent {
 class LocalDataTrackPublished extends BaseLocalParticipantEvent {
   final LocalDataTrackPublicationModel publicationModel;
 
-  const LocalDataTrackPublished(LocalParticipantModel localParticipantModel, this.publicationModel) : super(localParticipantModel);
+  const LocalDataTrackPublished(
+    LocalParticipantModel localParticipantModel,
+    this.publicationModel,
+  ) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalDataTrackPublished: { localParticipantModel: $localParticipantModel, publicationModel: $publicationModel }';
@@ -48,11 +59,14 @@ class LocalDataTrackPublished extends BaseLocalParticipantEvent {
 
 /// Use this event if publishing a LocalDataTrack failed.
 class LocalDataTrackPublicationFailed extends BaseLocalParticipantEvent {
-  final DataTrackModel localDataTrack;
+  final LocalDataTrackModel localDataTrack;
   final TwilioExceptionModel exception;
 
-  const LocalDataTrackPublicationFailed({@required this.localDataTrack, @required this.exception, @required LocalParticipantModel localParticipantModel})
-      : assert(localDataTrack != null),
+  const LocalDataTrackPublicationFailed({
+    @required this.localDataTrack,
+    @required this.exception,
+    @required LocalParticipantModel localParticipantModel,
+  })  : assert(localDataTrack != null),
         assert(exception != null),
         assert(localParticipantModel != null),
         super(localParticipantModel);
@@ -65,7 +79,10 @@ class LocalDataTrackPublicationFailed extends BaseLocalParticipantEvent {
 class LocalVideoTrackPublished extends BaseLocalParticipantEvent {
   final LocalVideoTrackPublicationModel publicationModel;
 
-  const LocalVideoTrackPublished(LocalParticipantModel localParticipantModel, this.publicationModel) : super(localParticipantModel);
+  const LocalVideoTrackPublished(
+    LocalParticipantModel localParticipantModel,
+    this.publicationModel,
+  ) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalVideoTrackPublished: { localParticipantModel: $localParticipantModel, publicationModel: $publicationModel }';
@@ -76,8 +93,11 @@ class LocalVideoTrackPublicationFailed extends BaseLocalParticipantEvent {
   final LocalVideoTrackModel localVideoTrack;
   final TwilioExceptionModel exception;
 
-  const LocalVideoTrackPublicationFailed({@required this.localVideoTrack, @required this.exception, @required LocalParticipantModel localParticipantModel})
-      : assert(localVideoTrack != null),
+  const LocalVideoTrackPublicationFailed({
+    @required this.localVideoTrack,
+    @required this.exception,
+    @required LocalParticipantModel localParticipantModel,
+  })  : assert(localVideoTrack != null),
         assert(exception != null),
         assert(localParticipantModel != null),
         super(localParticipantModel);

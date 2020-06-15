@@ -19,7 +19,8 @@ export 'room/room_model.dart';
 export 'room/room_event.dart';
 
 export 'tracks/track_model.dart';
-export 'tracks/data_track_model.dart';
+export 'tracks/local_data_track_model.dart';
+export 'tracks/local_audio_track_model.dart';
 export 'tracks/local_video_track_model.dart';
 export 'tracks/remote_data_track_model.dart';
 export 'tracks/remote_video_track_model.dart';

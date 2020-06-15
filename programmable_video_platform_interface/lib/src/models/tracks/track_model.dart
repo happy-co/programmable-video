@@ -1,15 +1,14 @@
 /// Base model that a plugin implementation can use to construct a Track.
 ///
 /// Other track models can extend this model to implement various kinds of Tracks.
-class TrackModel {
+abstract class TrackModel {
   final String name;
   final bool enabled;
 
-  const TrackModel({this.name, this.enabled});
-
-  factory TrackModel.fromEventChannelMap(Map<String, dynamic> map) {
-    return TrackModel(enabled: map['enabled'], name: map['name']);
-  }
+  const TrackModel({
+    this.name,
+    this.enabled,
+  });
 
   @override
   String toString() {

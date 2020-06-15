@@ -13,8 +13,14 @@ class RoomModel {
   final LocalParticipantModel localParticipant;
   final List<RemoteParticipantModel> remoteParticipants;
 
-  const RoomModel({@required this.sid, @required this.name, @required this.state, @required this.mediaRegion, @required this.localParticipant, @required this.remoteParticipants})
-      : assert(sid != null),
+  const RoomModel({
+    @required this.sid,
+    @required this.name,
+    @required this.state,
+    @required this.mediaRegion,
+    @required this.localParticipant,
+    @required this.remoteParticipants,
+  })  : assert(sid != null),
         assert(name != null),
         assert(state != null),
         assert(remoteParticipants != null);
@@ -23,9 +29,9 @@ class RoomModel {
   String toString() {
     var remoteParticipantsString = '';
     for (var remoteParticipant in remoteParticipants) {
-      remoteParticipantsString += remoteParticipant.toString() + ', ';
+      remoteParticipantsString += remoteParticipant.toString() + ',';
     }
 
-    return '{ sid: $sid, name: $name, state: $state, mediaRegion: $mediaRegion, localParticipant: $localParticipant, remoteParticipants: [$remoteParticipantsString] }';
+    return '{ sid: $sid, name: $name, state: $state, mediaRegion: $mediaRegion, localParticipant: $localParticipant, remoteParticipants: [ $remoteParticipantsString ] }';
   }
 }

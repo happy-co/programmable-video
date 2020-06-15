@@ -1,3 +1,9 @@
+## 0.4.0
+
+* **BREAKING CHANGE**: The 'SwitchCamera' method of the 'CameraCapturer'
+    class can now throw a 'FormatException' on IOS and Android.
+* `LocalDataTrack` now uses the DataTrackOptions correctly again.
+    
 ## 0.3.3+4
 
 * Upgraded Twilio SDK for Android from version `5.6.+` to `5.7.+`

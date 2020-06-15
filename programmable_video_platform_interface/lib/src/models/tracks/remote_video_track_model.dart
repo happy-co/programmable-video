@@ -13,10 +13,17 @@ class RemoteVideoTrackModel extends TrackModel {
   })  : assert(name != null),
         assert(enabled != null),
         assert(sid != null),
-        super(name: name, enabled: enabled);
+        super(
+          name: name,
+          enabled: enabled,
+        );
 
   factory RemoteVideoTrackModel.fromEventChannelMap(Map<String, dynamic> map) {
-    return RemoteVideoTrackModel(name: map['name'], enabled: map['enabled'], sid: map['sid']);
+    return RemoteVideoTrackModel(
+      name: map['name'],
+      enabled: map['enabled'],
+      sid: map['sid'],
+    );
   }
 
   @override

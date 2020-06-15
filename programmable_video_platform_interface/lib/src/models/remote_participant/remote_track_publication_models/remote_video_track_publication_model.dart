@@ -11,8 +11,13 @@ class RemoteVideoTrackPublicationModel {
 
   final RemoteVideoTrackModel remoteVideoTrack;
 
-  RemoteVideoTrackPublicationModel({this.subscribed, this.enabled, @required this.sid, @required this.name, @required this.remoteVideoTrack})
-      : assert(sid != null),
+  const RemoteVideoTrackPublicationModel({
+    this.subscribed,
+    this.enabled,
+    @required this.sid,
+    @required this.name,
+    @required this.remoteVideoTrack,
+  })  : assert(sid != null),
         assert(name != null);
 
   factory RemoteVideoTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
@@ -20,7 +25,13 @@ class RemoteVideoTrackPublicationModel {
     if (map['remoteVideoTrack'] != null) {
       remoteVideoTrack = RemoteVideoTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['remoteVideoTrack']));
     }
-    return RemoteVideoTrackPublicationModel(sid: map['sid'], name: map['name'], enabled: map['enabled'], subscribed: map['subscribed'], remoteVideoTrack: remoteVideoTrack);
+    return RemoteVideoTrackPublicationModel(
+      sid: map['sid'],
+      name: map['name'],
+      enabled: map['enabled'],
+      subscribed: map['subscribed'],
+      remoteVideoTrack: remoteVideoTrack,
+    );
   }
 
   @override

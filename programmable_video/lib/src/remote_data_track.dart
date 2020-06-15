@@ -42,6 +42,19 @@ class RemoteDataTrack extends DataTrack {
     return remoteDataTrack;
   }
 
+  /// Update properties from a [RemoteDataTrackModel].
+  @override
+  void _updateFromModel(TrackModel model) {
+    if (model is RemoteDataTrackModel) {
+      super._updateFromModel(model);
+      _name = model.name;
+      _ordered = model.ordered;
+      _reliable = model.reliable;
+      _maxPacketLifeTime = model.maxPacketLifeTime;
+      _maxRetransmits = model.maxRetransmits;
+    }
+  }
+
   void _parseEvents(BaseRemoteDataTrackEvent event) {
     _updateFromModel(event.remoteDataTrackModel);
 

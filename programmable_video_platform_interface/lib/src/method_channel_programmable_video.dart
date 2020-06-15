@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:meta/meta.dart';
 
 import 'enums/enum_exports.dart';
 import 'models/model_exports.dart';
@@ -10,9 +11,29 @@ import 'programmable_video_platform_interface.dart';
 
 /// An implementation of [ProgrammableVideoPlatform] that uses method channels.
 class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
-  static const MethodChannel _methodChannel = MethodChannel('twilio_programmable_video');
+  /// Constructs a MethodChannelProgrammableVideo.
+  MethodChannelProgrammableVideo()
+      : _methodChannel = MethodChannel('twilio_programmable_video'),
+        _roomChannel = EventChannel('twilio_programmable_video/room'),
+        _remoteParticipantChannel = EventChannel('twilio_programmable_video/remote'),
+        _localParticipantChannel = EventChannel('twilio_programmable_video/local'),
+        _remoteDataTrackChannel = EventChannel('twilio_programmable_video/remote_data_track'),
+        super();
+
+  /// This constructor is only used for testing and shouldn't be accessed by
+  /// users of the plugin. It may break or change at any time.
+  @visibleForTesting
+  MethodChannelProgrammableVideo.private(
+    this._methodChannel,
+    this._roomChannel,
+    this._remoteParticipantChannel,
+    this._localParticipantChannel,
+    this._remoteDataTrackChannel,
+  );
 
   //#region Functions
+
+  final MethodChannel _methodChannel;
 
   /// Calls native code to disconnect from a room.
   @override
@@ -23,14 +44,24 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// You can listen to these logs on the [loggingStream].
   @override
   Future<void> setNativeDebug(bool native) {
-    return _methodChannel.invokeMethod('debug', {'native': native});
+    return _methodChannel.invokeMethod(
+      'debug',
+      {
+        'native': native,
+      },
+    );
   }
 
   /// Calls native code to set the speaker mode on or off.
   @override
   Future<bool> setSpeakerphoneOn(bool on) {
     assert(on != null);
-    return _methodChannel.invokeMethod('setSpeakerphoneOn', {'on': on});
+    return _methodChannel.invokeMethod(
+      'setSpeakerphoneOn',
+      {
+        'on': on,
+      },
+    );
   }
 
   /// Calls native code to check if speaker mode is enabled.
@@ -51,41 +82,73 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.
   @override
   Future<bool> enableVideoTrack({bool enabled, String name}) {
-    return _methodChannel.invokeMethod('LocalVideoTrack#enable', <String, dynamic>{'name': name, 'enable': enabled});
+    return _methodChannel.invokeMethod(
+      'LocalVideoTrack#enable',
+      <String, dynamic>{
+        'name': name,
+        'enable': enabled,
+      },
+    );
+  }
+
+  /// Calls native code to send a String message.
+  @override
+  Future<void> sendMessage({String message, String name}) {
+    return _methodChannel.invokeMethod(
+      'LocalDataTrack#sendString',
+      <String, dynamic>{
+        'name': name,
+        'message': message,
+      },
+    );
   }
 
   /// Calls native code to send a ByteBuffer message.
   @override
-  Future<void> sendMessage({String message, String name}) {
-    return _methodChannel.invokeMethod('LocalDataTrack#sendString', <String, dynamic>{'name': name, 'message': message});
-  }
-
-  ///Calls native code to send a ByteBuffer message.
-  @override
   Future<void> sendBuffer({ByteBuffer message, String name}) {
     // Platform Channel Data types don't support ByteBuffer at the moment, so we need to convert it to
     // a data type the channels do understand (https://flutter.dev/docs/development/platform-integration/platform-channels#codec).
-    return _methodChannel.invokeMethod('LocalDataTrack#sendByteBuffer', <String, dynamic>{'name': name, 'message': message.asUint8List()});
+    return _methodChannel.invokeMethod(
+      'LocalDataTrack#sendByteBuffer',
+      <String, dynamic>{
+        'name': name,
+        'message': message.asUint8List(),
+      },
+    );
   }
 
   /// Calls native code to enable the LocalAudioTrack.
   @override
   Future<bool> enableAudioTrack({bool enable, String name}) {
-    return _methodChannel.invokeMethod('LocalAudioTrack#enable', <String, dynamic>{'name': name, 'enable': enable});
+    return _methodChannel.invokeMethod(
+      'LocalAudioTrack#enable',
+      <String, dynamic>{
+        'name': name,
+        'enable': enable,
+      },
+    );
   }
 
-  ///Calls native code to switch the camera.
+  /// Calls native code to switch the camera.
+  ///
+  /// Throws a [FormatException] if the result of the [MethodChannel] call could not be parsed to a [CameraSource].
   @override
   Future<CameraSource> switchCamera() async {
     final methodData = await MethodChannel('twilio_programmable_video').invokeMethod('CameraCapturer#switchCamera');
 
-    return EnumToString.fromString(CameraSource.values, methodData['cameraSource']);
+    final cameraSource = EnumToString.fromString(
+      CameraSource.values,
+      methodData['cameraSource'],
+    );
+    if (cameraSource == null) throw FormatException('Failed to parse cameraSource');
+    return cameraSource;
   }
-  //#endregion
 
-  //#region roomStream
+//#endregion
+
+//#region roomStream
   /// EventChannel over which the native code sends updates concerning the Room.
-  final roomChannel = EventChannel('twilio_programmable_video/room');
+  final EventChannel _roomChannel;
 
   Stream<BaseRoomEvent> _roomStream;
 
@@ -94,12 +157,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// This stream is used to update the Room in a plugin implementation.
   @override
   Stream<BaseRoomEvent> roomStream(int internalId) {
-    _roomStream ??= roomChannel.receiveBroadcastStream(internalId).map(parseRoomEvent);
+    _roomStream ??= _roomChannel.receiveBroadcastStream(internalId).map(_parseRoomEvent);
     return _roomStream;
   }
 
   /// Parses a map send from native code to a [BaseRoomEvent].
-  BaseRoomEvent parseRoomEvent(dynamic event) {
+  BaseRoomEvent _parseRoomEvent(dynamic event) {
     final String eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
     // If no room data is received, skip the event.
@@ -144,8 +207,14 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       mediaRegion = EnumToString.fromString(Region.values, roomMap['mediaRegion']);
     }
 
-    final roomModel =
-        RoomModel(name: roomMap['name'], sid: roomMap['sid'], mediaRegion: mediaRegion, state: EnumToString.fromString(RoomState.values, roomMap['state']), localParticipant: localParticipant, remoteParticipants: remoteParticipants);
+    final roomModel = RoomModel(
+      name: roomMap['name'],
+      sid: roomMap['sid'],
+      mediaRegion: mediaRegion,
+      state: EnumToString.fromString(RoomState.values, roomMap['state']),
+      localParticipant: localParticipant,
+      remoteParticipants: remoteParticipants,
+    );
 
     switch (eventName) {
       case 'connectFailure':
@@ -183,12 +252,13 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
         break;
     }
   }
-  //#endregion
 
-  //#region remoteParticipantStream
+//#endregion
+
+//#region remoteParticipantStream
 
   /// EventChannel over which the native code sends updates concerning the RemoteParticipants.
-  final remoteParticipantChannel = EventChannel('twilio_programmable_video/remote');
+  final EventChannel _remoteParticipantChannel;
 
   Stream<BaseRemoteParticipantEvent> _remoteParticipantStream;
 
@@ -197,12 +267,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// This stream is used to update the RemoteParticipants in a plugin implementation.
   @override
   Stream<BaseRemoteParticipantEvent> remoteParticipantStream(int internalId) {
-    _remoteParticipantStream ??= remoteParticipantChannel.receiveBroadcastStream(internalId).map(parseRemoteParticipantEvent);
+    _remoteParticipantStream ??= _remoteParticipantChannel.receiveBroadcastStream(internalId).map(_parseRemoteParticipantEvent);
     return _remoteParticipantStream;
   }
 
   /// Parses a map send from native code to a [BaseRemoteParticipantEvent].
-  BaseRemoteParticipantEvent parseRemoteParticipantEvent(dynamic event) {
+  BaseRemoteParticipantEvent _parseRemoteParticipantEvent(dynamic event) {
     final eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
 
@@ -270,100 +340,163 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     switch (eventName) {
       case 'audioTrackDisabled':
         assert(remoteAudioTrackPublicationModel != null);
-        return RemoteAudioTrackDisabled(remoteParticipantModel, remoteAudioTrackPublicationModel);
+        return RemoteAudioTrackDisabled(
+          remoteParticipantModel,
+          remoteAudioTrackPublicationModel,
+        );
         break;
       case 'audioTrackEnabled':
         assert(remoteAudioTrackPublicationModel != null);
-        return RemoteAudioTrackEnabled(remoteParticipantModel, remoteAudioTrackPublicationModel);
+        return RemoteAudioTrackEnabled(
+          remoteParticipantModel,
+          remoteAudioTrackPublicationModel,
+        );
         break;
       case 'audioTrackPublished':
         assert(remoteAudioTrackPublicationModel != null);
-        return RemoteAudioTrackPublished(remoteParticipantModel, remoteAudioTrackPublicationModel);
+        return RemoteAudioTrackPublished(
+          remoteParticipantModel,
+          remoteAudioTrackPublicationModel,
+        );
         break;
       case 'audioTrackSubscribed':
         assert(remoteAudioTrackPublicationModel != null);
         assert(remoteAudioTrackModel != null);
-        return RemoteAudioTrackSubscribed(remoteParticipantModel: remoteParticipantModel, remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel, remoteAudioTrackModel: remoteAudioTrackModel);
+        return RemoteAudioTrackSubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
+          remoteAudioTrackModel: remoteAudioTrackModel,
+        );
         break;
       case 'audioTrackSubscriptionFailed':
         assert(remoteAudioTrackPublicationModel != null);
         assert(twilioException != null);
-        return RemoteAudioTrackSubscriptionFailed(remoteParticipantModel: remoteParticipantModel, remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel, exception: twilioException);
+        return RemoteAudioTrackSubscriptionFailed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
+          exception: twilioException,
+        );
         break;
       case 'audioTrackUnpublished':
         assert(remoteAudioTrackPublicationModel != null);
-        return RemoteAudioTrackUnpublished(remoteParticipantModel, remoteAudioTrackPublicationModel);
+        return RemoteAudioTrackUnpublished(
+          remoteParticipantModel,
+          remoteAudioTrackPublicationModel,
+        );
         break;
       case 'audioTrackUnsubscribed':
         assert(remoteAudioTrackPublicationModel != null);
         assert(remoteAudioTrackModel != null);
-        return RemoteAudioTrackUnsubscribed(remoteParticipantModel: remoteParticipantModel, remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel, remoteAudioTrackModel: remoteAudioTrackModel);
+        return RemoteAudioTrackUnsubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
+          remoteAudioTrackModel: remoteAudioTrackModel,
+        );
         break;
       case 'dataTrackPublished':
         assert(remoteDataTrackPublicationModel != null);
-        return RemoteDataTrackPublished(remoteParticipantModel, remoteDataTrackPublicationModel);
+        return RemoteDataTrackPublished(
+          remoteParticipantModel,
+          remoteDataTrackPublicationModel,
+        );
         break;
       case 'dataTrackSubscribed':
         assert(remoteDataTrackPublicationModel != null);
         assert(remoteDataTrackModel != null);
-        return RemoteDataTrackSubscribed(remoteParticipantModel: remoteParticipantModel, remoteDataTrackPublicationModel: remoteDataTrackPublicationModel, remoteDataTrackModel: remoteDataTrackModel);
+        return RemoteDataTrackSubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteDataTrackPublicationModel: remoteDataTrackPublicationModel,
+          remoteDataTrackModel: remoteDataTrackModel,
+        );
         break;
       case 'dataTrackSubscriptionFailed':
         assert(remoteDataTrackPublicationModel != null);
         assert(twilioException != null);
-        return RemoteDataTrackSubscriptionFailed(remoteParticipantModel: remoteParticipantModel, remoteDataTrackPublicationModel: remoteDataTrackPublicationModel, exception: twilioException);
+        return RemoteDataTrackSubscriptionFailed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteDataTrackPublicationModel: remoteDataTrackPublicationModel,
+          exception: twilioException,
+        );
         break;
       case 'dataTrackUnpublished':
         assert(remoteDataTrackPublicationModel != null);
-        return RemoteDataTrackUnpublished(remoteParticipantModel, remoteDataTrackPublicationModel);
+        return RemoteDataTrackUnpublished(
+          remoteParticipantModel,
+          remoteDataTrackPublicationModel,
+        );
         break;
       case 'dataTrackUnsubscribed':
         assert(remoteDataTrackPublicationModel != null);
         assert(remoteDataTrackModel != null);
-        return RemoteDataTrackUnsubscribed(remoteParticipantModel: remoteParticipantModel, remoteDataTrackPublicationModel: remoteDataTrackPublicationModel, remoteDataTrackModel: remoteDataTrackModel);
+        return RemoteDataTrackUnsubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteDataTrackPublicationModel: remoteDataTrackPublicationModel,
+          remoteDataTrackModel: remoteDataTrackModel,
+        );
         break;
       case 'videoTrackDisabled':
         assert(remoteVideoTrackPublicationModel != null);
-        return RemoteVideoTrackDisabled(remoteParticipantModel, remoteVideoTrackPublicationModel);
+        return RemoteVideoTrackDisabled(
+          remoteParticipantModel,
+          remoteVideoTrackPublicationModel,
+        );
         break;
       case 'videoTrackEnabled':
         assert(remoteVideoTrackPublicationModel != null);
-        return RemoteVideoTrackEnabled(remoteParticipantModel, remoteVideoTrackPublicationModel);
+        return RemoteVideoTrackEnabled(
+          remoteParticipantModel,
+          remoteVideoTrackPublicationModel,
+        );
         break;
       case 'videoTrackPublished':
         assert(remoteVideoTrackPublicationModel != null);
-        return RemoteVideoTrackPublished(remoteParticipantModel, remoteVideoTrackPublicationModel);
+        return RemoteVideoTrackPublished(
+          remoteParticipantModel,
+          remoteVideoTrackPublicationModel,
+        );
         break;
       case 'videoTrackSubscribed':
         assert(remoteVideoTrackPublicationModel != null);
         assert(remoteVideoTrackModel != null);
-        return RemoteVideoTrackSubscribed(remoteParticipantModel: remoteParticipantModel, remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel, remoteVideoTrackModel: remoteVideoTrackModel);
+        return RemoteVideoTrackSubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
+          remoteVideoTrackModel: remoteVideoTrackModel,
+        );
         break;
       case 'videoTrackSubscriptionFailed':
         assert(remoteVideoTrackPublicationModel != null);
         assert(twilioException != null);
-        return RemoteVideoTrackSubscriptionFailed(remoteParticipantModel: remoteParticipantModel, remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel, exception: twilioException);
+        return RemoteVideoTrackSubscriptionFailed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
+          exception: twilioException,
+        );
         break;
       case 'videoTrackUnpublished':
         assert(remoteVideoTrackPublicationModel != null);
-        return RemoteVideoTrackUnpublished(remoteParticipantModel, remoteVideoTrackPublicationModel);
+        return RemoteVideoTrackUnpublished(
+          remoteParticipantModel,
+          remoteVideoTrackPublicationModel,
+        );
         break;
       case 'videoTrackUnsubscribed':
         assert(remoteVideoTrackPublicationModel != null);
         assert(remoteVideoTrackModel != null);
-        return RemoteVideoTrackUnsubscribed(remoteParticipantModel: remoteParticipantModel, remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel, remoteVideoTrackModel: remoteVideoTrackModel);
+        return RemoteVideoTrackUnsubscribed(
+          remoteParticipantModel: remoteParticipantModel,
+          remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
+          remoteVideoTrackModel: remoteVideoTrackModel,
+        );
         break;
       default:
         return SkipAbleRemoteParticipantEvent();
         break;
     }
   }
-  //#endregion
-
-  //#region localParticipantStream
 
   /// EventChannel over which the native code sends updates concerning the LocalParticipant.
-  final localParticipantChannel = EventChannel('twilio_programmable_video/local');
+  final EventChannel _localParticipantChannel;
 
   Stream<BaseLocalParticipantEvent> _localParticipantStream;
 
@@ -372,12 +505,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// This stream is used to update the LocalParticipant in a plugin implementation.
   @override
   Stream<BaseLocalParticipantEvent> localParticipantStream(int internalId) {
-    _localParticipantStream ??= localParticipantChannel.receiveBroadcastStream(internalId).map(parseLocalParticipantEvent);
+    _localParticipantStream ??= _localParticipantChannel.receiveBroadcastStream(internalId).map(_parseLocalParticipantEvent);
     return _localParticipantStream;
   }
 
   /// Parses a map send from native code to a [BaseLocalParticipantEvent].
-  BaseLocalParticipantEvent parseLocalParticipantEvent(dynamic event) {
+  BaseLocalParticipantEvent _parseLocalParticipantEvent(dynamic event) {
     final data = Map<String, dynamic>.from(event['data']);
     // If no localParticipant data is received, skip the event.
     if (data['localParticipant'] == null) return SkipAbleLocalParticipantEvent();
@@ -395,7 +528,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     TrackModel localAudioTrack;
     if (data['localAudioTrack'] != null) {
       final map = Map<String, dynamic>.from(data['localAudioTrack']);
-      localAudioTrack = TrackModel.fromEventChannelMap(map);
+      localAudioTrack = LocalAudioTrackModel.fromEventChannelMap(map);
     }
 
     LocalDataTrackPublicationModel localDataTrackPublication;
@@ -404,10 +537,10 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       localDataTrackPublication = LocalDataTrackPublicationModel.fromEventChannelMap(map);
     }
 
-    DataTrackModel localDataTrack;
+    LocalDataTrackModel localDataTrack;
     if (data['localDataTrack'] != null) {
       final map = Map<String, dynamic>.from(data['localDataTrack']);
-      localDataTrack = DataTrackModel.fromEventChannelMap(map);
+      localDataTrack = LocalDataTrackModel.fromEventChannelMap(map);
     }
 
     LocalVideoTrackPublicationModel localVideoTrackPublication;
@@ -430,34 +563,56 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
     switch (eventName) {
       case 'audioTrackPublished':
-        return LocalAudioTrackPublished(localParticipantModel, localAudioTrackPublication);
+        return LocalAudioTrackPublished(
+          localParticipantModel,
+          localAudioTrackPublication,
+        );
         break;
       case 'audioTrackPublicationFailed':
-        return LocalAudioTrackPublicationFailed(localAudioTrack: localAudioTrack, exception: twilioException, localParticipantModel: localParticipantModel);
+        return LocalAudioTrackPublicationFailed(
+          localAudioTrack: localAudioTrack,
+          exception: twilioException,
+          localParticipantModel: localParticipantModel,
+        );
         break;
       case 'dataTrackPublished':
-        return LocalDataTrackPublished(localParticipantModel, localDataTrackPublication);
+        return LocalDataTrackPublished(
+          localParticipantModel,
+          localDataTrackPublication,
+        );
         break;
       case 'dataTrackPublicationFailed':
-        return LocalDataTrackPublicationFailed(localDataTrack: localDataTrack, exception: twilioException, localParticipantModel: localParticipantModel);
+        return LocalDataTrackPublicationFailed(
+          localDataTrack: localDataTrack,
+          exception: twilioException,
+          localParticipantModel: localParticipantModel,
+        );
         break;
       case 'videoTrackPublished':
-        return LocalVideoTrackPublished(localParticipantModel, localVideoTrackPublication);
+        return LocalVideoTrackPublished(
+          localParticipantModel,
+          localVideoTrackPublication,
+        );
         break;
       case 'videoTrackPublicationFailed':
-        return LocalVideoTrackPublicationFailed(localVideoTrack: localVideoTrack, exception: twilioException, localParticipantModel: localParticipantModel);
+        return LocalVideoTrackPublicationFailed(
+          localVideoTrack: localVideoTrack,
+          exception: twilioException,
+          localParticipantModel: localParticipantModel,
+        );
         break;
       default:
         return SkipAbleLocalParticipantEvent();
         break;
     }
   }
-  //#endregion
 
-  //#region remoteDataTrackStream
+//#endregion
+
+//#region remoteDataTrackStream
 
   /// EventChannel over which the native code sends updates concerning the RemoteDataTrack.
-  final remoteDataTrackChannel = EventChannel('twilio_programmable_video/remote_data_track');
+  final EventChannel _remoteDataTrackChannel;
 
   Stream<BaseRemoteDataTrackEvent> _remoteDataTrackStream;
 
@@ -466,12 +621,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// This stream is used to update the RemoteDataTrack in a plugin implementation.
   @override
   Stream<BaseRemoteDataTrackEvent> remoteDataTrackStream(int internalId) {
-    _remoteDataTrackStream ??= remoteDataTrackChannel.receiveBroadcastStream(internalId).map(parseRemoteDataTrackEvent);
+    _remoteDataTrackStream ??= _remoteDataTrackChannel.receiveBroadcastStream(internalId).map(_parseRemoteDataTrackEvent);
     return _remoteDataTrackStream;
   }
 
   /// Parses a map send from native code to a [BaseRemoteDataTrackEvent].
-  BaseRemoteDataTrackEvent parseRemoteDataTrackEvent(dynamic event) {
+  BaseRemoteDataTrackEvent _parseRemoteDataTrackEvent(dynamic event) {
     final eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
     // If no RemoteDataTrack data is received, skip the event.
@@ -500,7 +655,8 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
         break;
     }
   }
-  //#endregion
+
+//#endregion
 
   /// Stream of dynamic that contains all the native logging output.
   @override

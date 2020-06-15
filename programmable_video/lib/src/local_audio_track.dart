@@ -13,8 +13,8 @@ class LocalAudioTrack extends AudioTrack {
 
   LocalAudioTrack(this._enabled, {String name = ''}) : super(_enabled, name);
 
-  /// Construct from a [TrackModel].
-  factory LocalAudioTrack._fromModel(TrackModel model) {
+  /// Construct from a [LocalAudioTrackModel].
+  factory LocalAudioTrack._fromModel(LocalAudioTrackModel model) {
     var localAudioTrack = LocalAudioTrack(model.enabled, name: model.name);
     localAudioTrack._updateFromModel(model);
     return localAudioTrack;
@@ -30,7 +30,7 @@ class LocalAudioTrack extends AudioTrack {
 
   /// Create [TrackModel] from properties.
   TrackModel _toModel() {
-    return TrackModel(
+    return LocalAudioTrackModel(
       enabled: _enabled,
       name: _name,
     );

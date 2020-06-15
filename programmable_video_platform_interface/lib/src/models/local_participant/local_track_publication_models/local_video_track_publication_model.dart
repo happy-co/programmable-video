@@ -7,15 +7,22 @@ class LocalVideoTrackPublicationModel {
   final String sid;
   final LocalVideoTrackModel localVideoTrack;
 
-  const LocalVideoTrackPublicationModel({@required this.sid, @required this.localVideoTrack})
-      : assert(sid != null),
+  const LocalVideoTrackPublicationModel({
+    @required this.sid,
+    @required this.localVideoTrack,
+  })  : assert(sid != null),
         assert(localVideoTrack != null);
 
   factory LocalVideoTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
-    if (map['localVideoTrack'] == null) {
-      return LocalVideoTrackPublicationModel(sid: map['sid'], localVideoTrack: null);
-    }
-    return LocalVideoTrackPublicationModel(sid: map['sid'], localVideoTrack: LocalVideoTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['localVideoTrack'])));
+    assert(map['localVideoTrack'] != null);
+    return LocalVideoTrackPublicationModel(
+      sid: map['sid'],
+      localVideoTrack: LocalVideoTrackModel.fromEventChannelMap(
+        Map<String, dynamic>.from(
+          map['localVideoTrack'],
+        ),
+      ),
+    );
   }
 
   @override

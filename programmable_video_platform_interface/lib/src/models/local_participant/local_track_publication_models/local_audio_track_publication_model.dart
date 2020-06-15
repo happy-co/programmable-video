@@ -5,17 +5,24 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 /// Model that a plugin implementation can use to construct a LocalAudioTrackPublication.
 class LocalAudioTrackPublicationModel {
   final String sid;
-  final TrackModel localAudioTrack;
+  final LocalAudioTrackModel localAudioTrack;
 
-  const LocalAudioTrackPublicationModel({@required this.sid, @required this.localAudioTrack})
-      : assert(sid != null),
+  const LocalAudioTrackPublicationModel({
+    @required this.sid,
+    @required this.localAudioTrack,
+  })  : assert(sid != null),
         assert(localAudioTrack != null);
 
   factory LocalAudioTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
-    if (map['localAudioTrack'] == null) {
-      return LocalAudioTrackPublicationModel(sid: map['sid'], localAudioTrack: null);
-    }
-    return LocalAudioTrackPublicationModel(sid: map['sid'], localAudioTrack: TrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['localAudioTrack'])));
+    assert(map['localAudioTrack'] != null);
+    return LocalAudioTrackPublicationModel(
+      sid: map['sid'],
+      localAudioTrack: LocalAudioTrackModel.fromEventChannelMap(
+        Map<String, dynamic>.from(
+          map['localAudioTrack'],
+        ),
+      ),
+    );
   }
 
   @override

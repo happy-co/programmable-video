@@ -6,7 +6,10 @@ class TwilioExceptionModel {
   /// Message containing a short explanation.
   final String message;
 
-  const TwilioExceptionModel(this.code, this.message);
+  const TwilioExceptionModel(
+    this.code,
+    this.message,
+  );
 
   @override
   String toString() {
