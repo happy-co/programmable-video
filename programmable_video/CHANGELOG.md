@@ -1,3 +1,13 @@
+## 0.5.0
+
+* **BREAKING CHANGE**: The 'send' method of the 'LocalDataTrack'
+    class can now throw a 'TwilioException'.
+* **BREAKING CHANGE**: The 'sendBuffer' method of the 'LocalDataTrack'
+    class can now throw a 'TwilioException'.
+* **BREAKING CHANGE**: The 'connect' method of the 'TwilioProgrammableVideo'
+    class can now throw a 'TwilioException'.
+* 'TwilioException' now has more error codes available through static properties.
+
 ## 0.4.0
 
 * **BREAKING CHANGE**: The 'SwitchCamera' method of the 'CameraCapturer'

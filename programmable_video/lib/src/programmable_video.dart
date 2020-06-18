@@ -13,6 +13,15 @@ class TwilioProgrammableVideo {
     }
   }
 
+  static Exception _convertException(PlatformException err) {
+    var code = int.tryParse(err.code);
+    // If code is an integer, then it is a Twilio ErrorInfo exception.
+    if (code != null) {
+      return TwilioException(int.parse(err.code), err.message);
+    }
+    return err;
+  }
+
   /// Enable debug logging.
   ///
   /// For native logging set [native] to `true` and for dart set [dart] to `true`.
@@ -76,12 +85,15 @@ class TwilioProgrammableVideo {
   /// Will request camera and microphone permissions.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     assert(connectOptions != null);
-
     if (await requestPermissionForCameraAndMicrophone()) {
-      print('waiting');
-      final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions._toModel());
-      print('waited');
-      return Room(roomId);
+      try {
+        print('waiting');
+        final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions._toModel());
+        print('waited');
+        return Room(roomId);
+      } on PlatformException catch (err) {
+        throw TwilioProgrammableVideo._convertException(err);
+      }
     }
     throw Exception('Permissions not granted');
   }

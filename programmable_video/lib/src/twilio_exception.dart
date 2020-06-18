@@ -2,6 +2,8 @@ part of twilio_programmable_video;
 
 /// Twilio Video SDK Exception.
 class TwilioException implements Exception {
+  /// This exception is iOS only.
+  static final int unknownException = 0;
   static final int accessTokenInvalidException = 20101;
   static final int accessTokenHeaderInvalidException = 20102;
   static final int accessTokenIssuerInvalidException = 20103;
@@ -15,6 +17,7 @@ class TwilioException implements Exception {
   static final int signalingIncomingMessageInvalidException = 53003;
   static final int signalingOutgoingMessageInvalidException = 53004;
   static final int signalingDnsResolutionErrorException = 53005;
+  static final int signalingServerBusyException = 53006;
   static final int roomNameInvalidException = 53100;
   static final int roomNameTooLongException = 53101;
   static final int roomNameCharsInvalidException = 53102;
@@ -34,24 +37,32 @@ class TwilioException implements Exception {
   static final int roomMediaRegionUnavailableException = 53116;
   static final int roomSubscriptionOperationNotSupportedException = 53117;
   static final int roomRoomCompletedException = 53118;
+  static final int roomAccountLimitExceededException = 53119;
   static final int participantIdentityInvalidException = 53200;
   static final int participantIdentityTooLongException = 53201;
   static final int participantIdentityCharsInvalidException = 53202;
   static final int participantMaxTracksExceededException = 53203;
   static final int participantNotFoundException = 53204;
   static final int participantDuplicateIdentityException = 53205;
+  static final int participantAccountLimitExceededException = 53206;
+  static final int participantInvalidSubscribeRuleException = 53215;
   static final int trackInvalidException = 53300;
   static final int trackNameInvalidException = 53301;
   static final int trackNameTooLongException = 53302;
   static final int trackNameCharsInvalidException = 53303;
   static final int trackNameIsDuplicatedException = 53304;
   static final int trackServerTrackCapacityReachedException = 53305;
+  static final int trackDataTrackMessageTooLargeException = 53306;
+  static final int trackDataTrackSendBufferFullException = 53307;
   static final int mediaClientLocalDescFailedException = 53400;
   static final int mediaServerLocalDescFailedException = 53401;
   static final int mediaClientRemoteDescFailedException = 53402;
   static final int mediaServerRemoteDescFailedException = 53403;
   static final int mediaNoSupportedCodecException = 53404;
   static final int mediaConnectionErrorException = 53405;
+  static final int mediaDataTrackFailedException = 53406;
+  static final int mediaDtlsTransportFailedException = 53407;
+  static final int mediaIceRestartNotAllowedException = 53408;
   static final int configurationAcquireFailedException = 53500;
   static final int configurationAcquireTurnFailedException = 53501;
 

@@ -13,12 +13,26 @@ class LocalDataTrack extends DataTrack {
     return localDataTrack;
   }
 
+  /// Sends a [String] message over this data track.
+  ///
+  /// Can throw either a [PlatformException] or a [TwilioException].
   Future<void> send(String message) async {
-    return ProgrammableVideoPlatform.instance.sendMessage(name: name, message: message);
+    try {
+      return ProgrammableVideoPlatform.instance.sendMessage(name: name, message: message);
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
+  /// Sends a [ByteBuffer] message over this data track.
+  ///
+  /// Can throw either a [PlatformException] or a [TwilioException].
   Future<void> sendBuffer(ByteBuffer message) async {
-    return ProgrammableVideoPlatform.instance.sendBuffer(name: name, message: message);
+    try {
+      return ProgrammableVideoPlatform.instance.sendBuffer(name: name, message: message);
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Create [DataTrackModel] from properties.
