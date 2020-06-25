@@ -125,6 +125,7 @@ class Room {
     onParticipantConnected = _onParticipantConnected.stream;
     onParticipantDisconnected = _onParticipantDisconnected.stream;
     onReconnected = _onReconnected.stream;
+    onReconnecting = _onReconnecting.stream;
     onRecordingStarted = _onRecordingStarted.stream;
     onRecordingStopped = _onRecordingStopped.stream;
   }
@@ -196,7 +197,11 @@ class Room {
       _onDisconnected.add(RoomDisconnectedEvent(this, TwilioException._fromModel(event.exception)));
     } else if (event is ParticipantConnected) {
       assert(event.connectedParticipant != null);
-      _onParticipantConnected.add(RoomParticipantConnectedEvent(this, _findOrCreateRemoteParticipant(event.connectedParticipant)));
+      final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);
+      if (!_remoteParticipants.contains(remoteParticipant)) {
+        _remoteParticipants.add(remoteParticipant);
+      }
+      _onParticipantConnected.add(RoomParticipantConnectedEvent(this, remoteParticipant));
     } else if (event is ParticipantDisconnected) {
       assert(event.disconnectedParticipant != null);
       var remoteParticipant = RemoteParticipant._fromModel(event.disconnectedParticipant);
@@ -212,7 +217,11 @@ class Room {
     } else if (event is RecordingStopped) {
       _onRecordingStopped.add(this);
     } else if (event is DominantSpeakerChanged) {
-      _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, _findOrCreateRemoteParticipant(event.dominantSpeaker)));
+      final remoteParticipant = _findOrCreateRemoteParticipant(event.dominantSpeaker);
+      if (!_remoteParticipants.contains(remoteParticipant)) {
+        _remoteParticipants.add(remoteParticipant);
+      }
+      _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, remoteParticipant));
     }
   }
 

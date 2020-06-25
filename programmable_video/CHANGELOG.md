@@ -1,3 +1,10 @@
+## 0.5.0+1
+
+* `Room` now updates correctly again from `ParticipantConnected` and
+    `DominantSpeakerChanged` events.
+* `Room.onReconnecting` is now instantiated in the constructor of
+    `Room`.
+
 ## 0.5.0
 
 * **BREAKING CHANGE**: The 'send' method of the 'LocalDataTrack'
