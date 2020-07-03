@@ -1,3 +1,7 @@
+## 0.5.0+2
+* Upgraded Twilio SDK for Android from version `5.7.+` to `5.8.+`
+* Upgraded Twilio SDK for iOS from version `3.3` to `3.4`
+
 ## 0.5.0+1
 
 * `Room` now updates correctly again from `ParticipantConnected` and

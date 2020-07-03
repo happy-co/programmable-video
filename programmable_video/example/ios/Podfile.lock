@@ -92,10 +92,10 @@ PODS:
   - "permission_handler (5.0.0+hotfix.8)":
     - Flutter
   - PromisesObjC (1.2.8)
-  - "twilio_programmable_video (0.3.3+4)":
+  - "twilio_programmable_video (0.5.0+2)":
     - Flutter
-    - TwilioVideo (~> 3.3)
-  - TwilioVideo (3.3.0)
+    - TwilioVideo (~> 3.4)
+  - TwilioVideo (3.4.1)
   - wakelock (0.0.1):
     - Flutter
 
