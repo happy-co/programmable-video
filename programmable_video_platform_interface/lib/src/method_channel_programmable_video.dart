@@ -633,7 +633,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     if (data['remoteDataTrack'] == null) {
       return SkipAbleRemoteDataTrackEvent();
     }
-    final remoteDataTrackModel = RemoteDataTrackModel.fromEventChannelMap(data['remoteDataTrack']);
+    final remoteDataTrackModel = RemoteDataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(data['remoteDataTrack']));
     switch (eventName) {
       case 'stringMessage':
         return StringMessage(remoteDataTrackModel, data['message'] as String);

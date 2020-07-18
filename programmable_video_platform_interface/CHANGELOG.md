@@ -1,3 +1,7 @@
+## 0.2.0+1
+
+- Fixed unhandled exception when receiving a remote data track message.
+
 ## 0.2.0
 
 - **BREAKING CHANGE**: SwitchCamera() can now throw a FormatException if it failed to parse to a CameraSource
