@@ -176,10 +176,10 @@ SPEC CHECKSUMS:
   native_device_orientation: e24d00be281de72996640885d80e706142707660
   permission_handler: c2a19c5cb3ed2d7054fc4baa8ff1b86f5dcfedfd
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
-  twilio_programmable_video: cf55347963d25335a5d5798dd8918ca3c361e333
-  TwilioVideo: 75caa6c7bda55d3633a3f2ad7caba66479cb067a
+  twilio_programmable_video: c4121706f941493b847ca1603321b43e2ed1c179
+  TwilioVideo: a16a52ac4d4b2006a33f43535ebed7d6d9acd70e
   wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
 PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
 
-COCOAPODS: 1.8.3
+COCOAPODS: 1.9.3

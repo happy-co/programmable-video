@@ -562,7 +562,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.4.0"
+    version: "0.5.0+3"
   twilio_programmable_video_platform_interface:
     dependency: transitive
     description:
