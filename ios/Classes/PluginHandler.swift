@@ -27,7 +27,7 @@ public class PluginHandler {
             case "getSpeakerphoneOn":
                 getSpeakerphoneOn(result: result)
             case "takePhoto":
-                takePhoto(result: result)
+                takePhoto(call, result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
             case "LocalDataTrack#sendString":
@@ -43,7 +43,7 @@ public class PluginHandler {
         }
     }
 
-    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?) -> Data {
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?, _ imageCompression: CGFloat) -> Data {
         var ciImage: CIImage? = nil
         if let imageBuffer = imageBuffer {
             ciImage = CIImage(cvPixelBuffer: imageBuffer)
@@ -82,17 +82,21 @@ public class PluginHandler {
             image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
         }
 
-        if let imageData = image?.jpegData(compressionQuality: 1.0) {
+        if let imageData = image?.jpegData(compressionQuality: imageCompression) {
             return imageData
         }
 
         return Data()
     }
 
-    private func takePhoto(result: @escaping FlutterResult) {
+    private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        let arguments = call.arguments as? [String: Any?]
+        let imageCompression = arguments!["imageCompression"] as? CGFloat ?? 100
+        let convertedImageCompression = imageCompression / 100
+
         if let frameToKeep = stillFrameRenderer.frameToKeep {
-            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, convertedImageCompression))
         }
          return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -113,7 +117,10 @@ public class PluginHandler {
                     }
                     captureDevice = realCaptureDevice
             }
-            cameraSource.selectCaptureDevice(captureDevice, completion: { (_, _, error) in
+            guard let videoFormat = self.getVideoFormat(cameraDevice: captureDevice) else {
+                return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
+            }
+            cameraSource.selectCaptureDevice(captureDevice, format: videoFormat, completion: { (_, _, error) in
                 if let error = error {
                     return result(FlutterError(code: "\((error as NSError).code)", message: (error as NSError).description, details: nil))
                 }
@@ -397,11 +404,7 @@ public class PluginHandler {
                             let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
                             localVideoTrack.addRenderer(self.stillFrameRenderer)
 
-                            let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
-
-                            guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
-                                $0.dimensions.height <= 1080 }) else {
-                                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
+                            guard let videoFormat = self.getVideoFormat(cameraDevice: cameraDevice) else {
                                 return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
                             }
 
@@ -426,6 +429,17 @@ public class PluginHandler {
         let roomId = 1
         SwiftTwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, connectOptions)
         result(roomId)
+    }
+
+    private func getVideoFormat(cameraDevice: AVCaptureDevice) -> VideoFormat? {
+        let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
+
+        guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
+            $0.dimensions.height <= 1080 }) else {
+            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
+                return nil
+        }
+        return videoFormat
     }
 
     private func debug(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
