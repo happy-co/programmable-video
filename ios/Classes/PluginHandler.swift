@@ -154,7 +154,7 @@ public class PluginHandler {
         guard let localVideoTrackName = arguments["name"] as? String else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
         }
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackEnable => called for \(localVideoTrackName), enable=\(String(describing: localVideoTrackEnable))")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackFrameCount => called for \(localVideoTrackName), enable=\(String(describing: localVideoTrackEnable))")
 
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
         if localVideoTrack != nil {
