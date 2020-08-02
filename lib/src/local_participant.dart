@@ -108,6 +108,11 @@ class LocalParticipant implements Participant {
     onVideoTrackPublicationFailed = _onVideoTrackPublicationFailed.stream;
   }
 
+  /// Reset the video of the local participant.
+  Future<void> resetVideo() async {
+    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalParticipant#resetVideo', <String, dynamic>{});
+  }
+
   /// Dispose the LocalParticipant
   void _dispose() {
     _closeStreams();
