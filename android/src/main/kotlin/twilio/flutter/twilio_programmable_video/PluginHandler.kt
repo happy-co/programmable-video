@@ -373,7 +373,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                         }
 
                         val highestDimensions = formats.first().dimensions
-                        var videoDimensions = VideoDimensions(VideoDimensions.HD_1080P_VIDEO_WIDTH , VideoDimensions.HD_1080P_VIDEO_HEIGHT)
+                        var videoDimensions = VideoDimensions(VideoDimensions.HD_1080P_VIDEO_WIDTH, VideoDimensions.HD_1080P_VIDEO_HEIGHT)
                         if (highestDimensions.height < VideoDimensions.HD_1080P_VIDEO_HEIGHT) {
                             videoDimensions = VideoDimensions(highestDimensions.width, highestDimensions.height)
                         }
