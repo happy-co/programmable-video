@@ -99,11 +99,12 @@ class PluginHandler : MethodCallHandler, ActivityAware {
 
     private fun takePhoto(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        val imageCompression = call.argument<Int>("imageCompression") ?: 100
             TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object: CameraCapturer.PictureListener {
                 override fun onPictureTaken(pictureData: ByteArray) {
                     val bitmap: Bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
                     val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
                     val  byteArray = stream.toByteArray()
                     bitmap.recycle()
                     return result.success(byteArray)

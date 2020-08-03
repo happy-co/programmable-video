@@ -47,7 +47,7 @@ public class PluginHandler {
         }
     }
 
-    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?) -> Data {
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?, _ imageCompression: CGFloat) -> Data {
         var ciImage: CIImage? = nil
         if let imageBuffer = imageBuffer {
             ciImage = CIImage(cvPixelBuffer: imageBuffer)
@@ -86,7 +86,7 @@ public class PluginHandler {
             image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
         }
 
-        if let imageData = image?.jpegData(compressionQuality: 1.0) {
+        if let imageData = image?.jpegData(compressionQuality: imageCompression) {
             return imageData
         }
 
@@ -97,7 +97,7 @@ public class PluginHandler {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
 
         if let frameToKeep = stillFrameRenderer.frameToKeep {
-            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, convertedImageCompression))
         }
          return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -462,7 +462,6 @@ public class PluginHandler {
 
     private func getVideoFormat(cameraDevice: AVCaptureDevice) -> VideoFormat? {
         let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
-
         guard let videoFormat: VideoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
             $0.dimensions.height <= 1080 }) else {
             SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
