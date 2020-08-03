@@ -47,7 +47,7 @@ public class PluginHandler {
         }
     }
 
-    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?, _ imageCompression: CGFloat) -> Data {
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?) -> Data {
         var ciImage: CIImage? = nil
         if let imageBuffer = imageBuffer {
             ciImage = CIImage(cvPixelBuffer: imageBuffer)
@@ -86,7 +86,7 @@ public class PluginHandler {
             image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
         }
 
-        if let imageData = image?.jpegData(compressionQuality: imageCompression) {
+        if let imageData = image?.jpegData(compressionQuality: 1.0) {
             return imageData
         }
 
@@ -95,12 +95,9 @@ public class PluginHandler {
 
     private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
-        let arguments = call.arguments as? [String: Any?]
-        let imageCompression = arguments!["imageCompression"] as? CGFloat ?? 100
-        let convertedImageCompression = imageCompression / 100
 
         if let frameToKeep = stillFrameRenderer.frameToKeep {
-            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, convertedImageCompression))
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer))
         }
          return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -466,11 +463,12 @@ public class PluginHandler {
     private func getVideoFormat(cameraDevice: AVCaptureDevice) -> VideoFormat? {
         let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
 
-        guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
+        guard let videoFormat: VideoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
             $0.dimensions.height <= 1080 }) else {
             SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
                 return nil
         }
+        videoFormat.frameRate = 15
         return videoFormat
     }
 
