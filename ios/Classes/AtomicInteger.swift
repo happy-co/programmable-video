@@ -9,28 +9,28 @@ import Foundation
 
 public final class AtomicInteger {
     private let lock = DispatchSemaphore(value: 1)
-    private var value: Int
+    private var localValue: Int
 
     public init(value initialValue: Int = 0) {
-        value = initialValue
+        localValue = initialValue
     }
 
     public var value: Int {
         get {
             lock.wait()
             defer { lock.signal() }
-            return value
+            return localValue
         }
         set {
             lock.wait()
             defer { lock.signal() }
-            value = newValue
+            localValue = newValue
         }
     }
 
     public func increment() {
         lock.wait()
         defer { lock.signal() }
-        value += 1
+        localValue += 1
     }
 }
