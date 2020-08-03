@@ -20,6 +20,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicLong
 
 
 class PluginHandler : MethodCallHandler, ActivityAware {
@@ -38,6 +39,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
     private var myNoisyAudioStreamReceiver: BecomingNoisyReceiver? = null
 
     private var audioManager: AudioManager
+
+    private var frameCount: AtomicLong = AtomicLong(0)
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(applicationContext: Context) {
@@ -82,23 +85,26 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
-            "takePhoto" -> takePhoto(result)
+            "takePhoto" -> takePhoto(call, result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
+            "LocalParticipant#resetVideo" -> localParticipantResetVideo(call, result)
             "LocalVideoTrack#enable" -> localVideoTrackEnable(call, result)
+            "LocalVideoTrack#frameCount" -> localVideoTrackFrameCount(call, result)
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
             else -> result.notImplemented()
         }
     }
 
-    private fun takePhoto(result: MethodChannel.Result) {
+    private fun takePhoto(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        val imageCompression = call.argument<Int>("imageCompression") ?: 100
             TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object: CameraCapturer.PictureListener {
                 override fun onPictureTaken(pictureData: ByteArray) {
                     val bitmap: Bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
                     val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
                     val  byteArray = stream.toByteArray()
                     bitmap.recycle()
                     return result.success(byteArray)
@@ -123,6 +129,17 @@ class PluginHandler : MethodCallHandler, ActivityAware {
         return result.error("NOT FOUND", "No CameraCapturer has been initialized yet natively", null)
     }
 
+    private fun localParticipantResetVideo(call: MethodCall, result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.localParticipantResetVideo => called")
+        val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
+        if (localVideoTrack != null) {
+            getLocalParticipant()?.unpublishTrack(localVideoTrack.localVideoTrack)
+            getLocalParticipant()?.publishTrack(localVideoTrack.localVideoTrack)
+            return result.success(true)
+        }
+        return result.error("NOT_FOUND", "No LocalVideoTrack found", null)
+    }
+
     private fun localVideoTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localVideoTrackName = call.argument<String>("name")
         val localVideoTrackEnable = call.argument<Boolean>("enable")
@@ -136,6 +153,19 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
         }
         return result.error("MISSING_PARAMS", "The parameters 'name' and 'enable' were not given", null)
+    }
+
+    private fun localVideoTrackFrameCount(call: MethodCall, result: MethodChannel.Result) {
+        val localVideoTrackName = call.argument<String>("name")
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackFrameCount => called for $localVideoTrackName")
+        if (localVideoTrackName != null) {
+            val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull { it.trackName == localVideoTrackName }
+            if (localVideoTrack != null) {
+                return result.success(frameCount.get())
+            }
+            return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
+        }
+        return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
     }
 
     private fun localAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
@@ -356,6 +386,13 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                                 .build()
 
                         val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoConstraints, videoTrack["name"] as String)
+                        // Reset framecount and add a renderer to count frames
+                        frameCount.set(0)
+                        localVideoTrack?.addRenderer(object: VideoRenderer {
+                            override fun renderFrame(frame: I420Frame) {
+                                frameCount.incrementAndGet()
+                            }
+                        })
                         videoTracks.add(localVideoTrack)
                     }
                     TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
