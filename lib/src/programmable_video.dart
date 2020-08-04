@@ -60,7 +60,7 @@ class TwilioProgrammableVideo {
 
   /// Takes a photo from the camera capturer.
   static Future<dynamic> takePhoto(int imageCompression) async {
-    return _methodChannel.invokeMethod('takePhoto', {'imageCompressions': imageCompression});
+    return _methodChannel.invokeMethod('takePhoto', {'imageCompression': imageCompression});
   }
 
   /// Request permission for camera and microphone.

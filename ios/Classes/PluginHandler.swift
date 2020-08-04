@@ -467,10 +467,11 @@ public class PluginHandler {
         let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
 
         guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
-            $0.dimensions.height <= 1080 }) else {
+            $0.dimensions.height <= 720 }) else {
             SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
                 return nil
         }
+        videoFormat.frameRate = 15
         return videoFormat
     }
 
