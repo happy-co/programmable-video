@@ -1,4 +1,9 @@
+## 0.5.0+3
+
+* Remote participants that have left the room will no longer be in the `Room.remoteParticipants` list.
+
 ## 0.5.0+2
+
 * Upgraded Twilio SDK for Android from version `5.7.+` to `5.8.+`
 * Upgraded Twilio SDK for iOS from version `3.3` to `3.4`
 

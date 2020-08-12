@@ -165,25 +165,7 @@ class Room {
     if (event is SkipAbleRoomEvent) {
       return;
     }
-    final roomModel = event.roomModel;
-    _sid = roomModel.sid;
-    _name = roomModel.name;
-    _state = roomModel.state;
-    if (roomModel.mediaRegion != null) {
-      _mediaRegion = roomModel.mediaRegion;
-    }
-
-    if (roomModel.localParticipant != null) {
-      _localParticipant ??= LocalParticipant._fromModel(roomModel.localParticipant);
-      _localParticipant._updateFromModel(roomModel.localParticipant);
-    }
-    for (final remoteParticipantModel in roomModel.remoteParticipants) {
-      final remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantModel);
-      if (!_remoteParticipants.contains(remoteParticipant)) {
-        _remoteParticipants.add(remoteParticipant);
-      }
-      remoteParticipant._updateFromModel(remoteParticipantModel);
-    }
+    _updateFromModel(event.roomModel);
 
     if (event is ConnectFailure) {
       _onConnectFailure.add(RoomConnectFailureEvent(this, TwilioException._fromModel(event.exception)));
@@ -204,7 +186,7 @@ class Room {
       _onParticipantConnected.add(RoomParticipantConnectedEvent(this, remoteParticipant));
     } else if (event is ParticipantDisconnected) {
       assert(event.disconnectedParticipant != null);
-      var remoteParticipant = RemoteParticipant._fromModel(event.disconnectedParticipant);
+      var remoteParticipant = _findOrCreateRemoteParticipant(event.disconnectedParticipant);
       _remoteParticipants.remove(remoteParticipant);
       _onParticipantDisconnected.add(RoomParticipantDisconnectedEvent(this, remoteParticipant));
       remoteParticipant._dispose();
@@ -282,5 +264,36 @@ class Room {
         }
       });
     });
+  }
+
+  /// Update this instances state from RoomEvents
+  void _updateFromModel(RoomModel roomModel) {
+    if (roomModel != null && _sid == null || roomModel.sid == _sid) {
+      _sid ??= roomModel.sid;
+      _name = roomModel.name;
+      _state = roomModel.state;
+      if (roomModel.mediaRegion != null) {
+        _mediaRegion = roomModel.mediaRegion;
+      }
+
+      if (roomModel.localParticipant != null) {
+        _localParticipant ??= LocalParticipant._fromModel(roomModel.localParticipant);
+        _localParticipant._updateFromModel(roomModel.localParticipant);
+      }
+      if (roomModel.remoteParticipants != null) {
+        for (final remoteParticipantModel in roomModel.remoteParticipants) {
+          final remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantModel);
+          if (!_remoteParticipants.contains(remoteParticipant)) {
+            _remoteParticipants.add(remoteParticipant);
+          }
+          remoteParticipant._updateFromModel(remoteParticipantModel);
+        }
+        var removeParticipants = _remoteParticipants.where((p) => !roomModel.remoteParticipants.any((model) => p.sid == model.sid)).toList();
+        for (var participant in removeParticipants) {
+          _remoteParticipants.remove(participant);
+          participant._dispose();
+        }
+      }
+    }
   }
 }
