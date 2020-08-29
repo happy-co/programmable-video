@@ -1,3 +1,7 @@
+## 0.5.0+4
+
+- Fixed unhandled exception when dominant speaker event contains no remote participant.
+
 ## 0.5.0+3
 
 * Remote participants that have left the room will no longer be in the `Room.remoteParticipants` list.
