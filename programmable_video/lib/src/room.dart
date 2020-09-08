@@ -144,18 +144,25 @@ class Room {
   ///
   /// If there are buffered events, they will be passed to the [RemoteParticipant].
   RemoteParticipant _findOrCreateRemoteParticipant(RemoteParticipantModel model) {
-    var remoteParticipant = _remoteParticipants.firstWhere(
-      (RemoteParticipant p) => p.sid == model.sid,
-      orElse: () => RemoteParticipant._fromModel(model),
-    );
-    // Check if there are events buffered for the remote participant.
-    if (_remoteParticipantsEventBuffer.containsKey(remoteParticipant.sid)) {
-      for (var event in _remoteParticipantsEventBuffer[remoteParticipant.sid]) {
-        remoteParticipant._parseEvents(event);
+    var remoteParticipant = model != null
+        ? _remoteParticipants.firstWhere(
+            (RemoteParticipant p) => p.sid == model?.sid,
+            orElse: () => RemoteParticipant._fromModel(model),
+          )
+        : null;
+
+    // Check if there is an actual remote participants
+    if (remoteParticipant != null) {
+      // Check if there are events buffered for the remote participant.
+      if (_remoteParticipantsEventBuffer.containsKey(remoteParticipant.sid)) {
+        for (var event in _remoteParticipantsEventBuffer[remoteParticipant.sid]) {
+          remoteParticipant._parseEvents(event);
+        }
+        // Empty the event buffer.
+        _remoteParticipantsEventBuffer[remoteParticipant.sid] = [];
       }
-      // Empty the event buffer.
-      _remoteParticipantsEventBuffer[remoteParticipant.sid] = [];
     }
+
     return remoteParticipant;
   }
 
@@ -180,14 +187,17 @@ class Room {
     } else if (event is ParticipantConnected) {
       assert(event.connectedParticipant != null);
       final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);
-      if (!_remoteParticipants.contains(remoteParticipant)) {
+      if (remoteParticipant != null && !_remoteParticipants.contains(remoteParticipant)) {
         _remoteParticipants.add(remoteParticipant);
       }
       _onParticipantConnected.add(RoomParticipantConnectedEvent(this, remoteParticipant));
     } else if (event is ParticipantDisconnected) {
       assert(event.disconnectedParticipant != null);
       var remoteParticipant = _findOrCreateRemoteParticipant(event.disconnectedParticipant);
-      _remoteParticipants.remove(remoteParticipant);
+
+      if (remoteParticipant != null) {
+        _remoteParticipants.remove(remoteParticipant);
+      }
       _onParticipantDisconnected.add(RoomParticipantDisconnectedEvent(this, remoteParticipant));
       remoteParticipant._dispose();
     } else if (event is Reconnected) {
@@ -200,7 +210,7 @@ class Room {
       _onRecordingStopped.add(this);
     } else if (event is DominantSpeakerChanged) {
       final remoteParticipant = _findOrCreateRemoteParticipant(event.dominantSpeaker);
-      if (!_remoteParticipants.contains(remoteParticipant)) {
+      if (remoteParticipant != null && !_remoteParticipants.contains(remoteParticipant)) {
         _remoteParticipants.add(remoteParticipant);
       }
       _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, remoteParticipant));
