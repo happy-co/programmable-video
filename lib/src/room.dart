@@ -120,7 +120,11 @@ class Room {
 
   /// Disconnects from the room.
   Future<void> disconnect() async {
-    await const MethodChannel('twilio_programmable_video').invokeMethod('disconnect');
+    await const MethodChannel('twilio_programmable_video')
+        .invokeMethod('disconnect');
+  }
+
+  void disposeRoom() async {
     await _roomStream.cancel();
     await _remoteParticipantStream.cancel();
     await _localParticipantStream.cancel();
@@ -213,6 +217,7 @@ class Room {
         }
         _remoteParticipants.clear();
         _onDisconnected.add(RoomDisconnectedEvent(this, twilioException));
+        disposeRoom();
         break;
       case 'participantConnected':
         assert(remoteParticipant != null);

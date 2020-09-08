@@ -42,6 +42,14 @@ class CameraCapturer implements VideoCapturer {
     _updateFromMap(cameraCapturerMap);
   }
 
+  /// Takes a photo from the camera capturer.
+  Future<dynamic> takePhoto(int imageCompression) async {
+    final methodData = await MethodChannel('twilio_programmable_video')
+        .invokeMethod(
+            'CameraCapturer#takePhoto', {'imageCompression': imageCompression});
+    return methodData;
+  }
+
   /// Update properties from a map.
   @override
   void _updateFromMap(Map<String, dynamic> map) {
