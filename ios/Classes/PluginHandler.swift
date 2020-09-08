@@ -26,8 +26,6 @@ public class PluginHandler {
                 setSpeakerphoneOn(call, result: result)
             case "getSpeakerphoneOn":
                 getSpeakerphoneOn(result: result)
-            case "takePhoto":
-                takePhoto(call, result: result)
             case "LocalAudioTrack#enable":
                 localAudioTrackEnable(call, result: result)
             case "LocalDataTrack#sendString":
@@ -42,6 +40,8 @@ public class PluginHandler {
                 localVideoTrackFrameCount(call, result:result)
             case "CameraCapturer#switchCamera":
                 switchCamera(call, result: result)
+            case "CameraCapturer#takePhoto":
+                takePhoto(call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
         }
