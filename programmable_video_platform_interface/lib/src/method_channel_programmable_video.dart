@@ -129,6 +129,29 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     );
   }
 
+  /// Calls native code to enable playback of the RemoteAudioTrack.
+  @override
+  Future<void> enableRemoteAudioTrack({bool enable, String sid}) {
+    return _methodChannel.invokeMethod(
+      'RemoteAudioTrack#enablePlayback',
+      <String, dynamic>{
+        'sid': sid,
+        'enable': enable,
+      },
+    );
+  }
+
+  /// Calls native code to check if playback is enabled for the RemoteAudioTrack.
+  @override
+  Future<bool> isRemoteAudioTrackPlaybackEnabled(String sid) {
+    return _methodChannel.invokeMethod(
+      'RemoteAudioTrack#isPlaybackEnabled',
+      <String, dynamic>{
+        'sid': sid,
+      },
+    );
+  }
+
   /// Calls native code to switch the camera.
   ///
   /// Throws a [FormatException] if the result of the [MethodChannel] call could not be parsed to a [CameraSource].
