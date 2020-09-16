@@ -10,25 +10,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.NonNull
-import com.twilio.video.AudioCodec
-import com.twilio.video.CameraCapturer
-import com.twilio.video.ConnectOptions
-import com.twilio.video.DataTrackOptions
-import com.twilio.video.G722Codec
-import com.twilio.video.H264Codec
-import com.twilio.video.IsacCodec
-import com.twilio.video.LocalAudioTrack
-import com.twilio.video.LocalDataTrack
-import com.twilio.video.LocalParticipant
-import com.twilio.video.LocalVideoTrack
-import com.twilio.video.OpusCodec
-import com.twilio.video.PcmaCodec
-import com.twilio.video.PcmuCodec
-import com.twilio.video.RemoteParticipant
-import com.twilio.video.VideoCapturer
-import com.twilio.video.VideoCodec
-import com.twilio.video.Vp8Codec
-import com.twilio.video.Vp9Codec
+import com.twilio.video.*
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
@@ -101,6 +83,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
             "LocalVideoTrack#enable" -> localVideoTrackEnable(call, result)
+            "RemoteAudioTrack#enablePlayback" -> remoteAudioTrackEnable(call, result)
+            "RemoteAudioTrack#isPlaybackEnabled" -> isRemoteAudioTrackPlaybackEnabled(call, result)
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
             else -> result.notImplemented()
         }
@@ -179,6 +163,41 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
         }
         return result.error("MISSING_PARAMS", "The parameters 'name' and 'message' were not given", null)
+    }
+
+    private fun remoteAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
+        val remoteAudioTrackSid = call.argument<String>("sid")
+                ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
+        val enable = call.argument<Boolean>("enable")
+                ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.remoteAudioTrackEnable => sid: $remoteAudioTrackSid enable: $enable")
+        val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
+                ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
+
+        remoteAudioTrack.remoteAudioTrack?.enablePlayback(enable)
+        return result.success(null)
+    }
+
+    private fun isRemoteAudioTrackPlaybackEnabled(call: MethodCall, result: MethodChannel.Result) {
+        val remoteAudioTrackSid = call.argument<String>("sid")
+                ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.isRemoteAudioTrackPlaybackEnabled => sid: $remoteAudioTrackSid")
+        val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
+                ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
+
+        return result.success(remoteAudioTrack.remoteAudioTrack?.isPlaybackEnabled)
+    }
+
+    private fun getRemoteAudioTrack(sid: String): RemoteAudioTrackPublication? {
+        val remoteParticipants = TwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants
+                ?: return null
+
+        var remoteAudioTrack: RemoteAudioTrackPublication? = null
+        for (remoteParticipant in remoteParticipants) {
+            remoteAudioTrack = remoteParticipant.remoteAudioTracks.firstOrNull { it.trackSid.equals(sid) }
+            if (remoteAudioTrack != null) return remoteAudioTrack
+        }
+        return null
     }
 
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
