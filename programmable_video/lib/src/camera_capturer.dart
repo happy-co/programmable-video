@@ -3,7 +3,25 @@ part of twilio_programmable_video;
 /// The [CameraCapturer] is used to provide video frames for a [LocalVideoTrack] from a given [CameraSource].
 class CameraCapturer implements VideoCapturer {
   /// Instance for the singleton behaviour.
-  static final CameraCapturer _cameraCapturer = CameraCapturer._internal();
+  static CameraCapturer _cameraCapturer;
+
+  /// Stream for native camera events
+  StreamSubscription<BaseCameraEvent> _cameraStream;
+
+  final StreamController<CameraSwitchedEvent> _onCameraSwitched = StreamController<CameraSwitchedEvent>.broadcast();
+
+  /// Called when the camera has switched
+  Stream<CameraSwitchedEvent> onCameraSwitched;
+
+  final StreamController<FirstFrameAvailableEvent> _onFirstFrameAvailable = StreamController<FirstFrameAvailableEvent>.broadcast();
+
+  /// Called when the first frame is available from the camera
+  Stream<FirstFrameAvailableEvent> onFirstFrameAvailable;
+
+  final StreamController<CameraErrorEvent> _onCameraError = StreamController<CameraErrorEvent>.broadcast();
+
+  /// Called when the camera has thrown an error
+  Stream<CameraErrorEvent> onCameraError;
 
   CameraSource _cameraSource;
 
@@ -19,7 +37,12 @@ class CameraCapturer implements VideoCapturer {
   /// Only one instance is allowed.
   factory CameraCapturer(CameraSource cameraSource) {
     assert(cameraSource != null);
+    _cameraCapturer ??= CameraCapturer._internal();
     _cameraCapturer._cameraSource = cameraSource;
+    _cameraCapturer._cameraStream ??= ProgrammableVideoPlatform.instance.cameraStream().listen(_cameraCapturer._parseCameraEvents);
+    _cameraCapturer.onCameraSwitched ??= _cameraCapturer._onCameraSwitched.stream;
+    _cameraCapturer.onFirstFrameAvailable ??= _cameraCapturer._onFirstFrameAvailable.stream;
+    _cameraCapturer.onCameraError ??= _cameraCapturer._onCameraError.stream;
     return _cameraCapturer;
   }
 
@@ -32,12 +55,50 @@ class CameraCapturer implements VideoCapturer {
 
   CameraCapturer._internal();
 
+  /// Dispose the LocalParticipant
+  @override
+  void _dispose() {
+    _closeStreams();
+    _cameraCapturer = null;
+  }
+
+  /// Dispose the event streams.
+  Future<void> _closeStreams() async {
+    await _cameraStream.cancel();
+    _cameraStream = null;
+    await _onFirstFrameAvailable.close();
+    onFirstFrameAvailable = null;
+    await _onCameraSwitched.close();
+    onCameraSwitched = null;
+    await _onCameraError.close();
+    onCameraError = null;
+  }
+
   /// Switch the current [CameraSource].
   ///
   /// This method can be invoked while capturing frames or not.
   /// Throws a [FormatException] if the result could not be parsed to a [CameraSource].
   Future<void> switchCamera() async {
     _cameraSource = await ProgrammableVideoPlatform.instance.switchCamera();
+  }
+
+  /// Get availability of torch on active [CameraSource].
+  ///
+  /// This method can be invoked while capturing frames or not.
+  /// Returns false if there is no active camera.
+  Future<bool> hasTorch() async {
+    return ProgrammableVideoPlatform.instance.hasTorch();
+  }
+
+  /// Set state of torch on active [CameraSource].
+  ///
+  /// This method can be invoked while capturing frames or not.
+  /// Throws an exception if the active [CameraSource] does not have a torch.
+  /// Throws an exception if it attempt to set torch state fails.
+  ///
+  /// Torch will be deactivated when camera is switched.
+  Future<void> setTorch(bool enabled) async {
+    await ProgrammableVideoPlatform.instance.setTorch(enabled);
   }
 
   /// Update properties from a [VideoCapturerModel].
@@ -48,5 +109,16 @@ class CameraCapturer implements VideoCapturer {
     }
   }
 
-// TODO(WLFN): Implement event streams.
+  void _parseCameraEvents(BaseCameraEvent event) {
+    TwilioProgrammableVideo._log("Camera => Event '$event'");
+    _updateFromModel(event.model);
+
+    if (event is CameraSwitched) {
+      _onCameraSwitched.add(CameraSwitchedEvent(this));
+    } else if (event is FirstFrameAvailable) {
+      _onFirstFrameAvailable.add(FirstFrameAvailableEvent(this));
+    } else if (event is CameraError) {
+      _onCameraError.add(CameraErrorEvent(this, TwilioException._fromModel(event.exception)));
+    }
+  }
 }

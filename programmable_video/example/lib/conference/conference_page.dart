@@ -117,10 +117,12 @@ class _ConferencePageState extends State<ConferencePage> {
             ConferenceButtonBar(
               audioEnabled: _conferenceRoom.onAudioEnabled,
               videoEnabled: _conferenceRoom.onVideoEnabled,
+              flashState: _conferenceRoom.flashStateStream,
               onAudioEnabled: _conferenceRoom.toggleAudioEnabled,
               onVideoEnabled: _conferenceRoom.toggleVideoEnabled,
               onHangup: _onHangup,
               onSwitchCamera: _conferenceRoom.switchCamera,
+              toggleFlashlight: _conferenceRoom.toggleFlashlight,
               onPersonAdd: _onPersonAdd,
               onPersonRemove: _onPersonRemove,
               onHeight: _onHeightBar,

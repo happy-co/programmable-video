@@ -31,12 +31,17 @@ void main() {
 
   var cameraSource = 'BACK_CAMERA';
 
+  StreamController cameraController;
   StreamController roomController;
   StreamController remoteParticipantController;
   StreamController localParticipantController;
   StreamController remoteDataTrackController;
 
   setUpAll(() {
+    cameraController = StreamController<dynamic>.broadcast();
+    final cameraChannel = MockEventChannel();
+    when(cameraChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => cameraController.stream);
+
     roomController = StreamController<dynamic>.broadcast();
     final roomChannel = MockEventChannel();
     when(roomChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => roomController.stream);
@@ -55,6 +60,7 @@ void main() {
 
     instance = MethodChannelProgrammableVideo.private(
       MethodChannel('twilio_programmable_video'),
+      cameraChannel,
       roomChannel,
       remoteParticipantChannel,
       localParticipantChannel,

@@ -16,6 +16,8 @@ class ConferenceRoom with ChangeNotifier {
   Stream<bool> onAudioEnabled;
   final StreamController<bool> _onVideoEnabledStreamController = StreamController<bool>.broadcast();
   Stream<bool> onVideoEnabled;
+  final StreamController<Map<String, bool>> _flashStateStreamController = StreamController<Map<String, bool>>.broadcast();
+  Stream<Map<String, bool>> flashStateStream;
   final StreamController<Exception> _onExceptionStreamController = StreamController<Exception>.broadcast();
   Stream<Exception> onException;
 
@@ -31,6 +33,8 @@ class ConferenceRoom with ChangeNotifier {
   Room _room;
   Timer _timer;
 
+  bool flashEnabled = false;
+
   ConferenceRoom({
     @required this.name,
     @required this.token,
@@ -38,6 +42,7 @@ class ConferenceRoom with ChangeNotifier {
   }) {
     onAudioEnabled = _onAudioEnabledStreamController.stream;
     onVideoEnabled = _onVideoEnabledStreamController.stream;
+    flashStateStream = _flashStateStreamController.stream;
     onException = _onExceptionStreamController.stream;
   }
 
@@ -66,6 +71,9 @@ class ConferenceRoom with ChangeNotifier {
 
       _streamSubscriptions.add(_room.onConnected.listen(_onConnected));
       _streamSubscriptions.add(_room.onConnectFailure.listen(_onConnectFailure));
+      _streamSubscriptions.add(_cameraCapturer.onCameraSwitched.listen(_onCameraSwitched));
+
+      await _updateFlashState();
 
       return _completer.future;
     } catch (err) {
@@ -92,6 +100,7 @@ class ConferenceRoom with ChangeNotifier {
   Future<void> _disposeStreamsAndSubscriptions() async {
     await _onAudioEnabledStreamController.close();
     await _onVideoEnabledStreamController.close();
+    await _flashStateStreamController.close();
     await _onExceptionStreamController.close();
     for (var streamSubscription in _streamSubscriptions) {
       await streamSubscription.cancel();
@@ -179,6 +188,12 @@ class ConferenceRoom with ChangeNotifier {
         'ConferenceRoom.switchCamera() failed because of FormatException with message: ${e.message}',
       );
     }
+  }
+
+  Future<void> toggleFlashlight() async {
+    await _cameraCapturer.setTorch(!flashEnabled);
+    flashEnabled = !flashEnabled;
+    await _updateFlashState();
   }
 
   void addDummy({Widget child}) {
@@ -289,6 +304,19 @@ class ConferenceRoom with ChangeNotifier {
     Debug.log('ConferenceRoom._onParticipantDisconnected: ${event.remoteParticipant.sid}');
     _participants.removeWhere((ParticipantWidget p) => p.id == event.remoteParticipant.sid);
     notifyListeners();
+  }
+
+  Future _onCameraSwitched(CameraSwitchedEvent event) async {
+    flashEnabled = false;
+    await _updateFlashState();
+  }
+
+  Future _updateFlashState() async {
+    var flashState = <String, bool>{
+      'hasFlash': await _cameraCapturer.hasTorch(),
+      'flashEnabled': flashEnabled,
+    };
+    _flashStateStreamController.add(flashState);
   }
 
   ParticipantWidget _buildParticipant({

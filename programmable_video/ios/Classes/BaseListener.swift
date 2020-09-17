@@ -2,7 +2,7 @@ import Flutter
 import Foundation
 import TwilioVideo
 
-class BaseListener: NSObject {
+public class BaseListener: NSObject {
     public var events: FlutterEventSink?
 
     private func errorToDict(_ error: Error?) -> [String: Any]? {

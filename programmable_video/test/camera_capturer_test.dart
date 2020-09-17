@@ -17,6 +17,30 @@ void main() {
     });
   });
 
+  group('.hasTorch()', () {
+    test('should call interface code to check for presence of torch', () async {
+      final mockInterface = MockInterface();
+      ProgrammableVideoPlatform.instance = mockInterface;
+      final cameraCapturer = CameraCapturer(CameraSource.BACK_CAMERA);
+      var hasTorch = await cameraCapturer.hasTorch();
+
+      expect(mockInterface.hasTorchWasCalled, true);
+      expect(hasTorch, true);
+    });
+  });
+
+  group('.setTorch(bool enable)', () {
+    test('should call interface code to set torch enable state', () async {
+      final mockInterface = MockInterface();
+      ProgrammableVideoPlatform.instance = mockInterface;
+      final cameraCapturer = CameraCapturer(CameraSource.BACK_CAMERA);
+      expect(mockInterface.torchEnabled, false);
+      await cameraCapturer.setTorch(true);
+
+      expect(mockInterface.torchEnabled, true);
+    });
+  });
+
   group('CameraCapturer()', () {
     test('CameraCapturer should be a singleton', () async {
       final firstInstance = CameraCapturer(CameraSource.BACK_CAMERA);

@@ -3,7 +3,7 @@ package twilio.flutter.twilio_programmable_video
 import android.content.Context
 import android.util.Log
 import androidx.annotation.NonNull
-import com.twilio.video.CameraCapturer
+import com.twilio.video.Camera2Capturer
 import com.twilio.video.Video
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
@@ -16,6 +16,8 @@ import io.flutter.plugin.platform.PlatformViewRegistry
 /** TwilioProgrammableVideoPlugin */
 class TwilioProgrammableVideoPlugin : FlutterPlugin {
     private lateinit var methodChannel: MethodChannel
+
+    private lateinit var cameraChannel: EventChannel
 
     private lateinit var roomChannel: EventChannel
 
@@ -64,9 +66,11 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 "MI 5"
         )
 
+        lateinit var pluginHandler: PluginHandler
+
         lateinit var roomListener: RoomListener
 
-        lateinit var cameraCapturer: CameraCapturer
+        lateinit var cameraCapturer: Camera2Capturer
 
         var loggingSink: EventChannel.EventSink? = null
 
@@ -92,9 +96,22 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
     }
 
     private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger, platformViewRegistry: PlatformViewRegistry) {
-        val pluginHandler = PluginHandler(applicationContext)
+        pluginHandler = PluginHandler(applicationContext)
         methodChannel = MethodChannel(messenger, "twilio_programmable_video")
         methodChannel.setMethodCallHandler(pluginHandler)
+
+        cameraChannel = EventChannel(messenger, "twilio_programmable_video/camera")
+        cameraChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Camera eventChannel attached")
+                pluginHandler.events = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Camera eventChannel detached")
+                pluginHandler.events = null
+            }
+        })
 
         roomChannel = EventChannel(messenger, "twilio_programmable_video/room")
         roomChannel.setStreamHandler(object : EventChannel.StreamHandler {
