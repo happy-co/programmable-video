@@ -1,11 +1,9 @@
 package twilio.flutter.twilio_programmable_video
 
-import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
 import com.twilio.video.RemoteParticipant
 import com.twilio.video.Room
 import com.twilio.video.TwilioException
-import com.twilio.video.VideoCapturer
 
 class RoomListener(private var internalId: Int, var connectOptions: ConnectOptions) : BaseListener(), Room.Listener {
     var room: Room? = null
@@ -78,25 +76,5 @@ class RoomListener(private var internalId: Int, var connectOptions: ConnectOptio
                 "remoteParticipants" to remoteParticipantsToList(room.remoteParticipants),
                 "dominantSpeaker" to if (room.dominantSpeaker != null) RemoteParticipantListener.remoteParticipantToMap(room.dominantSpeaker as RemoteParticipant) else null
         )
-    }
-
-    companion object {
-        @JvmStatic
-        fun videoCapturerToMap(videoCapturer: VideoCapturer, cameraSource: CameraCapturer.CameraSource? = null): Map<String, Any> {
-            if (videoCapturer is CameraCapturer) {
-                var source = videoCapturer.cameraSource.toString()
-                if (cameraSource != null) {
-                    source = cameraSource.toString()
-                }
-                return mapOf(
-                    "type" to "CameraCapturer",
-                    "cameraSource" to source
-                )
-            }
-            return mapOf(
-                "type" to "Unknown",
-                "isScreencast" to videoCapturer.isScreencast
-            )
-        }
     }
 }

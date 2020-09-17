@@ -1,3 +1,7 @@
+## 0.2.1+0
+
+- Added `hasTorch()` and `setTorch(bool enabled)` methods.
+
 ## 0.2.0+1
 
 - Fixed unhandled exception when receiving a remote data track message.

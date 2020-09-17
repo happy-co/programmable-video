@@ -111,6 +111,7 @@ class LocalParticipant implements Participant {
   /// Dispose the LocalParticipant
   void _dispose() {
     _closeStreams();
+    _localVideoTrackPublications.forEach((videoTrack) => videoTrack.localVideoTrack._dispose());
   }
 
   /// Dispose the event streams.

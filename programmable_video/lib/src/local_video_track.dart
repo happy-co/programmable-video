@@ -27,6 +27,11 @@ class LocalVideoTrack extends VideoTrack {
     return localVideoTrack;
   }
 
+  /// Dispose the videoCapturer
+  void _dispose() {
+    videoCapturer._dispose();
+  }
+
   /// Set the state of the local video track.
   ///
   /// The results of this operation are signaled to other [Participant]s in the same [Room].

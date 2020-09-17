@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:meta/meta.dart';
+import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
 import 'enums/enum_exports.dart';
 import 'models/model_exports.dart';
@@ -14,6 +15,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// Constructs a MethodChannelProgrammableVideo.
   MethodChannelProgrammableVideo()
       : _methodChannel = MethodChannel('twilio_programmable_video'),
+        _cameraChannel = EventChannel('twilio_programmable_video/camera'),
         _roomChannel = EventChannel('twilio_programmable_video/room'),
         _remoteParticipantChannel = EventChannel('twilio_programmable_video/remote'),
         _localParticipantChannel = EventChannel('twilio_programmable_video/local'),
@@ -25,6 +27,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   @visibleForTesting
   MethodChannelProgrammableVideo.private(
     this._methodChannel,
+    this._cameraChannel,
     this._roomChannel,
     this._remoteParticipantChannel,
     this._localParticipantChannel,
@@ -134,7 +137,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// Throws a [FormatException] if the result of the [MethodChannel] call could not be parsed to a [CameraSource].
   @override
   Future<CameraSource> switchCamera() async {
-    final methodData = await MethodChannel('twilio_programmable_video').invokeMethod('CameraCapturer#switchCamera');
+    final methodData = await _methodChannel.invokeMethod('CameraCapturer#switchCamera');
 
     final cameraSource = EnumToString.fromString(
       CameraSource.values,
@@ -144,6 +147,59 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     return cameraSource;
   }
 
+  /// Calls native code to find if the active camera has a flash.
+  @override
+  Future<bool> hasTorch() async {
+    return _methodChannel.invokeMethod('CameraCapturer#hasTorch', null);
+  }
+
+  /// Calls native code to change the torch state.
+  @override
+  Future<void> setTorch(bool enable) async {
+    await _methodChannel.invokeMethod('CameraCapturer#setTorch', <String, dynamic>{
+      'enable': enable,
+    });
+  }
+
+//#endregion
+
+//#region cameraStream
+  /// EventChannel over which the native code sends updates concerning the Room.
+  final EventChannel _cameraChannel;
+
+  Stream<BaseCameraEvent> _cameraStream;
+
+  /// Stream of the BaseRoomEvent model.
+  ///
+  /// This stream is used to update the Room in a plugin implementation.
+  @override
+  Stream<BaseCameraEvent> cameraStream() {
+    _cameraStream ??= _cameraChannel.receiveBroadcastStream().map(_parseCameraEvent);
+    return _cameraStream;
+  }
+
+  BaseCameraEvent _parseCameraEvent(dynamic event) {
+    final String eventName = event['name'];
+    final data = Map<String, dynamic>.from(event['data']);
+    final model = CameraCapturerModel(EnumToString.fromString(CameraSource.values, data['capturer']['cameraSource']), data['capturer']['type']);
+
+    switch (eventName) {
+      case 'cameraSwitched':
+        return CameraSwitched(model);
+      case 'firstFrameAvailable':
+        return FirstFrameAvailable(model);
+      case 'cameraError':
+        TwilioExceptionModel twilioException;
+        if (event['error'] != null) {
+          final errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
+          twilioException = TwilioExceptionModel(errorMap['code'] as int, errorMap['message']);
+        }
+        return CameraError(model, twilioException);
+      default:
+    }
+
+    return SkipableCameraEvent();
+  }
 //#endregion
 
 //#region roomStream

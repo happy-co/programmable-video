@@ -5,12 +5,18 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureRequest
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.NonNull
 import com.twilio.video.AudioCodec
+import com.twilio.video.Camera2Capturer
+import com.twilio.video.Camera2Capturer.Listener
 import com.twilio.video.CameraCapturer
 import com.twilio.video.ConnectOptions
 import com.twilio.video.DataTrackOptions
@@ -37,7 +43,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
-class PluginHandler : MethodCallHandler, ActivityAware {
+class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private var previousAudioMode: Int = 0
 
     private var previousMicrophoneMute: Boolean = false
@@ -102,6 +108,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
             "LocalVideoTrack#enable" -> localVideoTrackEnable(call, result)
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
+            "CameraCapturer#hasTorch" -> hasTorch(result)
+            "CameraCapturer#setTorch" -> setTorch(call, result)
             else -> result.notImplemented()
         }
     }
@@ -109,16 +117,59 @@ class PluginHandler : MethodCallHandler, ActivityAware {
     private fun switchCamera(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
         if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-            val source = if (TwilioProgrammableVideoPlugin.cameraCapturer.cameraSource == CameraCapturer.CameraSource.FRONT_CAMERA) {
-                CameraCapturer.CameraSource.BACK_CAMERA
+            val newCameraId: String
+            val newCameraSource: CameraCapturer.CameraSource
+            if (getCameraDirection(TwilioProgrammableVideoPlugin.cameraCapturer.cameraId) == CameraMetadata.LENS_FACING_FRONT) {
+                newCameraId = getCameraId(CameraMetadata.LENS_FACING_BACK)
+                newCameraSource = CameraCapturer.CameraSource.BACK_CAMERA
             } else {
-                CameraCapturer.CameraSource.FRONT_CAMERA
+                newCameraId = getCameraId(CameraMetadata.LENS_FACING_FRONT)
+                newCameraSource = CameraCapturer.CameraSource.FRONT_CAMERA
             }
-            TwilioProgrammableVideoPlugin.cameraCapturer.switchCamera()
 
-            return result.success(RoomListener.videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer, source))
+            if (newCameraId != null) {
+                TwilioProgrammableVideoPlugin.cameraCapturer.switchCamera(newCameraId)
+                return result.success(videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer, newCameraSource))
+            } else {
+                return result.error("NOT FOUND", "Could not find another camera to switch to", null)
+            }
         }
         return result.error("NOT FOUND", "No CameraCapturer has been initialized yet natively", null)
+    }
+
+    private fun hasTorch(): Boolean {
+        if (TwilioProgrammableVideoPlugin.cameraCapturer == null) return false
+        val cameraManager: CameraManager = getCameraManager()
+        return cameraManager.getCameraCharacteristics(TwilioProgrammableVideoPlugin.cameraCapturer.cameraId)[CameraCharacteristics.FLASH_INFO_AVAILABLE]
+    }
+
+    private fun hasTorch(result: MethodChannel.Result) {
+        result.success(hasTorch())
+    }
+
+    private fun setTorch(call: MethodCall, result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => called")
+        val enableTorch = call.argument<Boolean>("enable") ?: false
+
+        if (hasTorch()) {
+            val scheduled = TwilioProgrammableVideoPlugin.cameraCapturer.updateCaptureRequest {
+                val flashMode: Int = if (enableTorch) {
+                    CaptureRequest.FLASH_MODE_TORCH
+                } else {
+                    CaptureRequest.FLASH_MODE_OFF
+                }
+
+                it.set(CaptureRequest.FLASH_MODE, flashMode)
+            }
+            TwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => scheduled: $scheduled flashState: ")
+            if (scheduled) {
+                return result.success(true)
+            } else {
+                return result.error("FAILED", "Failed to schedule updateCaptureRequest", null)
+            }
+        } else {
+            return result.error("FAILED", "Current camera does not have a flash", null)
+        }
     }
 
     private fun localVideoTrackEnable(call: MethodCall, result: MethodChannel.Result) {
@@ -318,16 +369,35 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     for ((videoTrack) in videoTrackOptions) {
                         videoTrack as Map<*, *> // Ensure right type.
                         val videoCapturerMap = videoTrack["videoCapturer"] as Map<*, *>
-
-                        val videoCapturer: VideoCapturer = when (videoCapturerMap["type"] as String) {
+                        // Check type because we may want to add support for ScreenCapturer
+                        val cameraId: String = when (videoCapturerMap["type"] as String) {
                             "CameraCapturer" -> when (videoCapturerMap["cameraSource"] as String) {
-                                "FRONT_CAMERA" -> CameraCapturer(this.applicationContext, CameraCapturer.CameraSource.FRONT_CAMERA)
-                                "BACK_CAMERA" -> CameraCapturer(this.applicationContext, CameraCapturer.CameraSource.BACK_CAMERA)
-                                else -> CameraCapturer(this.applicationContext, CameraCapturer.CameraSource.FRONT_CAMERA)
+                                "BACK_CAMERA" -> getCameraId(CameraMetadata.LENS_FACING_BACK)
+                                else -> getCameraId(CameraMetadata.LENS_FACING_FRONT)
                             }
-                            else -> CameraCapturer(this.applicationContext, CameraCapturer.CameraSource.FRONT_CAMERA)
+                            else -> getCameraId(CameraMetadata.LENS_FACING_FRONT)
                         }
-                        if (videoCapturer is CameraCapturer) {
+                        val videoCapturer: VideoCapturer = Camera2Capturer(
+                            this.applicationContext,
+                            cameraId,
+                            object : Listener {
+                                override fun onError(camera2CapturerException: Camera2Capturer.Exception) {
+                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onError => $camera2CapturerException")
+                                    sendEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), camera2CapturerException)
+                                }
+
+                                override fun onFirstFrameAvailable() {
+                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onFirstFrameAvailable")
+                                    sendEvent("firstFrameAvailable", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
+                                }
+
+                                override fun onCameraSwitched(newCameraId: String) {
+                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onCameraSwitched => newCameraId: $newCameraId")
+                                    sendEvent("cameraSwitched", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
+                                }
+                            }
+                        )
+                        if (videoCapturer is Camera2Capturer) {
                             TwilioProgrammableVideoPlugin.cameraCapturer = videoCapturer
                         }
                         videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoTrack["name"] as String))
@@ -348,6 +418,51 @@ class PluginHandler : MethodCallHandler, ActivityAware {
         } else {
             result.error("INIT_ERROR", "Missing 'connectOptions' parameter", null)
         }
+    }
+
+    private fun getCameraManager(): CameraManager {
+        return this.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
+
+    private fun getCameraId(cameraDirection: Int): String {
+        val cameraManager: CameraManager = getCameraManager()
+        return cameraManager.cameraIdList.first { cameraId -> cameraManager.getCameraCharacteristics(cameraId)[CameraCharacteristics.LENS_FACING] == cameraDirection }
+    }
+
+    private fun getCameraIdWithTorch(): String {
+        val cameraManager: CameraManager = getCameraManager()
+        return cameraManager.cameraIdList.first { cameraId -> cameraManager.getCameraCharacteristics(cameraId).keys[CameraCharacteristics.FLASH_MODE_TORCH] != null }
+    }
+
+    private fun getCameraDirection(cameraId: String): Int? {
+        if (TwilioProgrammableVideoPlugin.cameraCapturer == null) return null
+        val cameraManager: CameraManager = getCameraManager()
+        return cameraManager.getCameraCharacteristics(cameraId)[CameraCharacteristics.LENS_FACING]
+    }
+
+    private fun getCameraDirectionAsString(direction: Int?): String {
+        when (direction) {
+            CameraMetadata.LENS_FACING_FRONT -> return "FRONT_CAMERA"
+            CameraMetadata.LENS_FACING_BACK -> return "BACK_CAMERA"
+            else -> return "UNKNOWN"
+        }
+    }
+
+    fun videoCapturerToMap(videoCapturer: VideoCapturer, cameraSource: CameraCapturer.CameraSource? = null): Map<String, Any> {
+        if (videoCapturer is Camera2Capturer) {
+            var source = getCameraDirectionAsString(getCameraDirection(videoCapturer.cameraId))
+            if (cameraSource != null) {
+                source = cameraSource.toString()
+            }
+            return mapOf(
+                    "type" to "CameraCapturer",
+                    "cameraSource" to source
+            )
+        }
+        return mapOf(
+                "type" to "Unknown",
+                "isScreencast" to videoCapturer.isScreencast
+        )
     }
 
     private fun debug(call: MethodCall, result: MethodChannel.Result) {
