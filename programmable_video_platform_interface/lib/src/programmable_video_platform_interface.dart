@@ -91,6 +91,16 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
     throw UnimplementedError('enableAudioTrack() has not been implemented.');
   }
 
+  /// Calls native code to enable playback of the RemoteAudioTrack.
+  Future<void> enableRemoteAudioTrack({bool enable, String sid}) {
+    throw UnimplementedError('enableRemoteAudioTrack() has not been implemented.');
+  }
+
+  /// Calls native code to check if playback is enabled for the RemoteAudioTrack.
+  Future<bool> isRemoteAudioTrackPlaybackEnabled(String sid) {
+    throw UnimplementedError('isRemoteAudioTrackPlaybackEnabled() has not been implemented.');
+  }
+
   /// Calls native code to switch the camera.
   Future<CameraSource> switchCamera() {
     throw UnimplementedError('switchCamera() has not been implemented.');

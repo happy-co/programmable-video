@@ -15,4 +15,14 @@ class RemoteAudioTrack extends AudioTrack {
   factory RemoteAudioTrack._fromModel(RemoteAudioTrackModel model) {
     return model != null ? RemoteAudioTrack(model.sid, model.enabled, model.name) : null;
   }
+
+  /// Enable or disable local playback of remote audio track
+  Future<void> enablePlayback(bool enable) async {
+    await ProgrammableVideoPlatform.instance.enableRemoteAudioTrack(enable: enable, sid: _sid);
+  }
+
+  /// Check if playback is enabled for this remote audio track
+  Future<bool> isPlaybackEnabled() async {
+    return ProgrammableVideoPlatform.instance.isRemoteAudioTrackPlaybackEnabled(_sid);
+  }
 }
