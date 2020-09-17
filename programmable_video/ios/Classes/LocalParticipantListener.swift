@@ -155,7 +155,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
             return [
                 "name": localVideoTrack.name,
                 "enabled": localVideoTrack.isEnabled,
-                "videoCapturer": RoomListener.videoSourceToDict(localVideoTrack.source)
+                "videoCapturer": SwiftTwilioProgrammableVideoPlugin.pluginHandler.videoSourceToDict(localVideoTrack.source, newCameraSource: nil) as Any
             ]
         }
         return nil

@@ -22,6 +22,7 @@ part 'connect_options.dart';
 part 'data_track.dart';
 part 'data_track_options.dart';
 part 'data_track_publication.dart';
+part 'events/camera_events.dart';
 part 'events/local_participant_events.dart';
 part 'events/remote_data_track_events.dart';
 part 'events/remote_participant_events.dart';

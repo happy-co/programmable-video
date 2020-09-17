@@ -3,6 +3,8 @@ import UIKit
 import TwilioVideo
 
 public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
+    static var pluginHandler: PluginHandler = PluginHandler()
+
     internal static var roomListener: RoomListener?
 
     internal static var remoteParticipantListener = RemoteParticipantListener()
@@ -36,6 +38,8 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     private var methodChannel: FlutterMethodChannel?
 
+    private var cameraChannel: FlutterEventChannel?
+
     private var roomChannel: FlutterEventChannel?
 
     private var remoteParticipantChannel: FlutterEventChannel?
@@ -47,9 +51,11 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     private var remoteDataTrackChannel: FlutterEventChannel?
 
     public func onRegister(_ registrar: FlutterPluginRegistrar) {
-        let pluginHandler = PluginHandler()
         methodChannel = FlutterMethodChannel(name: "twilio_programmable_video", binaryMessenger: registrar.messenger())
-        methodChannel?.setMethodCallHandler(pluginHandler.handle)
+        methodChannel?.setMethodCallHandler(SwiftTwilioProgrammableVideoPlugin.pluginHandler.handle)
+
+        cameraChannel = FlutterEventChannel(name: "twilio_programmable_video/camera", binaryMessenger: registrar.messenger())
+        cameraChannel?.setStreamHandler(CameraStreamHandler())
 
         roomChannel = FlutterEventChannel(name: "twilio_programmable_video/room", binaryMessenger: registrar.messenger())
         roomChannel?.setStreamHandler(RoomStreamHandler())
@@ -66,8 +72,22 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         remoteDataTrackChannel = FlutterEventChannel(name: "twilio_programmable_video/remote_data_track", binaryMessenger: registrar.messenger())
         remoteDataTrackChannel?.setStreamHandler(RemoteDataTrackStreamHandler())
 
-        let pvf = ParticipantViewFactory(pluginHandler)
+        let pvf = ParticipantViewFactory(SwiftTwilioProgrammableVideoPlugin.pluginHandler)
         registrar.register(pvf, withId: "twilio_programmable_video/views")
+    }
+
+    class CameraStreamHandler: NSObject, FlutterStreamHandler {
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler.onListen => Camera eventChannel attached")
+            pluginHandler.events = events
+            return nil
+        }
+
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler.onCancel => Camera eventChannel detached")
+            pluginHandler.events = nil
+            return nil
+        }
     }
 
     class RoomStreamHandler: NSObject, FlutterStreamHandler {

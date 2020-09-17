@@ -14,6 +14,8 @@ class MockInterface extends ProgrammableVideoPlatform {
   var enableAudioTrackWasCalled = false;
   var enableVideoTrackWasCalled = false;
   var switchCameraWasCalled = false;
+  var hasTorchWasCalled = false;
+  var torchEnabled = false;
   var sendMessageWasCalled = false;
   var sendBufferWasCalled = false;
   var disconnectWasCalled = false;
@@ -29,6 +31,11 @@ class MockInterface extends ProgrammableVideoPlatform {
     setNativeDebugWasCalled = true;
     nativeDebug = native;
     return Future.delayed(Duration(milliseconds: 1));
+  }
+
+  @override
+  Stream<BaseCameraEvent> cameraStream() {
+    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1));
   }
 
   @override
@@ -83,6 +90,18 @@ class MockInterface extends ProgrammableVideoPlatform {
   Future<CameraSource> switchCamera() async {
     switchCameraWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => CameraSource.FRONT_CAMERA);
+  }
+
+  @override
+  Future<bool> hasTorch() async {
+    hasTorchWasCalled = true;
+    return Future.delayed(Duration(milliseconds: 1), () => true);
+  }
+
+  @override
+  Future<void> setTorch(bool enable) async {
+    torchEnabled = enable;
+    return Future.delayed(Duration(milliseconds: 1), () {});
   }
 
   final _roomController = StreamController<BaseRoomEvent>();

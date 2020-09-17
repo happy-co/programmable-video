@@ -107,27 +107,4 @@ class RoomListener: BaseListener, RoomDelegate {
 
        return dict
     }
-
-    public static func videoSourceToDict(_ videoSource: VideoSource?) -> [String: Any] {
-        if let cameraSource = videoSource as? CameraSource {
-            var cameraSourceType: String
-            switch cameraSource.device?.position {
-                case .front:
-                    cameraSourceType = "FRONT_CAMERA"
-                case .back:
-                    cameraSourceType = "BACK_CAMERA"
-                default:
-                    cameraSourceType = "UNKNOWN"
-            }
-
-            return [
-                "type": "CameraCapturer",
-                "cameraSource": cameraSourceType
-            ]
-        }
-        return [
-            "type": "Unknown",
-            "isScreenCast": videoSource?.isScreencast ?? false
-        ]
-    }
 }

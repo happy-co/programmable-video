@@ -87,9 +87,7 @@ class TwilioProgrammableVideo {
     assert(connectOptions != null);
     if (await requestPermissionForCameraAndMicrophone()) {
       try {
-        print('waiting');
         final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions._toModel());
-        print('waited');
         return Room(roomId);
       } on PlatformException catch (err) {
         throw TwilioProgrammableVideo._convertException(err);

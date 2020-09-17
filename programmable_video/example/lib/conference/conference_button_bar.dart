@@ -11,11 +11,13 @@ class ConferenceButtonBar extends StatefulWidget {
   final VoidCallback onSwitchCamera;
   final VoidCallback onPersonAdd;
   final VoidCallback onPersonRemove;
+  final VoidCallback toggleFlashlight;
   final void Function(double) onHeight;
   final VoidCallback onHide;
   final VoidCallback onShow;
   final Stream<bool> videoEnabled;
   final Stream<bool> audioEnabled;
+  final Stream<Map<String, bool>> flashState;
 
   const ConferenceButtonBar({
     Key key,
@@ -25,8 +27,10 @@ class ConferenceButtonBar extends StatefulWidget {
     this.onSwitchCamera,
     this.onPersonAdd,
     this.onPersonRemove,
+    this.toggleFlashlight,
     @required this.videoEnabled,
     @required this.audioEnabled,
+    @required this.flashState,
     this.onHeight,
     this.onHide,
     this.onShow,
@@ -47,10 +51,13 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
   double _hidden;
   double _visible;
   final _keyButtonBarHeight = GlobalKey();
+  bool hasFlash = false;
+  bool flashEnabled = false;
 
   final Duration timeout = const Duration(seconds: 5);
   final Duration ms = const Duration(milliseconds: 1);
   final Duration periodicDuration = const Duration(milliseconds: 100);
+  final List<StreamSubscription> _subscriptions = [];
 
   Timer startTimeout([int milliseconds]) {
     final duration = milliseconds == null ? timeout : ms * milliseconds;
@@ -109,6 +116,10 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
   void initState() {
     super.initState();
     _timer = startTimeout();
+    _subscriptions.add(widget.flashState.listen((event) => setState(() {
+          hasFlash = event['hasFlash'];
+          flashEnabled = event['flashEnabled'];
+        })));
   }
 
   @override
@@ -134,6 +145,7 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
       _timer.cancel();
       _timer = null;
     }
+    _subscriptions.forEach((subscription) => subscription.cancel());
   }
 
   @override
@@ -237,6 +249,12 @@ class _ConferenceButtonBarState extends State<ConferenceButtonBar> with AfterLay
             onPressed: () => _onPressed(widget.onPersonAdd),
             onLongPress: () => _onPressed(widget.onPersonRemove),
           ),
+          if (hasFlash)
+            CircleButton(
+              child: Icon(flashEnabled ? Icons.highlight_off : Icons.highlight, color: Colors.white),
+              key: Key('toggle-flashlight-button'),
+              onPressed: () => _onPressed(widget.toggleFlashlight),
+            )
         ],
       ),
     );

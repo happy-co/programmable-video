@@ -1,3 +1,10 @@
+## 0.6.0+0
+
+- **BREAKING CHANGE**: Switched over to `Camera2Capturer` from `CameraCapturer` on Android
+- **BREAKING CHANGE**: Increased minSdk for Android to `21`
+- Introduced `hasTorch()` and `setTorch(bool enabled)` methods on `CameraCapturer`
+- Introduced `onCameraSwitched`, `onFirstFrameAvailable`, `onCameraError` streams on `CameraCapturer`
+
 ## 0.5.0+4
 
 - Fixed unhandled exception when dominant speaker event contains no remote participant.

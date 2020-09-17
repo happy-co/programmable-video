@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
 import 'enums/enum_exports.dart';
 import 'models/model_exports.dart';
@@ -104,9 +105,26 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   Future<CameraSource> switchCamera() {
     throw UnimplementedError('switchCamera() has not been implemented.');
   }
+
+  /// Calls native code to find if the active camera has a flash.
+  Future<bool> hasTorch() {
+    throw UnimplementedError('hasTorch() has not been implemented.');
+  }
+
+  /// Calls native code to change the torch state.
+  Future<void> setTorch(bool enabled) {
+    throw UnimplementedError('setTorch(bool enabled) has not been implemented.');
+  }
   //#endregion
 
   //#region Streams
+
+  /// Stream of the CameraEvent model.
+  ///
+  /// This stream is used to listen for async events after interactions with the camera.
+  Stream<BaseCameraEvent> cameraStream() {
+    throw UnimplementedError('cameraStream() has not been implemented');
+  }
 
   /// Stream of the BaseRoomEvent model.
   ///

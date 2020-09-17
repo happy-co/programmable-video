@@ -1,9 +1,10 @@
 // swiftlint:disable type_body_length
+// swiftlint:disable file_length
 import Flutter
 import Foundation
 import TwilioVideo
 
-public class PluginHandler {
+public class PluginHandler: BaseListener {
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -16,59 +17,108 @@ public class PluginHandler {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.handle => received \(call.method)")
         switch call.method {
-            case "debug":
-                debug(call, result: result)
-            case "connect":
-                connect(call, result: result)
-            case "disconnect":
-                disconnect(call, result: result)
-            case "setSpeakerphoneOn":
-                setSpeakerphoneOn(call, result: result)
-            case "getSpeakerphoneOn":
-                getSpeakerphoneOn(result: result)
-            case "LocalAudioTrack#enable":
-                localAudioTrackEnable(call, result: result)
-            case "LocalDataTrack#sendString":
-                localDataTrackSendString(call, result: result)
-            case "LocalDataTrack#sendByteBuffer":
-                localDataTrackSendByteBuffer(call, result: result)
-            case "LocalVideoTrack#enable":
-                localVideoTrackEnable(call, result: result)
-            case "RemoteAudioTrack#enablePlayback":
-                remoteAudioTrackEnable(call, result: result)
-            case "RemoteAudioTrack#isPlaybackEnabled":
-                isRemoteAudioTrackPlaybackEnabled(call, result: result)
-            case "CameraCapturer#switchCamera":
-                switchCamera(call, result: result)
-            default:
-                result(FlutterMethodNotImplemented)
+        case "debug":
+            debug(call, result: result)
+        case "connect":
+            connect(call, result: result)
+        case "disconnect":
+            disconnect(call, result: result)
+        case "setSpeakerphoneOn":
+            setSpeakerphoneOn(call, result: result)
+        case "getSpeakerphoneOn":
+            getSpeakerphoneOn(result: result)
+        case "LocalAudioTrack#enable":
+            localAudioTrackEnable(call, result: result)
+        case "LocalDataTrack#sendString":
+            localDataTrackSendString(call, result: result)
+        case "LocalDataTrack#sendByteBuffer":
+            localDataTrackSendByteBuffer(call, result: result)
+        case "LocalVideoTrack#enable":
+            localVideoTrackEnable(call, result: result)
+        case "RemoteAudioTrack#enablePlayback":
+            remoteAudioTrackEnable(call, result: result)
+        case "RemoteAudioTrack#isPlaybackEnabled":
+            isRemoteAudioTrackPlaybackEnabled(call, result: result)
+        case "CameraCapturer#switchCamera":
+            switchCamera(call, result: result)
+        case "CameraCapturer#hasTorch":
+            hasTorch(result: result)
+        case "CameraCapturer#setTorch":
+            setTorch(call, result: result)
+        default:
+            result(FlutterMethodNotImplemented)
         }
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
         if let cameraSource = SwiftTwilioProgrammableVideoPlugin.cameraSource {
-            var captureDevice: AVCaptureDevice
+            var captureDevice: AVCaptureDevice?
             switch cameraSource.device?.position {
-                case .back:
-                    guard let realCaptureDevice = CameraSource.captureDevice(position: .front) else {
-                        return result(RoomListener.videoSourceToDict(cameraSource))
-                    }
-                    captureDevice = realCaptureDevice
-                default: // or .front
-                    guard let realCaptureDevice = CameraSource.captureDevice(position: .back) else {
-                        return result(RoomListener.videoSourceToDict(cameraSource))
-                    }
-                    captureDevice = realCaptureDevice
+            case .back:
+                captureDevice = CameraSource.captureDevice(position: .front)
+            default: // or .front
+                captureDevice = CameraSource.captureDevice(position: .back)
             }
-            cameraSource.selectCaptureDevice(captureDevice, completion: { (_, _, error) in
-                if let error = error {
-                    return result(FlutterError(code: "\((error as NSError).code)", message: (error as NSError).description, details: nil))
-                }
-                return result(RoomListener.videoSourceToDict(cameraSource))
-            })
+
+            if let captureDevice = captureDevice {
+                cameraSource.selectCaptureDevice(captureDevice, completion: { (_, _, error) in
+                    if let error = error {
+                        self.sendEvent("cameraError", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: nil)], error: error)
+                    } else {
+                        self.sendEvent("cameraSwitched", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: captureDevice.position)], error: nil)
+                    }
+                })
+                return result(videoSourceToDict(cameraSource, newCameraSource: captureDevice.position))
+            } else {
+                return result(FlutterError(code: "NOT FOUND", message: "Could not find another camera to switch to", details: nil))
+            }
         } else {
             return result(FlutterError(code: "NOT FOUND", message: "No CameraCapturer has been initialized yet natively", details: nil))
+        }
+    }
+
+    private func hasTorch(result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.hasTorch => called")
+        guard let captureDevice = SwiftTwilioProgrammableVideoPlugin.cameraSource?.device else {
+            return result(false)
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.hasTorch => device: \(captureDevice.uniqueID) hasTorch: \(captureDevice.hasTorch)")
+        return result(captureDevice.hasTorch)
+    }
+
+    private func setTorch(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => called")
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
+        }
+
+        guard let enableTorch = arguments["enable"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+        }
+
+        do {
+            guard let captureDevice = SwiftTwilioProgrammableVideoPlugin.cameraSource?.device else {
+                return result(FlutterError(code: "NOT FOUND", message: "No camera source found", details: nil))
+            }
+
+            if !captureDevice.hasTorch {
+                return result(FlutterError(code: "NOT FOUND", message: "Camera source found does not have a torch", details: nil))
+            }
+
+            try captureDevice.lockForConfiguration()
+
+            if enableTorch {
+                try captureDevice.setTorchModeOn(level: AVCaptureDevice.maxAvailableTorchLevel)
+            } else {
+                captureDevice.torchMode = AVCaptureDevice.TorchMode.off
+            }
+
+            captureDevice.unlockForConfiguration()
+            return result(true)
+        } catch let error as NSError {
+            return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
     }
 
@@ -303,16 +353,16 @@ public class PluginHandler {
                 var audioCodecs: [AudioCodec] = []
                 for (_, audioCodec) in preferredAudioCodecs {
                     switch audioCodec {
-                        case "isac":
-                            audioCodecs.append(IsacCodec())
-                        case "PCMA":
-                            audioCodecs.append(PcmaCodec())
-                        case "PCMU":
-                            audioCodecs.append(PcmuCodec())
-                        case "G722":
-                            audioCodecs.append(G722Codec())
-                        default: // or opus
-                            audioCodecs.append(OpusCodec())
+                    case "isac":
+                        audioCodecs.append(IsacCodec())
+                    case "PCMA":
+                        audioCodecs.append(PcmaCodec())
+                    case "PCMU":
+                        audioCodecs.append(PcmuCodec())
+                    case "G722":
+                        audioCodecs.append(G722Codec())
+                    default: // or opus
+                        audioCodecs.append(OpusCodec())
                     }
                 }
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredAudioCodecs to '\(audioCodecs)'")
@@ -324,12 +374,12 @@ public class PluginHandler {
                 var videoCodecs: [VideoCodec] = []
                 for (_, videoCodec) in preferredVideoCodecs {
                     switch videoCodec {
-                        case "VP9":
-                            videoCodecs.append(Vp9Codec())
-                        case "H264":
-                            videoCodecs.append(H264Codec())
-                        default: // or VP8
-                            videoCodecs.append(Vp8Codec())
+                    case "VP9":
+                        videoCodecs.append(Vp9Codec())
+                    case "H264":
+                        videoCodecs.append(H264Codec())
+                    default: // or VP8
+                        videoCodecs.append(Vp8Codec())
                     }
                 }
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting preferredVideoCodecs to '\(videoCodecs)'")
@@ -387,21 +437,27 @@ public class PluginHandler {
                     let videoSourceType = videoCapturer?["type"] as? String
 
                     switch videoSourceType {
-                        default: // or CameraCapturer
-                            let cameraSource = videoCapturer?["cameraSource"] as? String
-                            let cameraDevice: AVCaptureDevice
-                            switch cameraSource {
-                                case "BACK_CAMERA":
-                                    cameraDevice = CameraSource.captureDevice(position: .back)!
-                                default: // or FRONT_CAMERA
-                                    cameraDevice = CameraSource.captureDevice(position: .front)!
-                            }
-                            let videoSource = CameraSource()!
-                            let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
+                    default: // or CameraCapturer
+                        let cameraSource = videoCapturer?["cameraSource"] as? String
+                        let cameraDevice: AVCaptureDevice
+                        switch cameraSource {
+                        case "BACK_CAMERA":
+                            cameraDevice = CameraSource.captureDevice(position: .back)!
+                        default: // or FRONT_CAMERA
+                            cameraDevice = CameraSource.captureDevice(position: .front)!
+                        }
+                        let videoSource = CameraSource()!
+                        let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
 
-                            videoSource.startCapture(device: cameraDevice)
-                            videoTracks.append(localVideoTrack)
-                            SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
+                        videoSource.startCapture(device: cameraDevice) { (device: AVCaptureDevice, _: VideoFormat, error: Error?) in
+                            if let error = error {
+                                self.sendEvent("cameraError", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: nil)], error: error)
+                            } else {
+                                self.sendEvent("firstFrameAvailable", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: device.position)], error: nil)
+                            }
+                        }
+                        videoTracks.append(localVideoTrack)
+                        SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
                 }
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '\(videoTracks)'")
@@ -414,6 +470,31 @@ public class PluginHandler {
         let roomId = 1
         SwiftTwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, connectOptions)
         result(roomId)
+    }
+
+    func videoSourceToDict(_ videoSource: VideoSource?, newCameraSource: AVCaptureDevice.Position?) -> [String: Any] {
+        if let cameraSource = videoSource as? CameraSource {
+            let source: AVCaptureDevice.Position? = newCameraSource != nil ? newCameraSource : cameraSource.device?.position
+            return [
+                "type": "CameraCapturer",
+                "cameraSource": cameraPositionToString(source)
+            ]
+        }
+        return [
+            "type": "Unknown",
+            "isScreenCast": videoSource?.isScreencast ?? false
+        ]
+    }
+
+    private func cameraPositionToString(_ position: AVCaptureDevice.Position?) -> String {
+        switch position {
+        case .front:
+            return "FRONT_CAMERA"
+        case .back:
+            return "BACK_CAMERA"
+        default:
+            return "UNKNOWN"
+        }
     }
 
     private func debug(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

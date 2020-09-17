@@ -1,3 +1,5 @@
+export 'capturers/camera_event.dart';
+
 export 'capturers/camera_capturer_model.dart';
 export 'capturers/video_capturer_model.dart';
 
