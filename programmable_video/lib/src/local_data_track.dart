@@ -15,7 +15,7 @@ class LocalDataTrack extends DataTrack {
 
   /// Sends a [String] message over this data track.
   ///
-  /// Can throw either a [PlatformException] or a [TwilioException].
+  /// Can throw a [MissingParameterException], [NotFoundException], or a [TwilioException].
   Future<void> send(String message) async {
     try {
       return ProgrammableVideoPlatform.instance.sendMessage(name: name, message: message);
@@ -26,7 +26,7 @@ class LocalDataTrack extends DataTrack {
 
   /// Sends a [ByteBuffer] message over this data track.
   ///
-  /// Can throw either a [PlatformException] or a [TwilioException].
+  /// Can throw a [MissingParameterException], [NotFoundException], or a [TwilioException].
   Future<void> sendBuffer(ByteBuffer message) async {
     try {
       return ProgrammableVideoPlatform.instance.sendBuffer(name: name, message: message);

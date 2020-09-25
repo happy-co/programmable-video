@@ -36,9 +36,16 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// The results of this operation are signaled to other [Participant]s in the same [Room].
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.
-  Future<bool> enable(bool enabled) async {
-    _enabled = enabled;
-    return ProgrammableVideoPlatform.instance.enableVideoTrack(name: name, enabled: enabled);
+  ///
+  /// Throws [MissingParameterException] if [enabled] is not provided.
+  /// Throws [NotFoundException] if no track is found by the name provided (probably means you haven't connected).
+  Future<void> enable(bool enabled) async {
+    try {
+      await ProgrammableVideoPlatform.instance.enableVideoTrack(name: name, enabled: enabled);
+      _enabled = enabled;
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Returns a native widget.

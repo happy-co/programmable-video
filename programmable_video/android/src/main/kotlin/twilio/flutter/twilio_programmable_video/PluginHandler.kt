@@ -119,7 +119,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun switchCamera(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
         if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-            val newCameraId: String
+            val newCameraId: String?
             val newCameraSource: CameraCapturer.CameraSource
             if (getCameraDirection(TwilioProgrammableVideoPlugin.cameraCapturer.cameraId) == CameraMetadata.LENS_FACING_FRONT) {
                 newCameraId = getCameraId(CameraMetadata.LENS_FACING_BACK)
@@ -133,10 +133,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 TwilioProgrammableVideoPlugin.cameraCapturer.switchCamera(newCameraId)
                 return result.success(videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer, newCameraSource))
             } else {
-                return result.error("NOT FOUND", "Could not find another camera to switch to", null)
+                return result.error("MISSING_CAMERA", "Could not find another camera to switch to", null)
             }
         }
-        return result.error("NOT FOUND", "No CameraCapturer has been initialized yet natively", null)
+        return result.error("NOT_FOUND", "No CameraCapturer has been initialized yet, try connecting first.", null)
     }
 
     private fun hasTorch(): Boolean {
@@ -151,7 +151,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun setTorch(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => called")
-        val enableTorch = call.argument<Boolean>("enable") ?: false
+        val enableTorch = call.argument<Boolean>("enable")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
 
         if (hasTorch()) {
             val scheduled = TwilioProgrammableVideoPlugin.cameraCapturer.updateCaptureRequest {
@@ -165,7 +166,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             }
             TwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => scheduled: $scheduled flashState: ")
             if (scheduled) {
-                return result.success(true)
+                return result.success(null)
             } else {
                 return result.error("FAILED", "Failed to schedule updateCaptureRequest", null)
             }
@@ -176,62 +177,64 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun localVideoTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localVideoTrackName = call.argument<String>("name")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
         val localVideoTrackEnable = call.argument<Boolean>("enable")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+
         TwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackEnable => called for $localVideoTrackName, enable=$localVideoTrackEnable")
-        if (localVideoTrackName != null && localVideoTrackEnable != null) {
-            val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull { it.trackName == localVideoTrackName }
-            if (localVideoTrack != null) {
-                localVideoTrack.localVideoTrack.enable(localVideoTrackEnable)
-                return result.success(true)
-            }
-            return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
+
+        val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull { it.trackName == localVideoTrackName }
+        if (localVideoTrack != null) {
+            localVideoTrack.localVideoTrack.enable(localVideoTrackEnable)
+            return result.success(null)
         }
-        return result.error("MISSING_PARAMS", "The parameters 'name' and 'enable' were not given", null)
+        return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
     }
 
     private fun localAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localAudioTrackName = call.argument<String>("name")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
         val localAudioTrackEnable = call.argument<Boolean>("enable")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+
         TwilioProgrammableVideoPlugin.debug("PluginHandler.localAudioTrackEnable => called for $localAudioTrackName, enable=$localAudioTrackEnable")
-        if (localAudioTrackName != null && localAudioTrackEnable != null) {
-            val localAudioTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localAudioTracks?.firstOrNull { it.trackName == localAudioTrackName }
-            if (localAudioTrack != null) {
-                localAudioTrack.localAudioTrack.enable(localAudioTrackEnable)
-                return result.success(true)
-            }
-            return result.error("NOT_FOUND", "No LocalAudioTrack found with the name '$localAudioTrackName'", null)
+
+        val localAudioTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localAudioTracks?.firstOrNull { it.trackName == localAudioTrackName }
+        if (localAudioTrack != null) {
+            localAudioTrack.localAudioTrack.enable(localAudioTrackEnable)
+            return result.success(null)
         }
-        return result.error("MISSING_PARAMS", "The parameters 'name' and 'enable' were not given", null)
+        return result.error("NOT_FOUND", "No LocalAudioTrack found with the name '$localAudioTrackName'", null)
     }
 
     private fun localDataTrackSendString(call: MethodCall, result: MethodChannel.Result) {
         val localDataTrackName = call.argument<String>("name")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
         val localDataTrackMessage = call.argument<String>("message")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'message' was not given", null)
+
         TwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for $localDataTrackName")
-        if (localDataTrackName != null && localDataTrackMessage != null) {
-            val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
-            if (localDataTrack != null) {
-                localDataTrack.localDataTrack.send(localDataTrackMessage)
-                return result.success(null)
-            }
-            return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
-        }
-        return result.error("MISSING_PARAMS", "The parameters 'name' and 'message' were not given", null)
+
+        val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
+            ?: return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
+
+        localDataTrack.localDataTrack.send(localDataTrackMessage)
+        return result.success(null)
     }
 
     private fun localDataTrackSendByteBuffer(call: MethodCall, result: MethodChannel.Result) {
         val localDataTrackName = call.argument<String>("name")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
         val localDataTrackMessage = call.argument<ByteArray>("message")
+            ?: return result.error("MISSING_PARAMS", "The parameter 'message' was not given", null)
+
         TwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendByteBuffer => called for $localDataTrackName")
-        if (localDataTrackName != null && localDataTrackMessage != null) {
-            val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
-            if (localDataTrack != null) {
-                localDataTrack.localDataTrack.send(ByteBuffer.wrap(localDataTrackMessage))
-                return result.success(null)
-            }
-            return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
-        }
-        return result.error("MISSING_PARAMS", "The parameters 'name' and 'message' were not given", null)
+
+        val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
+            ?: return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
+
+        localDataTrack.localDataTrack.send(ByteBuffer.wrap(localDataTrackMessage))
+        return result.success(null)
     }
 
     private fun remoteAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
@@ -271,11 +274,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
         val on = call.argument<Boolean>("on")
-        if (on != null) {
-            audioManager.isSpeakerphoneOn = on
-            return result.success(on)
-        }
-        return result.error("MISSING_PARAMS", "The parameter 'on' was not given", null)
+            ?: return result.error("MISSING_PARAMS", "The parameter 'on' was not given", null)
+
+        audioManager.isSpeakerphoneOn = on
+        return result.success(on)
     }
 
     private fun getSpeakerphoneOn(result: MethodChannel.Result) {
@@ -298,162 +300,161 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             TwilioProgrammableVideoPlugin.debug("WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler => true")
             WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(true)
         }
+        val optionsObj = call.argument<Map<String, Any>>("connectOptions")
+            ?: return result.error("MISSING_PARAMS", "Missing 'connectOptions' parameter", null)
 
         setAudioFocus(true)
-        val optionsObj = call.argument<Map<String, Any>>("connectOptions")
-        if (optionsObj != null) {
-            try {
-                val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
 
-                // Set the room name if it has been passed.
-                if (optionsObj["roomName"] != null) {
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting roomName to '${optionsObj["roomName"]}'")
-                    optionsBuilder.roomName(optionsObj["roomName"] as String)
+        try {
+            val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
+
+            // Set the room name if it has been passed.
+            if (optionsObj["roomName"] != null) {
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting roomName to '${optionsObj["roomName"]}'")
+                optionsBuilder.roomName(optionsObj["roomName"] as String)
+            }
+
+            // Set the region if it has been passed.
+            if (optionsObj["region"] != null) {
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting region to '${optionsObj["region"]}'")
+                optionsBuilder.region(optionsObj["region"] as String)
+            }
+
+            // Set the preferred audio codecs if it has been passed.
+            if (optionsObj["preferredAudioCodecs"] != null) {
+                val preferredAudioCodecs = optionsObj["preferredAudioCodecs"] as Map<*, *>
+
+                val audioCodecs = ArrayList<AudioCodec>()
+                for ((audioCodec) in preferredAudioCodecs) {
+                    when (audioCodec) {
+                        IsacCodec.NAME -> audioCodecs.add(IsacCodec())
+                        OpusCodec.NAME -> audioCodecs.add(OpusCodec())
+                        PcmaCodec.NAME -> audioCodecs.add(PcmaCodec())
+                        PcmuCodec.NAME -> audioCodecs.add(PcmuCodec())
+                        G722Codec.NAME -> audioCodecs.add(G722Codec())
+                        else -> audioCodecs.add(OpusCodec())
+                    }
                 }
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioCodecs to '${audioCodecs.joinToString(", ")}'")
+                optionsBuilder.preferAudioCodecs(audioCodecs)
+            }
 
-                // Set the region if it has been passed.
-                if (optionsObj["region"] != null) {
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting region to '${optionsObj["region"]}'")
-                    optionsBuilder.region(optionsObj["region"] as String)
+            // Set the preferred video codecs if it has been passed.
+            if (optionsObj["preferredVideoCodecs"] != null) {
+                val preferredVideoCodecs = optionsObj["preferredVideoCodecs"] as Map<*, *>
+
+                val videoCodecs = ArrayList<VideoCodec>()
+                for ((videoCodec) in preferredVideoCodecs) {
+                    when (videoCodec) {
+                        Vp8Codec.NAME -> videoCodecs.add(Vp8Codec()) // TODO(WLFN): It has an optional parameter, need to figure out for what: https://github.com/twilio/video-quickstart-android/blob/master/quickstartKotlin/src/main/java/com/twilio/video/quickstart/kotlin/VideoActivity.kt#L106
+                        Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
+                        H264Codec.NAME -> videoCodecs.add(H264Codec())
+                        else -> videoCodecs.add(Vp8Codec())
+                    }
                 }
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoCodecs to '${videoCodecs.joinToString(", ")}'")
+                optionsBuilder.preferVideoCodecs(videoCodecs)
+            }
 
-                // Set the preferred audio codecs if it has been passed.
-                if (optionsObj["preferredAudioCodecs"] != null) {
-                    val preferredAudioCodecs = optionsObj["preferredAudioCodecs"] as Map<*, *>
+            // Set the local audio tracks if it has been passed.
+            if (optionsObj["audioTracks"] != null) {
+                val audioTrackOptions = optionsObj["audioTracks"] as Map<*, *>
 
-                    val audioCodecs = ArrayList<AudioCodec>()
-                    for ((audioCodec) in preferredAudioCodecs) {
-                        when (audioCodec) {
-                            IsacCodec.NAME -> audioCodecs.add(IsacCodec())
-                            OpusCodec.NAME -> audioCodecs.add(OpusCodec())
-                            PcmaCodec.NAME -> audioCodecs.add(PcmaCodec())
-                            PcmuCodec.NAME -> audioCodecs.add(PcmuCodec())
-                            G722Codec.NAME -> audioCodecs.add(G722Codec())
-                            else -> audioCodecs.add(OpusCodec())
+                val audioTracks = ArrayList<LocalAudioTrack?>()
+                for ((audioTrack) in audioTrackOptions) {
+                    audioTrack as Map<*, *> // Ensure right type.
+                    audioTracks.add(LocalAudioTrack.create(this.applicationContext, audioTrack["enable"] as Boolean, audioTrack["name"] as String))
+                }
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioTracks to '${audioTracks.joinToString(", ")}'")
+                optionsBuilder.audioTracks(audioTracks)
+            }
+
+            // Set the local data tracks if it has been passed.
+            if (optionsObj["dataTracks"] != null) {
+                val dataTrackMap = optionsObj["dataTracks"] as Map<*, *>
+
+                val dataTracks = ArrayList<LocalDataTrack?>()
+                for ((dataTrack) in dataTrackMap) {
+                    dataTrack as Map<*, *> // Ensure right type.
+                    if (dataTrack["dataTrackOptions"] != null) {
+                        val dataTrackOptionsMap = dataTrack["dataTrackOptions"] as Map<*, *>
+
+                        val dataTrackOptionsBuilder = DataTrackOptions.Builder()
+                        if (dataTrackOptionsMap["ordered"] != null) {
+                            dataTrackOptionsBuilder.ordered(dataTrackOptionsMap["ordered"] as Boolean)
                         }
-                    }
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioCodecs to '${audioCodecs.joinToString(", ")}'")
-                    optionsBuilder.preferAudioCodecs(audioCodecs)
-                }
-
-                // Set the preferred video codecs if it has been passed.
-                if (optionsObj["preferredVideoCodecs"] != null) {
-                    val preferredVideoCodecs = optionsObj["preferredVideoCodecs"] as Map<*, *>
-
-                    val videoCodecs = ArrayList<VideoCodec>()
-                    for ((videoCodec) in preferredVideoCodecs) {
-                        when (videoCodec) {
-                            Vp8Codec.NAME -> videoCodecs.add(Vp8Codec()) // TODO(WLFN): It has an optional parameter, need to figure out for what: https://github.com/twilio/video-quickstart-android/blob/master/quickstartKotlin/src/main/java/com/twilio/video/quickstart/kotlin/VideoActivity.kt#L106
-                            Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
-                            H264Codec.NAME -> videoCodecs.add(H264Codec())
-                            else -> videoCodecs.add(Vp8Codec())
+                        if (dataTrackOptionsMap["maxPacketLifeTime"] != null) {
+                            dataTrackOptionsBuilder.maxPacketLifeTime(dataTrackOptionsMap["maxPacketLifeTime"] as Int)
                         }
-                    }
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoCodecs to '${videoCodecs.joinToString(", ")}'")
-                    optionsBuilder.preferVideoCodecs(videoCodecs)
-                }
-
-                // Set the local audio tracks if it has been passed.
-                if (optionsObj["audioTracks"] != null) {
-                    val audioTrackOptions = optionsObj["audioTracks"] as Map<*, *>
-
-                    val audioTracks = ArrayList<LocalAudioTrack?>()
-                    for ((audioTrack) in audioTrackOptions) {
-                        audioTrack as Map<*, *> // Ensure right type.
-                        audioTracks.add(LocalAudioTrack.create(this.applicationContext, audioTrack["enable"] as Boolean, audioTrack["name"] as String))
-                    }
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting audioTracks to '${audioTracks.joinToString(", ")}'")
-                    optionsBuilder.audioTracks(audioTracks)
-                }
-
-                // Set the local data tracks if it has been passed.
-                if (optionsObj["dataTracks"] != null) {
-                    val dataTrackMap = optionsObj["dataTracks"] as Map<*, *>
-
-                    val dataTracks = ArrayList<LocalDataTrack?>()
-                    for ((dataTrack) in dataTrackMap) {
-                        dataTrack as Map<*, *> // Ensure right type.
-                        if (dataTrack["dataTrackOptions"] != null) {
-                            val dataTrackOptionsMap = dataTrack["dataTrackOptions"] as Map<*, *>
-
-                            val dataTrackOptionsBuilder = DataTrackOptions.Builder()
-                            if (dataTrackOptionsMap["ordered"] != null) {
-                                dataTrackOptionsBuilder.ordered(dataTrackOptionsMap["ordered"] as Boolean)
-                            }
-                            if (dataTrackOptionsMap["maxPacketLifeTime"] != null) {
-                                dataTrackOptionsBuilder.maxPacketLifeTime(dataTrackOptionsMap["maxPacketLifeTime"] as Int)
-                            }
-                            if (dataTrackOptionsMap["maxRetransmits"] != null) {
-                                dataTrackOptionsBuilder.maxRetransmits(dataTrackOptionsMap["maxRetransmits"] as Int)
-                            }
-                            if (dataTrackOptionsMap["name"] != null) {
-                                dataTrackOptionsBuilder.name(dataTrackOptionsMap["name"] as String)
-                            }
-                            dataTracks.add(LocalDataTrack.create(this.applicationContext, dataTrackOptionsBuilder.build()))
-                        } else {
-                            dataTracks.add(LocalDataTrack.create(this.applicationContext))
+                        if (dataTrackOptionsMap["maxRetransmits"] != null) {
+                            dataTrackOptionsBuilder.maxRetransmits(dataTrackOptionsMap["maxRetransmits"] as Int)
                         }
+                        if (dataTrackOptionsMap["name"] != null) {
+                            dataTrackOptionsBuilder.name(dataTrackOptionsMap["name"] as String)
+                        }
+                        dataTracks.add(LocalDataTrack.create(this.applicationContext, dataTrackOptionsBuilder.build()))
+                    } else {
+                        dataTracks.add(LocalDataTrack.create(this.applicationContext))
                     }
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
-                    optionsBuilder.dataTracks(dataTracks)
                 }
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting dataTracks to '${dataTracks.joinToString(", ")}'")
+                optionsBuilder.dataTracks(dataTracks)
+            }
 
-                // Set the local video tracks if it has been passed.
-                if (optionsObj["videoTracks"] != null) {
-                    val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
+            // Set the local video tracks if it has been passed.
+            if (optionsObj["videoTracks"] != null) {
+                val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
 
-                    val videoTracks = ArrayList<LocalVideoTrack?>()
-                    for ((videoTrack) in videoTrackOptions) {
-                        videoTrack as Map<*, *> // Ensure right type.
-                        val videoCapturerMap = videoTrack["videoCapturer"] as Map<*, *>
-                        // Check type because we may want to add support for ScreenCapturer
-                        val cameraId: String = when (videoCapturerMap["type"] as String) {
-                            "CameraCapturer" -> when (videoCapturerMap["cameraSource"] as String) {
-                                "BACK_CAMERA" -> getCameraId(CameraMetadata.LENS_FACING_BACK)
-                                else -> getCameraId(CameraMetadata.LENS_FACING_FRONT)
-                            }
+                val videoTracks = ArrayList<LocalVideoTrack?>()
+                for ((videoTrack) in videoTrackOptions) {
+                    videoTrack as Map<*, *> // Ensure right type.
+                    val videoCapturerMap = videoTrack["videoCapturer"] as Map<*, *>
+                    // Check type because we may want to add support for ScreenCapturer
+                    val cameraId = when (videoCapturerMap["type"] as String) {
+                        "CameraCapturer" -> when (videoCapturerMap["cameraSource"] as String) {
+                            "BACK_CAMERA" -> getCameraId(CameraMetadata.LENS_FACING_BACK)
                             else -> getCameraId(CameraMetadata.LENS_FACING_FRONT)
                         }
-                        val videoCapturer: VideoCapturer = Camera2Capturer(
-                            this.applicationContext,
-                            cameraId,
-                            object : Listener {
-                                override fun onError(camera2CapturerException: Camera2Capturer.Exception) {
-                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onError => $camera2CapturerException")
-                                    sendEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), camera2CapturerException)
-                                }
+                        else -> getCameraId(CameraMetadata.LENS_FACING_FRONT)
+                    } ?: return result.error("MISSING_CAMERA", "No camera found for ${videoCapturerMap["cameraSource"]}", null)
 
-                                override fun onFirstFrameAvailable() {
-                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onFirstFrameAvailable")
-                                    sendEvent("firstFrameAvailable", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
-                                }
-
-                                override fun onCameraSwitched(newCameraId: String) {
-                                    TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onCameraSwitched => newCameraId: $newCameraId")
-                                    sendEvent("cameraSwitched", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
-                                }
+                    val videoCapturer: VideoCapturer = Camera2Capturer(
+                        this.applicationContext,
+                        cameraId,
+                        object : Listener {
+                            override fun onError(camera2CapturerException: Camera2Capturer.Exception) {
+                                TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onError => $camera2CapturerException")
+                                sendEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), camera2CapturerException)
                             }
-                        )
-                        if (videoCapturer is Camera2Capturer) {
-                            TwilioProgrammableVideoPlugin.cameraCapturer = videoCapturer
+
+                            override fun onFirstFrameAvailable() {
+                                TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onFirstFrameAvailable")
+                                sendEvent("firstFrameAvailable", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
+                            }
+
+                            override fun onCameraSwitched(newCameraId: String) {
+                                TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onCameraSwitched => newCameraId: $newCameraId")
+                                sendEvent("cameraSwitched", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
+                            }
                         }
-                        videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoTrack["name"] as String))
+                    )
+                    if (videoCapturer is Camera2Capturer) {
+                        TwilioProgrammableVideoPlugin.cameraCapturer = videoCapturer
                     }
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
-                    optionsBuilder.videoTracks(videoTracks)
+                    videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoTrack["name"] as String))
                 }
-
-                optionsBuilder.enableDominantSpeaker(if (optionsObj["enableDominantSpeaker"] != null) optionsObj["enableDominantSpeaker"] as Boolean else false)
-                optionsBuilder.enableAutomaticSubscription(if (optionsObj["enableAutomaticSubscription"] != null) optionsObj["enableAutomaticSubscription"] as Boolean else true)
-
-                val roomId = 1 // Future preparation, for when we might want to support multiple rooms.
-                TwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, optionsBuilder.build())
-                result.success(roomId)
-            } catch (e: Exception) {
-                result.error("INIT_ERROR", e.toString(), e)
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
+                optionsBuilder.videoTracks(videoTracks)
             }
-        } else {
-            result.error("INIT_ERROR", "Missing 'connectOptions' parameter", null)
+
+            optionsBuilder.enableDominantSpeaker(if (optionsObj["enableDominantSpeaker"] != null) optionsObj["enableDominantSpeaker"] as Boolean else false)
+            optionsBuilder.enableAutomaticSubscription(if (optionsObj["enableAutomaticSubscription"] != null) optionsObj["enableAutomaticSubscription"] as Boolean else true)
+
+            val roomId = 1 // Future preparation, for when we might want to support multiple rooms.
+            TwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, optionsBuilder.build())
+            result.success(roomId)
+        } catch (e: Exception) {
+            result.error("INIT_ERROR", e.toString(), e)
         }
     }
 
@@ -461,14 +462,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         return this.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
 
-    private fun getCameraId(cameraDirection: Int): String {
+    private fun getCameraId(cameraDirection: Int): String? {
         val cameraManager: CameraManager = getCameraManager()
-        return cameraManager.cameraIdList.first { cameraId -> cameraManager.getCameraCharacteristics(cameraId)[CameraCharacteristics.LENS_FACING] == cameraDirection }
-    }
-
-    private fun getCameraIdWithTorch(): String {
-        val cameraManager: CameraManager = getCameraManager()
-        return cameraManager.cameraIdList.first { cameraId -> cameraManager.getCameraCharacteristics(cameraId).keys[CameraCharacteristics.FLASH_MODE_TORCH] != null }
+        return cameraManager.cameraIdList.firstOrNull { cameraId -> cameraManager.getCameraCharacteristics(cameraId)[CameraCharacteristics.LENS_FACING] == cameraDirection }
     }
 
     private fun getCameraDirection(cameraId: String): Int? {
@@ -504,12 +500,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun debug(call: MethodCall, result: MethodChannel.Result) {
         val enableNative = call.argument<Boolean>("native")
-        if (enableNative != null) {
-            TwilioProgrammableVideoPlugin.nativeDebug = enableNative
-            result.success(enableNative)
-        } else {
-            result.error("MISSING_PARAMS", "Missing 'native' parameter", null)
-        }
+            ?: return result.error("MISSING_PARAMS", "Missing 'native' parameter", null)
+
+        TwilioProgrammableVideoPlugin.nativeDebug = enableNative
+        result.success(enableNative)
     }
 
     private fun setAudioFocus(focus: Boolean) {

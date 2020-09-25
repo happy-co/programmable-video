@@ -71,10 +71,10 @@ public class PluginHandler: BaseListener {
                 })
                 return result(videoSourceToDict(cameraSource, newCameraSource: captureDevice.position))
             } else {
-                return result(FlutterError(code: "NOT FOUND", message: "Could not find another camera to switch to", details: nil))
+                return result(FlutterError(code: "MISSING_CAMERA", message: "Could not find another camera to switch to", details: nil))
             }
         } else {
-            return result(FlutterError(code: "NOT FOUND", message: "No CameraCapturer has been initialized yet natively", details: nil))
+            return result(FlutterError(code: "NOT_FOUND", message: "No CameraCapturer has been initialized yet, try connecting first.", details: nil))
         }
     }
 
@@ -91,7 +91,7 @@ public class PluginHandler: BaseListener {
     private func setTorch(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setTorch => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameters", details: nil))
         }
 
         guard let enableTorch = arguments["enable"] as? Bool else {
@@ -100,11 +100,11 @@ public class PluginHandler: BaseListener {
 
         do {
             guard let captureDevice = SwiftTwilioProgrammableVideoPlugin.cameraSource?.device else {
-                return result(FlutterError(code: "NOT FOUND", message: "No camera source found", details: nil))
+                return result(FlutterError(code: "NOT_FOUND", message: "No camera source found", details: nil))
             }
 
             if !captureDevice.hasTorch {
-                return result(FlutterError(code: "NOT FOUND", message: "Camera source found does not have a torch", details: nil))
+                return result(FlutterError(code: "NOT_FOUND", message: "Camera source found does not have a torch", details: nil))
             }
 
             try captureDevice.lockForConfiguration()
@@ -116,7 +116,7 @@ public class PluginHandler: BaseListener {
             }
 
             captureDevice.unlockForConfiguration()
-            return result(true)
+            return result(nil)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
@@ -140,7 +140,7 @@ public class PluginHandler: BaseListener {
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
         if let localVideoTrack = localVideoTrack {
             localVideoTrack.localTrack?.isEnabled = localVideoTrackEnable
-            return result(true)
+            return result(nil)
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalVideoTrack found with the name '\(localVideoTrackName)'", details: nil))
     }
@@ -163,7 +163,7 @@ public class PluginHandler: BaseListener {
         let localAudioTrack = getLocalParticipant()?.localAudioTracks.first(where: {$0.trackName == localAudioTrackName})
         if let localAudioTrack = localAudioTrack {
             localAudioTrack.localTrack?.isEnabled = localAudioTrackEnable
-            return result(true)
+            return result(nil)
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalAudioTrack found with the name '\(localAudioTrackName)'", details: nil))
     }
@@ -439,13 +439,14 @@ public class PluginHandler: BaseListener {
                     switch videoSourceType {
                     default: // or CameraCapturer
                         let cameraSource = videoCapturer?["cameraSource"] as? String
-                        let cameraDevice: AVCaptureDevice
-                        switch cameraSource {
-                        case "BACK_CAMERA":
-                            cameraDevice = CameraSource.captureDevice(position: .back)!
-                        default: // or FRONT_CAMERA
-                            cameraDevice = CameraSource.captureDevice(position: .front)!
+                        let cameraDeviceRequested: AVCaptureDevice? = cameraSource == "BACK_CAMERA" ?
+                            CameraSource.captureDevice(position: .back) :
+                            CameraSource.captureDevice(position: .front)
+
+                        guard let cameraDevice = cameraDeviceRequested else {
+                            return result(FlutterError(code: "MISSING_CAMERA", message: "No camera found for \(videoCapturer?["cameraSource"] ?? "FRONT_CAMERA")", details: nil))
                         }
+
                         let videoSource = CameraSource()!
                         let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
 

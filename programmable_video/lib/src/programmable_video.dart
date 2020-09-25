@@ -18,6 +18,30 @@ class TwilioProgrammableVideo {
     // If code is an integer, then it is a Twilio ErrorInfo exception.
     if (code != null) {
       return TwilioException(int.parse(err.code), err.message);
+    } else if (err.code == 'MISSING_CAMERA') {
+      return MissingCameraException(
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      );
+    } else if (err.code == 'MISSING_PARAMS') {
+      return MissingParameterException(
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      );
+    } else if (err.code == 'INIT_ERROR') {
+      return InitializationException(
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      );
+    } else if (err.code == 'NOT_FOUND') {
+      return NotFoundException(
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      );
     }
     return err;
   }
@@ -83,6 +107,9 @@ class TwilioProgrammableVideo {
   /// Connect to a [Room].
   ///
   /// Will request camera and microphone permissions.
+  /// Throws [MissingParameterException] if [ConnectOptions] are not provided.
+  /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource]
+  /// Throws [InitializationException] if an error is caught when attempting to connect.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     assert(connectOptions != null);
     if (await requestPermissionForCameraAndMicrophone()) {

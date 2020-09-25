@@ -23,9 +23,15 @@ class LocalAudioTrack extends AudioTrack {
   /// Set the state.
   ///
   /// The results of this operation are signaled to other [Participant]s in the same [Room].
-  Future<bool> enable(bool enabled) async {
-    _enabled = enabled;
-    return ProgrammableVideoPlatform.instance.enableAudioTrack(name: name, enable: enabled);
+  /// Throws [MissingParameterException] if [enabled] is not provided.
+  /// Throws [NotFoundException] if no track is found by the name provided (probably means you haven't connected).
+  Future<void> enable(bool enabled) async {
+    try {
+      await ProgrammableVideoPlatform.instance.enableAudioTrack(name: name, enable: enabled);
+      _enabled = enabled;
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Create [TrackModel] from properties.

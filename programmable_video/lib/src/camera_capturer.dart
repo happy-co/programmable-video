@@ -78,8 +78,15 @@ class CameraCapturer implements VideoCapturer {
   ///
   /// This method can be invoked while capturing frames or not.
   /// Throws a [FormatException] if the result could not be parsed to a [CameraSource].
+  /// Throws a [MissingCameraException] if no camera is found for the [CameraSource]
+  /// that is not presently in use.
+  /// Throws a [NotFoundException] when the [CameraCapturer] was not provided at time of connection.
   Future<void> switchCamera() async {
-    _cameraSource = await ProgrammableVideoPlatform.instance.switchCamera();
+    try {
+      _cameraSource = await ProgrammableVideoPlatform.instance.switchCamera();
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Get availability of torch on active [CameraSource].
@@ -93,12 +100,18 @@ class CameraCapturer implements VideoCapturer {
   /// Set state of torch on active [CameraSource].
   ///
   /// This method can be invoked while capturing frames or not.
+  /// Throws [MissingParameterException] if [enabled] is not provided.
   /// Throws an exception if the active [CameraSource] does not have a torch.
-  /// Throws an exception if it attempt to set torch state fails.
+  /// Throws a [PlatformException] if the attempt to set torch state fails.
   ///
-  /// Torch will be deactivated when camera is switched.
+  /// Torch will be deactivated when camera is switched as it is considered to
+  /// be an asset of the camera in use.
   Future<void> setTorch(bool enabled) async {
-    await ProgrammableVideoPlatform.instance.setTorch(enabled);
+    try {
+      await ProgrammableVideoPlatform.instance.setTorch(enabled);
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Update properties from a [VideoCapturerModel].
