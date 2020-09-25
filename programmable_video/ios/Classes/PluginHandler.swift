@@ -35,6 +35,10 @@ public class PluginHandler: BaseListener {
             localDataTrackSendByteBuffer(call, result: result)
         case "LocalVideoTrack#enable":
             localVideoTrackEnable(call, result: result)
+        case "RemoteAudioTrack#enablePlayback":
+            remoteAudioTrackEnable(call, result: result)
+        case "RemoteAudioTrack#isPlaybackEnabled":
+            isRemoteAudioTrackPlaybackEnabled(call, result: result)
         case "CameraCapturer#switchCamera":
             switchCamera(call, result: result)
         case "CameraCapturer#hasTorch":
@@ -162,6 +166,61 @@ public class PluginHandler: BaseListener {
             return result(nil)
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalAudioTrack found with the name '\(localAudioTrackName)'", details: nil))
+    }
+
+    private func remoteAudioTrackEnable(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
+        }
+
+        guard let remoteAudioTrackSid = arguments["sid"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'sid' parameter", details: nil))
+        }
+
+        guard let remoteAudioTrackEnable = arguments["enable"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.remoteAudioTrackEnable => called for \(remoteAudioTrackSid), enable=\(remoteAudioTrackEnable)")
+
+        guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+        }
+
+        remoteAudioTrack.remoteTrack?.isPlaybackEnabled = remoteAudioTrackEnable
+        return result(nil)
+    }
+
+    private func isRemoteAudioTrackPlaybackEnabled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
+        }
+
+        guard let remoteAudioTrackSid = arguments["sid"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'sid' parameter", details: nil))
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.isRemoteAudioTrackPlaybackEnabled => called for \(remoteAudioTrackSid)")
+
+        guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+        }
+
+        return result(remoteAudioTrack.remoteTrack?.isPlaybackEnabled)
+    }
+
+    private func getRemoteAudioTrack(_ sid: String) -> RemoteAudioTrackPublication? {
+        guard let remoteParticipants = SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants else {
+            return nil
+        }
+        var remoteAudioTrack: RemoteAudioTrackPublication?
+        for remoteParticipant in remoteParticipants {
+            remoteAudioTrack = remoteParticipant.remoteAudioTracks.first(where: { $0.remoteTrack?.sid == sid })
+            if remoteAudioTrack != nil {
+                return remoteAudioTrack
+            }
+        }
+        return nil
     }
 
     private func localDataTrackSendString(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

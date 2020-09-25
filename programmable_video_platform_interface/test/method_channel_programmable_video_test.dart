@@ -22,6 +22,8 @@ void main() {
   var nativeEnableAudioTrackIsCalled = false;
   var nativeEnableVideoTrackIsCalled = false;
   var nativeSendByteBufferIsCalled = false;
+  var nativeEnableRemoteAudioTrackIsCalled = false;
+  var nativeIsRemoteAudioTrackPlaybackEnabledIsCalled = false;
   var nativeDisconnectIsCalled = false;
   var nativeConnectIsCalled = false;
   var nativeSetSpeakerphoneOnIsCalled = false;
@@ -84,6 +86,12 @@ void main() {
           break;
         case 'LocalDataTrack#sendByteBuffer':
           nativeSendByteBufferIsCalled = true;
+          break;
+        case 'RemoteAudioTrack#enablePlayback':
+          nativeEnableRemoteAudioTrackIsCalled = true;
+          break;
+        case 'RemoteAudioTrack#isPlaybackEnabled':
+          nativeIsRemoteAudioTrackPlaybackEnabledIsCalled = true;
           break;
         case 'disconnect':
           nativeDisconnectIsCalled = true;
@@ -194,6 +202,37 @@ void main() {
         isMethodCall(
           'LocalDataTrack#sendByteBuffer',
           arguments: {'name': testName, 'message': testMessage.asUint8List()},
+        )
+      ]);
+    });
+  });
+
+  group('.enableRemoteAudioTrack()', () {
+    test('should call native code to enable playback of a remote audiotrack', () async {
+      final testEnable = true;
+      final testSid = 'testSid';
+
+      await instance.enableRemoteAudioTrack(sid: testSid, enable: testEnable);
+      expect(nativeEnableRemoteAudioTrackIsCalled, true);
+      expect(methodCalls, <Matcher>[
+        isMethodCall(
+          'RemoteAudioTrack#enablePlayback',
+          arguments: {'sid': testSid, 'enable': testEnable},
+        )
+      ]);
+    });
+  });
+
+  group('.isRemoteAudioTrackPlaybackEnabled()', () {
+    test('should call native code to check if playback of a remote audiotrack is enabled', () async {
+      final testSid = 'testSid';
+
+      await instance.isRemoteAudioTrackPlaybackEnabled(testSid);
+      expect(nativeIsRemoteAudioTrackPlaybackEnabledIsCalled, true);
+      expect(methodCalls, <Matcher>[
+        isMethodCall(
+          'RemoteAudioTrack#isPlaybackEnabled',
+          arguments: {'sid': testSid},
         )
       ]);
     });
