@@ -21,6 +21,8 @@ class ParticipantWidget extends StatelessWidget {
   final bool isRemote;
   final bool isDummy;
   final bool isDominant;
+  final bool audioEnabledLocally;
+  final VoidCallback toggleMute;
 
   const ParticipantWidget({
     Key key,
@@ -29,6 +31,8 @@ class ParticipantWidget extends StatelessWidget {
     @required this.videoEnabled,
     @required this.id,
     @required this.isRemote,
+    this.toggleMute,
+    this.audioEnabledLocally = true,
     this.isDominant = false,
     this.isDummy = false,
   })  : assert(child != null),
@@ -44,6 +48,7 @@ class ParticipantWidget extends StatelessWidget {
     bool audioEnabled,
     bool videoEnabled,
     bool isDominant,
+    bool audioEnabledLocally,
   }) {
     return ParticipantWidget(
       id: id,
@@ -51,7 +56,9 @@ class ParticipantWidget extends StatelessWidget {
       audioEnabled: audioEnabled ?? this.audioEnabled,
       videoEnabled: videoEnabled ?? this.videoEnabled,
       isDominant: isDominant ?? this.isDominant,
+      audioEnabledLocally: audioEnabledLocally ?? this.audioEnabledLocally,
       isRemote: isRemote,
+      toggleMute: toggleMute,
     );
   }
 
@@ -89,6 +96,8 @@ class ParticipantWidget extends StatelessWidget {
     ));
     if (!audioEnabled) {
       icons.add(_buildAudioEnabledIcon());
+    } else if (!audioEnabledLocally) {
+      icons.add(_buildMutedIcon());
     }
     if (icons.isNotEmpty) {
       if (isRemote) {
@@ -100,6 +109,8 @@ class ParticipantWidget extends StatelessWidget {
           rows.add(_buildRow(_fitText('The microphone is off', Colors.black26)));
         } else if (!videoEnabled) {
           rows.add(_buildRow(_fitText('The camera is off', Colors.white24)));
+        } else if (!audioEnabledLocally) {
+          rows.add(_buildRow(_fitText('You muted them', Colors.black26)));
         }
         children.add(
           Column(
@@ -117,8 +128,12 @@ class ParticipantWidget extends StatelessWidget {
       }
     }
 
-    return Stack(
-      children: children,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: children,
+      ),
+      onLongPress: isRemote && toggleMute != null ? toggleMute : null,
     );
   }
 
@@ -169,6 +184,23 @@ class ParticipantWidget extends StatelessWidget {
         child: FittedBox(
           child: Icon(
             Icons.mic_off,
+            color: Colors.black,
+            key: Key('microphone-off-icon'),
+          ),
+        ),
+        backgroundColor: Colors.white24,
+      ),
+    );
+  }
+
+  Widget _buildMutedIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: CircleAvatar(
+        maxRadius: 15,
+        child: FittedBox(
+          child: Icon(
+            Icons.volume_off,
             color: Colors.black,
             key: Key('microphone-off-icon'),
           ),

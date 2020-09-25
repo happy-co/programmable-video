@@ -1,13 +1,17 @@
+## 0.6.1
+
+- Introduced `enablePlayback` and `isPlaybackEnabled` methods to the `RemoteAudioTrack`.
+
 ## 0.6.0+1
 
 - Abort connect and throw `MissingCameraException` if no camera is found for specified `CameraSource`.
 
 ## 0.6.0+0
 
-- **BREAKING CHANGE**: Switched over to `Camera2Capturer` from `CameraCapturer` on Android
-- **BREAKING CHANGE**: Increased minSdk for Android to `21`
-- Introduced `hasTorch()` and `setTorch(bool enabled)` methods on `CameraCapturer`
-- Introduced `onCameraSwitched`, `onFirstFrameAvailable`, `onCameraError` streams on `CameraCapturer`
+- **BREAKING CHANGE**: Switched over to `Camera2Capturer` from `CameraCapturer` on Android.
+- **BREAKING CHANGE**: Increased minSdk for Android to `21`.
+- Introduced `hasTorch()` and `setTorch(bool enabled)` methods on `CameraCapturer`.
+- Introduced `onCameraSwitched`, `onFirstFrameAvailable`, `onCameraError` streams on `CameraCapturer`.
 
 ## 0.5.0+4
 

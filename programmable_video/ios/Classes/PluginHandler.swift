@@ -180,17 +180,17 @@ public class PluginHandler: BaseListener {
         guard let remoteAudioTrackEnable = arguments["enable"] as? Bool else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
-        
+
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.remoteAudioTrackEnable => called for \(remoteAudioTrackSid), enable=\(remoteAudioTrackEnable)")
-        
+
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
-        
+
         remoteAudioTrack.remoteTrack?.isPlaybackEnabled = remoteAudioTrackEnable
         return result(nil)
     }
-    
+
     private func isRemoteAudioTrackPlaybackEnabled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
@@ -201,14 +201,14 @@ public class PluginHandler: BaseListener {
         }
 
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.isRemoteAudioTrackPlaybackEnabled => called for \(remoteAudioTrackSid)")
-        
+
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
-        
+
         return result(remoteAudioTrack.remoteTrack?.isPlaybackEnabled)
     }
-    
+
     private func getRemoteAudioTrack(_ sid: String) -> RemoteAudioTrackPublication? {
         guard let remoteParticipants = SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants else {
             return nil
@@ -222,7 +222,7 @@ public class PluginHandler: BaseListener {
         }
         return nil
     }
-    
+
     private func localDataTrackSendString(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'message' parameters", details: nil))

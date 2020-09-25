@@ -140,16 +140,23 @@ class ConferenceRoom with ChangeNotifier {
     if (index < 0) {
       return;
     }
-    var participant = _participants[index];
-    _participants.replaceRange(
-      index,
-      index + 1,
-      [
-        participant.copyWith(videoEnabled: localVideoTrack.isEnabled),
-      ],
-    );
+    _participants[index] = _participants[index].copyWith(videoEnabled: localVideoTrack.isEnabled);
     Debug.log('ConferenceRoom.toggleVideoEnabled() => ${localVideoTrack.isEnabled}');
     _onVideoEnabledStreamController.add(localVideoTrack.isEnabled);
+    notifyListeners();
+  }
+
+  Future<void> toggleMute(RemoteParticipant remoteParticipant) async {
+    final enabled = await remoteParticipant.remoteAudioTracks.first.remoteAudioTrack.isPlaybackEnabled();
+    remoteParticipant.remoteAudioTracks.forEach((remoteAudioTrackPublication) async {
+      await remoteAudioTrackPublication.remoteAudioTrack.enablePlayback(!enabled);
+    });
+
+    var index = _participants.indexWhere((ParticipantWidget participant) => participant.id == remoteParticipant.sid);
+    if (index < 0) {
+      return;
+    }
+    _participants[index] = _participants[index].copyWith(audioEnabledLocally: !enabled);
     notifyListeners();
   }
 
@@ -166,14 +173,7 @@ class ConferenceRoom with ChangeNotifier {
     if (index < 0) {
       return;
     }
-    var participant = _participants[index];
-    _participants.replaceRange(
-      index,
-      index + 1,
-      [
-        participant.copyWith(audioEnabled: localAudioTrack.isEnabled),
-      ],
-    );
+    _participants[index] = _participants[index].copyWith(audioEnabled: localAudioTrack.isEnabled);
     Debug.log('ConferenceRoom.toggleAudioEnabled() => ${localAudioTrack.isEnabled}');
     _onAudioEnabledStreamController.add(localAudioTrack.isEnabled);
     notifyListeners();
@@ -283,15 +283,13 @@ class ConferenceRoom with ChangeNotifier {
 
   void _onDominantSpeakerChanged(DominantSpeakerChangedEvent event) {
     Debug.log('ConferenceRoom._onDominantSpeakerChanged: ${event.remoteParticipant.identity}');
-    var oldDominantParticipant = _participants.firstWhere((p) => p.isDominant, orElse: () => null);
-    if (oldDominantParticipant != null) {
-      var oldDominantParticipantIndex = _participants.indexOf(oldDominantParticipant);
-      _participants.replaceRange(oldDominantParticipantIndex, oldDominantParticipantIndex + 1, [oldDominantParticipant.copyWith(isDominant: false)]);
+    var oldDominantParticipantIndex = _participants.indexWhere((p) => p.isDominant);
+    if (oldDominantParticipantIndex >= 0) {
+      _participants[oldDominantParticipantIndex] = _participants[oldDominantParticipantIndex].copyWith(isDominant: false);
     }
 
-    var newDominantParticipant = _participants.firstWhere((p) => p.id == event.remoteParticipant.sid);
-    var newDominantParticipantIndex = _participants.indexOf(newDominantParticipant);
-    _participants.replaceRange(newDominantParticipantIndex, newDominantParticipantIndex + 1, [newDominantParticipant.copyWith(isDominant: true)]);
+    var newDominantParticipantIndex = _participants.indexWhere((p) => p.id == event.remoteParticipant.sid);
+    _participants[newDominantParticipantIndex] = _participants[newDominantParticipantIndex].copyWith(isDominant: true);
     notifyListeners();
   }
 
@@ -332,6 +330,7 @@ class ConferenceRoom with ChangeNotifier {
       child: child,
       audioEnabled: audioEnabled,
       videoEnabled: videoEnabled,
+      toggleMute: () => toggleMute(remoteParticipant),
     );
   }
 
@@ -483,14 +482,7 @@ class ConferenceRoom with ChangeNotifier {
     if (index < 0) {
       return;
     }
-    var participant = _participants[index];
-    _participants.replaceRange(
-      index,
-      index + 1,
-      [
-        participant.copyWith(audioEnabled: event.remoteAudioTrackPublication.isTrackEnabled),
-      ],
-    );
+    _participants[index] = _participants[index].copyWith(audioEnabled: event.remoteAudioTrackPublication.isTrackEnabled);
     notifyListeners();
   }
 
@@ -502,14 +494,7 @@ class ConferenceRoom with ChangeNotifier {
     if (index < 0) {
       return;
     }
-    var participant = _participants[index];
-    _participants.replaceRange(
-      index,
-      index + 1,
-      [
-        participant.copyWith(videoEnabled: event.remoteVideoTrackPublication.isTrackEnabled),
-      ],
-    );
+    _participants[index] = _participants[index].copyWith(videoEnabled: event.remoteVideoTrackPublication.isTrackEnabled);
     notifyListeners();
   }
 

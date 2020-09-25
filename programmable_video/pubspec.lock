@@ -183,7 +183,7 @@ packages:
       path: "../programmable_video_platform_interface"
       relative: true
     source: path
-    version: "0.2.1+0"
+    version: "0.2.2"
   typed_data:
     dependency: transitive
     description:

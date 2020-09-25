@@ -37,6 +37,8 @@ void main() {
       expect(() => ProgrammableVideoPlatform.instance.localParticipantStream(0), throwsUnimplementedError);
       expect(() => ProgrammableVideoPlatform.instance.remoteDataTrackStream(0), throwsUnimplementedError);
       expect(() => ProgrammableVideoPlatform.instance.loggingStream(), throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.enableRemoteAudioTrack(enable: true, sid: 'sid'), throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.isRemoteAudioTrackPlaybackEnabled('sid'), throwsUnimplementedError);
     });
   });
 }

@@ -1,3 +1,7 @@
+## 0.2.2
+
+- Added `enableRemoteAudioTrack({bool enable, String sid})` and `isRemoteAudioTrackPlaybackEnabled(String sid)` methods.
+
 ## 0.2.1+0
 
 - Added `hasTorch()` and `setTorch(bool enabled)` methods.

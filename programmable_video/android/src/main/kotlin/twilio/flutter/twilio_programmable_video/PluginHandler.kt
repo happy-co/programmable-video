@@ -30,6 +30,7 @@ import com.twilio.video.LocalVideoTrack
 import com.twilio.video.OpusCodec
 import com.twilio.video.PcmaCodec
 import com.twilio.video.PcmuCodec
+import com.twilio.video.RemoteAudioTrackPublication
 import com.twilio.video.RemoteParticipant
 import com.twilio.video.VideoCapturer
 import com.twilio.video.VideoCodec
