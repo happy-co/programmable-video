@@ -1,3 +1,8 @@
+## 0.6.2
+
+- Upgraded TwilioVideo iOS SDK to '3.7'.
+- Upgraded TwilioVideo Android SDK to '5.12.+'.
+
 ## 0.6.1
 
 - Introduced `enablePlayback` and `isPlaybackEnabled` methods to the `RemoteAudioTrack`.
