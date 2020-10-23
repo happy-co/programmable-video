@@ -455,3 +455,7 @@ Reference table of all the events the plugin currently supports
 
 # Development and Contributing
 Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/CONTRIBUTING.md) guidelines.
+
+# Contributions By
+
+[![HomeX - Home Repairs Made Easy](https://homex.com/static/brand/homex-logo-green.svg)](https://homex.com)
