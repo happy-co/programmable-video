@@ -298,8 +298,7 @@ class Room {
       return;
     }
 
-    final remoteDataTrackMap =
-        Map<String, dynamic>.from(data['remoteDataTrack']);
+    final remoteDataTrackMap = Map<String, dynamic>.from(data['remoteDataTrack']);
 
     _remoteParticipants?.forEach((RemoteParticipant remoteParticipant) {
       remoteParticipant.remoteDataTracks
