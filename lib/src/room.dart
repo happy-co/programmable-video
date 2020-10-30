@@ -298,10 +298,12 @@ class Room {
       return;
     }
 
-    final remoteDataTrackMap = Map<String, dynamic>.from(data['remoteDataTrack']);
+    final remoteDataTrackMap =
+        Map<String, dynamic>.from(data['remoteDataTrack']);
 
-    _remoteParticipants.forEach((RemoteParticipant remoteParticipant) {
-      remoteParticipant.remoteDataTracks.forEach((RemoteDataTrackPublication dataTrackPublication) {
+    _remoteParticipants?.forEach((RemoteParticipant remoteParticipant) {
+      remoteParticipant.remoteDataTracks
+          ?.forEach((RemoteDataTrackPublication dataTrackPublication) {
         if (dataTrackPublication.trackSid == remoteDataTrackMap['sid']) {
           dataTrackPublication.remoteDataTrack._parseEvents(event);
         }
