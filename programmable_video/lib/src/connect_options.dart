@@ -107,7 +107,7 @@ class ConnectOptions {
       region: region,
       roomName: roomName,
       enableNetworkQuality: enableNetworkQuality,
-      networkQualityConfiguration: networkQualityConfiguration._toModel(),
+      networkQualityConfiguration: networkQualityConfiguration?._toModel(),
     );
   }
 }

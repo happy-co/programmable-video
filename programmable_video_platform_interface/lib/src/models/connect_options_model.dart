@@ -1,5 +1,4 @@
 import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/foundation.dart';
 import 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
@@ -49,17 +48,17 @@ class ConnectOptionsModel {
 
   ConnectOptionsModel(
     this.accessToken, {
-    @required this.audioTracks,
-    @required this.dataTracks,
-    @required this.preferredAudioCodecs,
-    @required this.preferredVideoCodecs,
-    @required this.region,
-    @required this.roomName,
-    @required this.videoTracks,
-    @required this.enableDominantSpeaker,
-    @required this.enableAutomaticSubscription,
-    @required this.enableNetworkQuality,
-    @required this.networkQualityConfiguration,
+    this.audioTracks,
+    this.dataTracks,
+    this.preferredAudioCodecs,
+    this.preferredVideoCodecs,
+    this.region,
+    this.roomName,
+    this.videoTracks,
+    this.enableDominantSpeaker,
+    this.enableAutomaticSubscription,
+    this.enableNetworkQuality,
+    this.networkQualityConfiguration,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),

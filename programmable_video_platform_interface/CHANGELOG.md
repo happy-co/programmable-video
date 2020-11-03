@@ -1,3 +1,7 @@
+## 0.2.3
+
+- Added support for Network Quality API.
+
 ## 0.2.2
 
 - Added `enableRemoteAudioTrack({bool enable, String sid})` and `isRemoteAudioTrackPlaybackEnabled(String sid)` methods.
