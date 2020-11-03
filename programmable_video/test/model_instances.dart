@@ -1,3 +1,4 @@
+import 'package:twilio_programmable_video/src/parts.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
@@ -29,6 +30,7 @@ class ModelInstances {
     remoteAudioTrackPublications: <RemoteAudioTrackPublicationModel>[],
     remoteDataTrackPublications: <RemoteDataTrackPublicationModel>[],
     remoteVideoTrackPublications: <RemoteVideoTrackPublicationModel>[],
+    networkQualityLevel: NetworkQualityLevel.NETWORK_QUALITY_LEVEL_ONE,
   );
 
   static const twilioExceptionModel = TwilioExceptionModel(1, 'test');

@@ -7,6 +7,7 @@ import com.twilio.video.LocalDataTrackPublication
 import com.twilio.video.LocalParticipant
 import com.twilio.video.LocalVideoTrack
 import com.twilio.video.LocalVideoTrackPublication
+import com.twilio.video.NetworkQualityLevel
 import com.twilio.video.TwilioException
 
 class LocalParticipantListener : BaseListener(), LocalParticipant.Listener {
@@ -34,6 +35,15 @@ class LocalParticipantListener : BaseListener(), LocalParticipant.Listener {
                 "localParticipant" to localParticipantToMap(localParticipant),
                 "localDataTrack" to localDataTrackToMap(localDataTrack)
         ), twilioException)
+    }
+
+    override fun onNetworkQualityLevelChanged(localParticipant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
+        TwilioProgrammableVideoPlugin.debug("LocalParticipantListener.onNetworkQualityLevelChanged => " +
+                "sid: ${localParticipant.sid}")
+        sendEvent("networkQualityLevelChanged", mapOf(
+                "localParticipant" to localParticipantToMap(localParticipant),
+                "networkQualityLevel" to networkQualityLevel.toString()
+        ))
     }
 
     override fun onAudioTrackPublished(localParticipant: LocalParticipant, localAudioTrackPublication: LocalAudioTrackPublication) {

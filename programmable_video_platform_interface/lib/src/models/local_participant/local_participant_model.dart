@@ -1,6 +1,5 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
@@ -10,27 +9,27 @@ class LocalParticipantModel {
   final String sid;
   final String signalingRegion;
 
-  final NetworkQualityLevel networkQualityLevel;
-
   final List<LocalAudioTrackPublicationModel> localAudioTrackPublications;
   final List<LocalDataTrackPublicationModel> localDataTrackPublications;
   final List<LocalVideoTrackPublicationModel> localVideoTrackPublications;
+
+  final NetworkQualityLevel networkQualityLevel;
 
   const LocalParticipantModel({
     @required this.identity,
     @required this.sid,
     @required this.signalingRegion,
-    @required this.networkQualityLevel,
     @required this.localAudioTrackPublications,
     @required this.localDataTrackPublications,
     @required this.localVideoTrackPublications,
+    @required this.networkQualityLevel,
   })  : assert(identity != null),
         assert(sid != null),
         assert(signalingRegion != null),
-        assert(networkQualityLevel != null),
         assert(localAudioTrackPublications != null),
         assert(localDataTrackPublications != null),
-        assert(localVideoTrackPublications != null);
+        assert(localVideoTrackPublications != null),
+        assert(networkQualityLevel != null);
 
   factory LocalParticipantModel.fromEventChannelMap(Map<String, dynamic> map) {
     var localAudioTrackPublications = <LocalAudioTrackPublicationModel>[];
@@ -60,14 +59,16 @@ class LocalParticipantModel {
       }
     }
 
+    var networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+
     return LocalParticipantModel(
       identity: map['identity'],
       sid: map['sid'],
       signalingRegion: map['signalingRegion'],
-      networkQualityLevel: EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN,
       localAudioTrackPublications: localAudioTrackPublications,
       localDataTrackPublications: localDataTrackPublications,
       localVideoTrackPublications: localVideoTrackPublications,
+      networkQualityLevel: networkQualityLevel,
     );
   }
 
@@ -92,10 +93,10 @@ class LocalParticipantModel {
       identity: $identity,
       sid: $sid,
       signalingRegion: $signalingRegion,
-      networkQualityLevel: $networkQualityLevel,
       localAudioTrackPublications: [ $localAudioTrackPublicationsString ],
       localDataTrackPublications: [ $localDataTrackPublicationsString ],
-      localVideoTrackPublications: [ $localVideoTrackPublicationsString ]
+      localVideoTrackPublications: [ $localVideoTrackPublicationsString ],
+      networkQualityLevel: $networkQualityLevel
       }''';
   }
 }

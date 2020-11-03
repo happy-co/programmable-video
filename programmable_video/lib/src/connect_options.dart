@@ -30,6 +30,20 @@ class ConnectOptions {
   /// Video tracks that will be published upon connection.
   final List<LocalVideoTrack> videoTracks;
 
+  /// Enable or disable the Network Quality API.
+  /// Set this to true to enable the Network Quality API when using Group Rooms.
+  /// This option has no effect in Peer-to-Peer Rooms. The default value is false.
+  final bool enableNetworkQuality;
+
+  /// Sets the verbosity level for network quality information returned by the
+  /// Network Quality API.
+  ///
+  /// If a [NetworkQualityConfiguration] is not provided, the default
+  /// configuration is used: [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL]
+  /// for the [LocalParticipant] and [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE]
+  /// for the [RemoteParticipant]s.
+  final NetworkQualityConfiguration networkQualityConfiguration;
+
   /// Choosing between `subscribe-to-all` or `subscribe-to-none` subscription rule
   final bool enableAutomaticSubscription;
 
@@ -42,6 +56,8 @@ class ConnectOptions {
     this.region,
     this.roomName,
     this.videoTracks,
+    this.enableNetworkQuality = false,
+    this.networkQualityConfiguration,
     this.enableDominantSpeaker,
     this.enableAutomaticSubscription,
   })  : assert(accessToken != null),
@@ -50,7 +66,8 @@ class ConnectOptions {
         assert((dataTracks != null && dataTracks.isNotEmpty) || dataTracks == null),
         assert((preferredAudioCodecs != null && preferredAudioCodecs.isNotEmpty) || preferredAudioCodecs == null),
         assert((preferredVideoCodecs != null && preferredVideoCodecs.isNotEmpty) || preferredVideoCodecs == null),
-        assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null);
+        assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null),
+        assert(enableNetworkQuality != null);
 
   /// Create a [ConnectOptionsModel] from properties.
   ConnectOptionsModel _toModel() {
@@ -89,6 +106,8 @@ class ConnectOptions {
       preferredVideoCodecs: preferredVideoCodecs,
       region: region,
       roomName: roomName,
+      enableNetworkQuality: enableNetworkQuality,
+      networkQualityConfiguration: networkQualityConfiguration._toModel(),
     );
   }
 }

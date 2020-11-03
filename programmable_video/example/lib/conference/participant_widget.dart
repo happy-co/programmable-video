@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:twilio_programmable_video/twilio_programmable_video.dart';
+import 'package:twilio_programmable_video_example/conference/network_quality_indicator.dart';
 
 class ParticipantBuffer {
   final bool audioEnabled;
@@ -23,6 +25,8 @@ class ParticipantWidget extends StatelessWidget {
   final bool isDominant;
   final bool audioEnabledLocally;
   final VoidCallback toggleMute;
+  final NetworkQualityLevel networkQualityLevel;
+  final Stream<NetworkQualityLevelChangedEvent> onNetworkQualityChanged;
 
   const ParticipantWidget({
     Key key,
@@ -31,6 +35,8 @@ class ParticipantWidget extends StatelessWidget {
     @required this.videoEnabled,
     @required this.id,
     @required this.isRemote,
+    this.networkQualityLevel = NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN,
+    this.onNetworkQualityChanged,
     this.toggleMute,
     this.audioEnabledLocally = true,
     this.isDominant = false,
@@ -41,6 +47,7 @@ class ParticipantWidget extends StatelessWidget {
         assert(isRemote != null),
         assert(isDominant != null),
         assert(isDummy != null),
+        assert(networkQualityLevel != null),
         super(key: key);
 
   ParticipantWidget copyWith({
@@ -59,6 +66,8 @@ class ParticipantWidget extends StatelessWidget {
       audioEnabledLocally: audioEnabledLocally ?? this.audioEnabledLocally,
       isRemote: isRemote,
       toggleMute: toggleMute,
+      networkQualityLevel: networkQualityLevel,
+      onNetworkQualityChanged: onNetworkQualityChanged,
     );
   }
 
@@ -127,6 +136,14 @@ class ParticipantWidget extends StatelessWidget {
         ));
       }
     }
+
+    children.add(NetworkQualityIndicator(
+      networkQualityIndicatorPosition: NetworkQualityIndicatorPosition.bottomCenter,
+      bottom: 10,
+      networkQualityLevel: networkQualityLevel,
+      showFromNetworkQualityLevelAndBelow: NetworkQualityLevel.NETWORK_QUALITY_LEVEL_THREE,
+      onNetworkQualityChanged: onNetworkQualityChanged,
+    ));
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

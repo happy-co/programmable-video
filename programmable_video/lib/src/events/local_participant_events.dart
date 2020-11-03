@@ -68,6 +68,21 @@ class LocalDataTrackPublishedEvent {
 }
 //#endregion
 
+class LocalNetworkQualityLevelChangedEvent implements NetworkQualityLevelChangedEvent {
+  /// The local participant
+  final LocalParticipant localParticipant;
+
+  /// The new [NetworkQualityLevel]
+  @override
+  final NetworkQualityLevel networkQualityLevel;
+
+  LocalNetworkQualityLevelChangedEvent(
+    this.localParticipant,
+    this.networkQualityLevel,
+  )   : assert(localParticipant != null),
+        assert(networkQualityLevel != null);
+}
+
 //#region VIDEO TRACK EVENTS
 class LocalVideoTrackPublicationFailedEvent {
   /// The local participant that failed to publish the video track.

@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
 import 'enums/enum_exports.dart';
+import 'models/local_participant/local_participant_event.dart';
 import 'models/model_exports.dart';
 import 'programmable_video_platform_interface.dart';
 
@@ -410,6 +411,11 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       }
     }
 
+    NetworkQualityLevel networkQualityLevel;
+    if (data['networkQualityLevel'] != null) {
+      networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, data['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+    }
+
     TwilioExceptionModel twilioException;
     if (event['error'] != null) {
       final errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
@@ -568,6 +574,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
           remoteVideoTrackModel: remoteVideoTrackModel,
         );
         break;
+      case 'networkQualityLevelChanged':
+        assert(networkQualityLevel != null);
+        return RemoteNetworkQualityLevelChanged(remoteParticipantModel, networkQualityLevel);
       default:
         return SkipAbleRemoteParticipantEvent();
         break;
@@ -634,6 +643,11 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       localVideoTrack = LocalVideoTrackModel.fromEventChannelMap(map);
     }
 
+    NetworkQualityLevel networkQualityLevel;
+    if (data['networkQualityLevel'] != null) {
+      networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, data['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+    }
+
     TwilioExceptionModel twilioException;
     if (event['error'] != null) {
       final errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
@@ -679,6 +693,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
           exception: twilioException,
           localParticipantModel: localParticipantModel,
         );
+        break;
+      case 'networkQualityLevelChanged':
+        return LocalNetworkQualityLevelChanged(localParticipantModel, networkQualityLevel);
         break;
       default:
         return SkipAbleLocalParticipantEvent();

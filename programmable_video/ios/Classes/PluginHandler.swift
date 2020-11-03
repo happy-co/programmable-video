@@ -464,6 +464,20 @@ public class PluginHandler: BaseListener {
                 SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoTracks to '\(videoTracks)'")
                 builder.videoTracks = videoTracks
             }
+
+            if let isNetworkQualityEnabled = optionsObj["enableNetworkQuality"] as? Bool {
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting enableNetworkQuality to '\(isNetworkQualityEnabled)'")
+                builder.isNetworkQualityEnabled = isNetworkQualityEnabled
+
+                if let networkQualityConfigurationMap = optionsObj["networkQualityConfiguration"] as? [AnyHashable: Any],
+                   let localConfig = networkQualityConfigurationMap["local"] as? String,
+                   let remoteConfig = networkQualityConfigurationMap["remote"] as? String {
+                        let local = self.getNetworkQualityVerbosity(verbosity: localConfig)
+                        let remote = self.getNetworkQualityVerbosity(verbosity: remoteConfig)
+                        builder.networkQualityConfiguration = NetworkQualityConfiguration(localVerbosity: local, remoteVerbosity: remote)
+                }
+            }
+
             builder.isDominantSpeakerEnabled = optionsObj["enableDominantSpeaker"] as? Bool ?? false
             builder.isAutomaticSubscriptionEnabled = optionsObj["enableAutomaticSubscription"] as? Bool ?? true
         }
@@ -471,6 +485,17 @@ public class PluginHandler: BaseListener {
         let roomId = 1
         SwiftTwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, connectOptions)
         result(roomId)
+    }
+
+    private func getNetworkQualityVerbosity(verbosity: String) -> NetworkQualityVerbosity {
+        switch verbosity {
+            case "NETWORK_QUALITY_VERBOSITY_NONE":
+                return NetworkQualityVerbosity.none
+            case "NETWORK_QUALITY_VERBOSITY_MINIMAL":
+                return NetworkQualityVerbosity.minimal
+            default:
+                return NetworkQualityVerbosity.none
+        }
     }
 
     func videoSourceToDict(_ videoSource: VideoSource?, newCameraSource: AVCaptureDevice.Position?) -> [String: Any] {

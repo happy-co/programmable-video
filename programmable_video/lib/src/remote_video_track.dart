@@ -44,7 +44,9 @@ class RemoteVideoTrack extends VideoTrack {
           TwilioProgrammableVideo._log('RemoteVideoTrack => View created: $viewId, creationParams: $creationParams');
         },
       );
-    } else {
+    }
+
+    if (Platform.isIOS) {
       return _widget ??= UiKitView(
         key: key,
         viewType: 'twilio_programmable_video/views',
@@ -55,5 +57,7 @@ class RemoteVideoTrack extends VideoTrack {
         },
       );
     }
+
+    throw Exception('No widget implementation found for platform \'${Platform.operatingSystem}\'');
   }
 }

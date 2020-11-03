@@ -1,5 +1,6 @@
 package twilio.flutter.twilio_programmable_video
 
+import com.twilio.video.NetworkQualityLevel
 import com.twilio.video.RemoteAudioTrack
 import com.twilio.video.RemoteAudioTrackPublication
 import com.twilio.video.RemoteDataTrack
@@ -155,6 +156,14 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
         ))
     }
 
+    override fun onNetworkQualityLevelChanged(remoteParticipant: RemoteParticipant, networkQualityLevel: NetworkQualityLevel) {
+        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onNetworkQualityLevelChanged => sid: ${remoteParticipant.sid}")
+        sendEvent("networkQualityLevelChanged", mapOf(
+                "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
+                "networkQualityLevel" to networkQualityLevel.toString()
+        ))
+    }
+
     override fun onVideoTrackDisabled(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
         TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackDisabled => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
@@ -247,6 +256,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
             return mapOf(
                     "identity" to remoteParticipant.identity,
                     "sid" to remoteParticipant.sid,
+                    "networkQualityLevel" to remoteParticipant.networkQualityLevel.toString(),
                     "remoteAudioTrackPublications" to remoteAudioTrackPublications,
                     "remoteVideoTrackPublications" to remoteVideoTrackPublications
             )

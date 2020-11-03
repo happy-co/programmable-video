@@ -12,6 +12,8 @@ class RemoteParticipant implements Participant {
 
   final List<RemoteVideoTrackPublication> _remoteVideoTrackPublications = <RemoteVideoTrackPublication>[];
 
+  NetworkQualityLevel _networkQualityLevel;
+
   /// The SID of the [RemoteParticipant].
   @override
   String get sid => _sid;
@@ -19,6 +21,10 @@ class RemoteParticipant implements Participant {
   /// The identity of the [RemoteParticipant].
   @override
   String get identity => _identity;
+
+  /// The network quality of the [RemoteParticipant].
+  @override
+  NetworkQualityLevel get networkQualityLevel => _networkQualityLevel;
 
   /// Read-only list of [RemoteAudioTrackPublication].
   List<RemoteAudioTrackPublication> get remoteAudioTracks => [..._remoteAudioTrackPublications];
@@ -32,9 +38,6 @@ class RemoteParticipant implements Participant {
   /// Read-only list of [AudioTrackPublication].
   @override
   List<AudioTrackPublication> get audioTracks => [..._remoteAudioTrackPublications];
-
-  /// Read-only list of data track publications.
-  List<DataTrackPublication> get dataTracks => [..._remoteDataTrackPublications];
 
   /// Read-only list of [VideoTrackPublication].
   @override
@@ -103,6 +106,11 @@ class RemoteParticipant implements Participant {
   /// Notifies the listener that the [RemoteDataTrack] of the [RemoteParticipant] has been unsubscribed from.
   Stream<RemoteDataTrackSubscriptionEvent> onDataTrackUnsubscribed;
 
+  final StreamController<RemoteNetworkQualityLevelChangedEvent> _onNetworkQualityLevelChanged = StreamController<RemoteNetworkQualityLevelChangedEvent>.broadcast();
+
+  /// Notifies the listener that the [RemoteParticipant]'s [NetworkQualityLevel] has changed.
+  Stream<RemoteNetworkQualityLevelChangedEvent> onNetworkQualityLevelChanged;
+
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackDisabled = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] video track has been disabled.
@@ -158,6 +166,8 @@ class RemoteParticipant implements Participant {
     onDataTrackUnpublished = _onDataTrackUnpublished.stream;
     onDataTrackUnsubscribed = _onDataTrackUnsubscribed.stream;
 
+    onNetworkQualityLevelChanged = _onNetworkQualityLevelChanged.stream;
+
     onVideoTrackDisabled = _onVideoTrackDisabled.stream;
     onVideoTrackEnabled = _onVideoTrackEnabled.stream;
     onVideoTrackPublished = _onVideoTrackPublished.stream;
@@ -187,6 +197,8 @@ class RemoteParticipant implements Participant {
     await _onDataTrackSubscriptionFailed.close();
     await _onDataTrackUnpublished.close();
     await _onDataTrackUnsubscribed.close();
+
+    await _onNetworkQualityLevelChanged.close();
 
     await _onVideoTrackDisabled.close();
     await _onVideoTrackEnabled.close();
@@ -242,9 +254,9 @@ class RemoteParticipant implements Participant {
         remoteVideoTrackPublication._updateFromModel(remoteVideoTrackPublicationModel);
       }
     }
+    _networkQualityLevel = model.networkQualityLevel ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
   }
 
-  /// Parse the native remote participant events to the right event streams.
   void _parseEvents(BaseRemoteParticipantEvent event) {
     if (event is SkipAbleRemoteParticipantEvent) return;
 
@@ -343,6 +355,9 @@ class RemoteParticipant implements Participant {
       final remoteVideoTrackPublication = findOrCreateRemoteVideoTrackPublication(event.remoteVideoTrackPublicationModel);
       final remoteVideoTrack = findOrCreateRemoteVideoTrack(remoteVideoTrackPublication, event.remoteVideoTrackModel);
       _onVideoTrackUnsubscribed.add(RemoteVideoTrackSubscriptionEvent(this, remoteVideoTrackPublication, remoteVideoTrack));
+    } else if (event is RemoteNetworkQualityLevelChanged) {
+      _networkQualityLevel = event.networkQualityLevel;
+      _onNetworkQualityLevelChanged.add(RemoteNetworkQualityLevelChangedEvent(this, _networkQualityLevel));
     }
   }
 }

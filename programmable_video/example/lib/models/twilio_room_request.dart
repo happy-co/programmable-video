@@ -51,13 +51,13 @@ class TwilioRoomRequest {
     return {
       'enableTurn': enableTurn,
       'maxParticipants': maxParticipants,
-      'mediaRegion': EnumToString.parse(mediaRegion),
+      'mediaRegion': EnumToString.convertToString(mediaRegion),
       'recordParticipantsOnConnect': recordParticipantsOnConnect,
       'statusCallback': statusCallback,
-      'statusCallbackMethod': EnumToString.parse(statusCallbackMethod),
-      'type': type != null ? EnumToString.parse(type).paramCase : null,
+      'statusCallbackMethod': EnumToString.convertToString(statusCallbackMethod),
+      'type': type != null ? EnumToString.convertToString(type).paramCase : null,
       'uniqueName': uniqueName,
-      'videoCodecs': videoCodecs?.map((TwilioVideoCodec videoCodec) => EnumToString.parse(videoCodec))?.toList()
+      'videoCodecs': videoCodecs?.map((TwilioVideoCodec videoCodec) => EnumToString.convertToString(videoCodec))?.toList()
     };
   }
 }
