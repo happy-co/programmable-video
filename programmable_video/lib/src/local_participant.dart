@@ -41,6 +41,11 @@ class LocalParticipant implements Participant {
   /// [LocalDataTrack] to a [Room].
   Stream<LocalDataTrackPublicationFailedEvent> onDataTrackPublicationFailed;
 
+  final StreamController<LocalNetworkQualityLevelChangedEvent> _onNetworkQualityLevelChanged = StreamController<LocalNetworkQualityLevelChangedEvent>.broadcast();
+
+  /// Notifies the listener that the [LocalParticipant]'s [NetworkQualityLevel] has changed.
+  Stream<LocalNetworkQualityLevelChangedEvent> onNetworkQualityLevelChanged;
+
   final StreamController<LocalVideoTrackPublishedEvent> _onVideoTrackPublished = StreamController<LocalVideoTrackPublishedEvent>.broadcast();
 
   /// Notifies the listener that a [LocalVideoTrack] has been shared to a [Room].
@@ -72,6 +77,7 @@ class LocalParticipant implements Participant {
   String get signalingRegion => _signalingRegion;
 
   /// The network quality of the [LocalParticipant].
+  @override
   NetworkQualityLevel get networkQualityLevel => _networkQualityLevel;
 
   /// Read-only list of local audio track publications.
@@ -87,9 +93,6 @@ class LocalParticipant implements Participant {
   @override
   List<AudioTrackPublication> get audioTracks => [..._localAudioTrackPublications];
 
-  /// Read-only list of data track publications.
-  List<DataTrackPublication> get dataTracks => [..._localDataTrackPublications];
-
   /// Read-only list of video track publications.
   @override
   List<VideoTrackPublication> get videoTracks {
@@ -104,6 +107,7 @@ class LocalParticipant implements Participant {
     onAudioTrackPublicationFailed = _onAudioTrackPublicationFailed.stream;
     onDataTrackPublished = _onDataTrackPublished.stream;
     onDataTrackPublicationFailed = _onDataTrackPublicationFailed.stream;
+    onNetworkQualityLevelChanged = _onNetworkQualityLevelChanged.stream;
     onVideoTrackPublished = _onVideoTrackPublished.stream;
     onVideoTrackPublicationFailed = _onVideoTrackPublicationFailed.stream;
   }
@@ -120,6 +124,7 @@ class LocalParticipant implements Participant {
     await _onAudioTrackPublicationFailed.close();
     await _onDataTrackPublished.close();
     await _onDataTrackPublicationFailed.close();
+    await _onNetworkQualityLevelChanged.close();
     await _onVideoTrackPublished.close();
     await _onVideoTrackPublicationFailed.close();
   }
@@ -198,6 +203,8 @@ class LocalParticipant implements Participant {
     } else if (event is LocalVideoTrackPublicationFailed) {
       final localVideoTrack = LocalVideoTrack._fromModel(event.localVideoTrack);
       _onVideoTrackPublicationFailed.add(LocalVideoTrackPublicationFailedEvent(this, localVideoTrack, TwilioException._fromModel(event.exception)));
+    } else if (event is LocalNetworkQualityLevelChanged) {
+      _onNetworkQualityLevelChanged.add(LocalNetworkQualityLevelChangedEvent(this, event.networkQualityLevel));
     }
   }
 }

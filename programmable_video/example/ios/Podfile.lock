@@ -3,8 +3,6 @@ PODS:
     - Firebase/Core
     - Firebase/Functions (~> 6.0)
     - Flutter
-  - cloud_functions_web (1.0.0):
-    - Flutter
   - device_info (0.0.1):
     - Flutter
   - Firebase/Core (6.34.0):
@@ -82,7 +80,7 @@ PODS:
   - nanopb/encode (1.30906.0)
   - native_device_orientation (0.0.1):
     - Flutter
-  - "permission_handler (5.0.0+hotfix.8)":
+  - "permission_handler (5.0.1+1)":
     - Flutter
   - PromisesObjC (1.2.11)
   - twilio_programmable_video (0.6.1):
@@ -94,10 +92,8 @@ PODS:
 
 DEPENDENCIES:
   - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
-  - cloud_functions_web (from `.symlinks/plugins/cloud_functions_web/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_core_web (from `.symlinks/plugins/firebase_core_web/ios`)
   - Flutter (from `Flutter`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
@@ -123,14 +119,10 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   cloud_functions:
     :path: ".symlinks/plugins/cloud_functions/ios"
-  cloud_functions_web:
-    :path: ".symlinks/plugins/cloud_functions_web/ios"
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
-  firebase_core_web:
-    :path: ".symlinks/plugins/firebase_core_web/ios"
   Flutter:
     :path: Flutter
   native_device_orientation:
@@ -144,7 +136,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   cloud_functions: 20ba5a917ef4e8f5e60648c7398c272b38a66051
-  cloud_functions_web: ec883775f4a3b3fad943918d2cdad4fbf51cdbf0
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   Firebase: c23a36d9e4cdf7877dfcba8dd0c58add66358999
   firebase_core: 335c02abd48672b7c83c683df833d0488a72e73e
@@ -167,6 +158,6 @@ SPEC CHECKSUMS:
   TwilioVideo: 807526f68043a11f0e17e5c26ef0f0f73d5678e4
   wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
-PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
 COCOAPODS: 1.9.3

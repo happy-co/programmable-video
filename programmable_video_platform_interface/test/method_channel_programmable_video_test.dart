@@ -1,11 +1,12 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'dart:typed_data';
+import 'package:mockito/mockito.dart';
 import 'package:twilio_programmable_video_platform_interface/src/method_channel_programmable_video.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
-import 'package:mockito/mockito.dart';
 import 'package:twilio_programmable_video_platform_interface/src/programmable_video_platform_interface.dart';
-import 'dart:async';
 
 import 'event_channel_maps.dart';
 
@@ -262,8 +263,11 @@ void main() {
           enableDominantSpeaker: false,
           preferredAudioCodecs: null,
           preferredVideoCodecs: null,
+          region: null,
           roomName: '',
           videoTracks: null,
+          enableNetworkQuality: false,
+          networkQualityConfiguration: null,
         ),
       );
       expect(nativeConnectIsCalled, true);
@@ -281,7 +285,9 @@ void main() {
               'dataTracks': null,
               'videoTracks': null,
               'enableDominantSpeaker': false,
-              'enableAutomaticSubscription': false
+              'enableAutomaticSubscription': false,
+              'enableNetworkQuality': false,
+              'networkQualityConfiguration': null,
             },
           },
         )

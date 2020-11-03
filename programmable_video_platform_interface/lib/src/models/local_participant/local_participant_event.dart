@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// The base LocalParticipantEvent that all other LocalParticipantEvent types must extend.
@@ -104,6 +105,16 @@ class LocalVideoTrackPublicationFailed extends BaseLocalParticipantEvent {
 
   @override
   String toString() => 'LocalVideoTrackPublicationFailed: { localParticipantModel: $localParticipantModel, localVideoTrack: $localVideoTrack, exception: $exception }';
+}
+
+/// Use this event if the network quality level changed.
+class LocalNetworkQualityLevelChanged extends BaseLocalParticipantEvent {
+  final NetworkQualityLevel networkQualityLevel;
+
+  const LocalNetworkQualityLevelChanged(LocalParticipantModel localParticipantModel, this.networkQualityLevel) : super(localParticipantModel);
+
+  @override
+  String toString() => 'LocalNetworkQualityLevelChanged: { localParticipantModel: $localParticipantModel, networkQualityLevel: $networkQualityLevel}';
 }
 
 /// Use this event if an invalid LocalParticipantEvent is received from native code which should be skipped.

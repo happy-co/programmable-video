@@ -125,7 +125,11 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
     if (_isButtonBarVisible) {
       return _viewPaddingTop;
     }
-    final _defaultViewPaddingTop = Platform.isIOS ? 20.0 : Platform.isAndroid ? 24.0 : 0.0;
+    final _defaultViewPaddingTop = Platform.isIOS
+        ? 20.0
+        : Platform.isAndroid
+            ? 24.0
+            : 0.0;
     if (_viewPaddingTop > _defaultViewPaddingTop) {
       // There must be a hardware notch in the display.
       return _viewPaddingTop;
@@ -144,9 +148,17 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
     // Determine the center of the object being dragged so we can decide
     // in which corner the object should be placed.
     var dx = (_width / 2) + _left;
-    dx = dx < 0 ? 0 : dx >= widget.availableScreenSize.width ? widget.availableScreenSize.width - 1 : dx;
+    dx = dx < 0
+        ? 0
+        : dx >= widget.availableScreenSize.width
+            ? widget.availableScreenSize.width - 1
+            : dx;
     var dy = (_height / 2) + _top;
-    dy = dy < 0 ? 0 : dy >= widget.availableScreenSize.height ? widget.availableScreenSize.height - 1 : dy;
+    dy = dy < 0
+        ? 0
+        : dy >= widget.availableScreenSize.height
+            ? widget.availableScreenSize.height - 1
+            : dy;
     final draggableCenter = Offset(dx, dy);
 
     setState(() {

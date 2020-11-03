@@ -1,3 +1,4 @@
+// swiftlint:disable type_body_length
 import Flutter
 import Foundation
 import TwilioVideo
@@ -107,6 +108,15 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
         sendEvent("dataTrackUnpublished", data: [
             "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
             "remoteDataTrackPublication": RemoteParticipantListener.remoteDataTrackPublicationToDict(publication)
+        ])
+    }
+
+    func remoteParticipantNetworkQualityLevelDidChange(participant: RemoteParticipant, networkQualityLevel: NetworkQualityLevel) {
+        SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.didChangeNetworkQualityLevel =>"  +
+                                                    "sid: \(participant.sid ?? "")")
+        sendEvent("networkQualityLevelChanged", data: [
+            "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant, noTracks: true),
+            "networkQualityLevel": Mapper.networkQualityLevelToString(networkQualityLevel) as Any
         ])
     }
 

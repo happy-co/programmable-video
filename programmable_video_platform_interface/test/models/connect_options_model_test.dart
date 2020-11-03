@@ -1,12 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/region.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
-import 'package:collection/collection.dart';
+import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
 void main() {
   final accessToken = 'token';
@@ -39,6 +39,11 @@ void main() {
   final preferredVideoCodecs = <VideoCodec>[H264Codec()];
   final region = Region.br1;
   final roomName = 'roomName';
+  final enableNetworkQuality = true;
+  final networkQualityConfiguration = NetworkQualityConfigurationModel(
+    NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE,
+    NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE,
+  );
 
   group('.toMap()', () {
     test('should return correct Map', () {
@@ -53,6 +58,8 @@ void main() {
         preferredVideoCodecs: preferredVideoCodecs,
         region: region,
         roomName: roomName,
+        enableNetworkQuality: enableNetworkQuality,
+        networkQualityConfiguration: networkQualityConfiguration,
       );
 
       expect(
@@ -68,7 +75,9 @@ void main() {
             'dataTracks': Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrackModel d) => d.toMap())),
             'videoTracks': Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrackModel v) => v.toMap())),
             'enableDominantSpeaker': enableDominantSpeaker,
-            'enableAutomaticSubscription': enableAutomaticSubscription
+            'enableAutomaticSubscription': enableAutomaticSubscription,
+            'enableNetworkQuality': enableNetworkQuality,
+            'networkQualityConfiguration': networkQualityConfiguration.toMap(),
           },
         }),
       );
@@ -77,8 +86,38 @@ void main() {
 
   group('ConnectOptionsModel()', () {
     test('should not construct without accessToken', () {
-      expect(() => ConnectOptionsModel(null), throwsAssertionError);
-      expect(() => ConnectOptionsModel(''), throwsAssertionError);
+      expect(
+          () => ConnectOptionsModel(
+                null,
+                audioTracks: audioTracks,
+                dataTracks: dataTracks,
+                videoTracks: videoTracks,
+                enableAutomaticSubscription: enableAutomaticSubscription,
+                enableDominantSpeaker: enableDominantSpeaker,
+                preferredAudioCodecs: preferredAudioCodecs,
+                preferredVideoCodecs: preferredVideoCodecs,
+                region: region,
+                roomName: roomName,
+                enableNetworkQuality: enableNetworkQuality,
+                networkQualityConfiguration: networkQualityConfiguration,
+              ),
+          throwsAssertionError);
+      expect(
+          () => ConnectOptionsModel(
+                '',
+                audioTracks: audioTracks,
+                dataTracks: dataTracks,
+                videoTracks: videoTracks,
+                enableAutomaticSubscription: enableAutomaticSubscription,
+                enableDominantSpeaker: enableDominantSpeaker,
+                preferredAudioCodecs: preferredAudioCodecs,
+                preferredVideoCodecs: preferredVideoCodecs,
+                region: region,
+                roomName: roomName,
+                enableNetworkQuality: enableNetworkQuality,
+                networkQualityConfiguration: networkQualityConfiguration,
+              ),
+          throwsAssertionError);
     });
 
     test('should not construct with an empty audioTracks list', () {
@@ -87,6 +126,16 @@ void main() {
         () => ConnectOptionsModel(
           accessToken,
           audioTracks: [],
+          dataTracks: dataTracks,
+          videoTracks: videoTracks,
+          enableAutomaticSubscription: enableAutomaticSubscription,
+          enableDominantSpeaker: enableDominantSpeaker,
+          preferredAudioCodecs: preferredAudioCodecs,
+          preferredVideoCodecs: preferredVideoCodecs,
+          region: region,
+          roomName: roomName,
+          enableNetworkQuality: enableNetworkQuality,
+          networkQualityConfiguration: networkQualityConfiguration,
         ),
         throwsAssertionError,
       );
@@ -97,7 +146,17 @@ void main() {
       expect(
         () => ConnectOptionsModel(
           accessToken,
+          audioTracks: audioTracks,
+          dataTracks: dataTracks,
           videoTracks: [],
+          enableAutomaticSubscription: enableAutomaticSubscription,
+          enableDominantSpeaker: enableDominantSpeaker,
+          preferredAudioCodecs: preferredAudioCodecs,
+          preferredVideoCodecs: preferredVideoCodecs,
+          region: region,
+          roomName: roomName,
+          enableNetworkQuality: enableNetworkQuality,
+          networkQualityConfiguration: networkQualityConfiguration,
         ),
         throwsAssertionError,
       );
@@ -108,7 +167,17 @@ void main() {
       expect(
         () => ConnectOptionsModel(
           accessToken,
+          audioTracks: audioTracks,
           dataTracks: [],
+          videoTracks: videoTracks,
+          enableAutomaticSubscription: enableAutomaticSubscription,
+          enableDominantSpeaker: enableDominantSpeaker,
+          preferredAudioCodecs: preferredAudioCodecs,
+          preferredVideoCodecs: preferredVideoCodecs,
+          region: region,
+          roomName: roomName,
+          enableNetworkQuality: enableNetworkQuality,
+          networkQualityConfiguration: networkQualityConfiguration,
         ),
         throwsAssertionError,
       );

@@ -1,5 +1,5 @@
-import 'package:intl/intl.dart';
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
 import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 
@@ -36,7 +36,7 @@ class TwilioListRoomRequest {
       'dateCreatedAfter': DateFormat('yyyy-MM-dd').format(dateCreatedAfter),
       'dateCreatedBefore': DateFormat('yyyy-MM-dd').format(dateCreatedBefore),
       'limit': limit,
-      'status': status != null ? EnumToString.parse(status).paramCase : null,
+      'status': status != null ? EnumToString.convertToString(status).paramCase : null,
       'uniqueName': uniqueName,
     };
   }

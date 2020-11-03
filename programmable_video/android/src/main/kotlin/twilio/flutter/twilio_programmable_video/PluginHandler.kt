@@ -27,6 +27,8 @@ import com.twilio.video.LocalAudioTrack
 import com.twilio.video.LocalDataTrack
 import com.twilio.video.LocalParticipant
 import com.twilio.video.LocalVideoTrack
+import com.twilio.video.NetworkQualityConfiguration
+import com.twilio.video.NetworkQualityVerbosity
 import com.twilio.video.OpusCodec
 import com.twilio.video.PcmaCodec
 import com.twilio.video.PcmuCodec
@@ -402,9 +404,19 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 optionsBuilder.dataTracks(dataTracks)
             }
 
-            // Set the local video tracks if it has been passed.
-            if (optionsObj["videoTracks"] != null) {
-                val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting enableNetworkQuality to '${optionsObj["enableNetworkQuality"]}'")
+                optionsBuilder.enableNetworkQuality(optionsObj["enableNetworkQuality"] as Boolean)
+
+                if (optionsObj["networkQualityConfiguration"] != null) {
+                    val networkQualityConfigurationMap = optionsObj["networkQualityConfiguration"] as Map<*, *>
+                    val local: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["local"] as String)
+                    val remote: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["remote"] as String)
+                    optionsBuilder.networkQualityConfiguration(NetworkQualityConfiguration(local, remote))
+                }
+
+                // Set the local video tracks if it has been passed.
+                if (optionsObj["videoTracks"] != null) {
+                    val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
 
                 val videoTracks = ArrayList<LocalVideoTrack?>()
                 for ((videoTrack) in videoTrackOptions) {
@@ -497,6 +509,14 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 "type" to "Unknown",
                 "isScreencast" to videoCapturer.isScreencast
         )
+    }
+
+    private fun getNetworkQualityVerbosity(verbosity: String): NetworkQualityVerbosity {
+        return when (verbosity) {
+            "NETWORK_QUALITY_VERBOSITY_NONE" -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE
+            "NETWORK_QUALITY_VERBOSITY_MINIMAL" -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL
+            else -> NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE
+        }
     }
 
     private fun debug(call: MethodCall, result: MethodChannel.Result) {

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// The base remoteParticipantEvent that all other RemoteParticipantEvent types must extend.
@@ -319,6 +320,16 @@ class RemoteVideoTrackUnsubscribed extends BaseRemoteParticipantEvent {
   String toString() => '''RemoteVideoTrackUnsubscribed: { 
     remoteParticipantModel: $remoteParticipantModel, remoteVideoTrackPublicationModel: $remoteVideoTrackPublicationModel, remoteVideoTrackModel: $remoteVideoTrackModel
   }''';
+}
+
+/// Use this event if the network quality level changed.
+class RemoteNetworkQualityLevelChanged extends BaseRemoteParticipantEvent {
+  final NetworkQualityLevel networkQualityLevel;
+
+  const RemoteNetworkQualityLevelChanged(RemoteParticipantModel remoteParticipantModel, this.networkQualityLevel) : super(remoteParticipantModel);
+
+  @override
+  String toString() => 'RemoteNetworkQualityLevelChanged: { remoteParticipantModel: $remoteParticipantModel, networkQualityLevel: $networkQualityLevel}';
 }
 
 /// Use this event if an invalid RemoteParticipantEvent is received from native code which should be skipped.

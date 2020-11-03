@@ -29,6 +29,7 @@ class ModelInstances {
     remoteAudioTrackPublications: <RemoteAudioTrackPublicationModel>[],
     remoteDataTrackPublications: <RemoteDataTrackPublicationModel>[],
     remoteVideoTrackPublications: <RemoteVideoTrackPublicationModel>[],
+    networkQualityLevel: NetworkQualityLevel.NETWORK_QUALITY_LEVEL_ONE,
   );
 
   static const twilioExceptionModel = TwilioExceptionModel(1, 'test');

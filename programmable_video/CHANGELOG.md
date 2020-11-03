@@ -1,3 +1,7 @@
+## 0.6.3
+
+- Introduced `networkQualityLevel` property and `onNetworkQualityLevelChanged` event to the `ParticipantWidget`.
+
 ## 0.6.2
 
 - Upgraded TwilioVideo iOS SDK to '3.7'.

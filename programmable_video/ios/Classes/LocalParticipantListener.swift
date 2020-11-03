@@ -60,6 +60,15 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
         ], error: error)
     }
 
+    func localParticipantNetworkQualityLevelDidChange(participant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
+        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didChangeNetworkQualityLevel =>" +
+                                                    "sid: \(participant.sid ?? "")")
+sendEvent("networkQualityLevelChanged", data: [
+            "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
+    "networkQualityLevel": Mapper.networkQualityLevelToString(networkQualityLevel) as Any
+        ])
+    }
+
     public static func localParticipantToDict(_ localParticipant: LocalParticipant?) -> [String: Any]? {
         if let localParticipant = localParticipant {
             var networkQualityLevel: String

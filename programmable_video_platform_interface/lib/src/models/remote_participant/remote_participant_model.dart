@@ -1,5 +1,6 @@
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// Model that a plugin implementation can use to construct a RemoteParticipant.
@@ -11,17 +12,21 @@ class RemoteParticipantModel {
   final List<RemoteDataTrackPublicationModel> remoteDataTrackPublications;
   final List<RemoteVideoTrackPublicationModel> remoteVideoTrackPublications;
 
+  final NetworkQualityLevel networkQualityLevel;
+
   const RemoteParticipantModel({
     @required this.identity,
     @required this.sid,
     @required this.remoteAudioTrackPublications,
     @required this.remoteDataTrackPublications,
     @required this.remoteVideoTrackPublications,
+    @required this.networkQualityLevel,
   })  : assert(identity != null),
         assert(sid != null),
         assert(remoteAudioTrackPublications != null),
         assert(remoteDataTrackPublications != null),
-        assert(remoteVideoTrackPublications != null);
+        assert(remoteVideoTrackPublications != null),
+        assert(networkQualityLevel != null);
 
   factory RemoteParticipantModel.fromEventChannelMap(Map<String, dynamic> map) {
     var remoteAudioTrackPublications = <RemoteAudioTrackPublicationModel>[];
@@ -51,13 +56,15 @@ class RemoteParticipantModel {
       }
     }
 
+    var networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+
     return RemoteParticipantModel(
-      identity: map['identity'],
-      sid: map['sid'],
-      remoteAudioTrackPublications: remoteAudioTrackPublications,
-      remoteDataTrackPublications: remoteDataTrackPublications,
-      remoteVideoTrackPublications: remoteVideoTrackPublications,
-    );
+        identity: map['identity'],
+        sid: map['sid'],
+        remoteAudioTrackPublications: remoteAudioTrackPublications,
+        remoteDataTrackPublications: remoteDataTrackPublications,
+        remoteVideoTrackPublications: remoteVideoTrackPublications,
+        networkQualityLevel: networkQualityLevel);
   }
 
   @override
@@ -82,7 +89,8 @@ class RemoteParticipantModel {
       sid: $sid,
       remoteAudioTrackPublications: [ $remoteAudioTrackPublicationsString ],
       remoteDataTrackPublications: [ $remoteDataTrackPublicationsString ],
-      remoteVideoTrackPublications: [ $remoteVideoTrackPublicationsString ]
+      remoteVideoTrackPublications: [ $remoteVideoTrackPublicationsString ],
+      networkQualityLevel: $networkQualityLevel
       }''';
   }
 }

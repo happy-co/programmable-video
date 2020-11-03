@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 import '../model_instances.dart';
@@ -56,6 +56,7 @@ void main() {
 
   final identity = 'identity';
   final sid = 'sid';
+  final networkQualityLevel = NetworkQualityLevel.NETWORK_QUALITY_LEVEL_ONE;
 
   group('.fromEventChannelMap()', () {
     test('should correctly construct from Map', () {
@@ -116,13 +117,15 @@ void main() {
         remoteAudioTrackPublications: [ModelInstances.remoteAudioTrackPublicationModel],
         remoteDataTrackPublications: [ModelInstances.remoteDataTrackPublicationModel],
         remoteVideoTrackPublications: [ModelInstances.remoteVideoTrackPublicationModel],
+        networkQualityLevel: networkQualityLevel,
       );
       expect(model.toString(), '''{ 
       identity: $identity,
       sid: $sid,
       remoteAudioTrackPublications: [ ${ModelInstances.remoteAudioTrackPublicationModel.toString()}, ],
       remoteDataTrackPublications: [ ${ModelInstances.remoteDataTrackPublicationModel.toString()}, ],
-      remoteVideoTrackPublications: [ ${ModelInstances.remoteVideoTrackPublicationModel.toString()}, ]
+      remoteVideoTrackPublications: [ ${ModelInstances.remoteVideoTrackPublicationModel.toString()}, ],
+      networkQualityLevel: $networkQualityLevel
       }''');
     });
   });
