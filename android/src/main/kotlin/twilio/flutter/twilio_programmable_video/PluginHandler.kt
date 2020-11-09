@@ -285,6 +285,10 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     val preferredVideoCodecs = optionsObj["preferredVideoCodecs"] as Map<*, *>
 
                     val videoCodecs = ArrayList<VideoCodec>()
+                    // Some Android devices have issues rendering some resolutions on H264
+                    // As per: https://bugs.chromium.org/p/webrtc/issues/detail?id=11337
+                    // Force VP8 then turn off Hardware Encoding.
+                    // Once Twilio update their version of WebRTC to include this bug fix we can remove this.
                     if (TwilioProgrammableVideoPlugin.HARDWARE_H264_BLACKLIST.contains(Build.MODEL)) {
                         videoCodecs.add(Vp8Codec())
                         MediaCodecVideoEncoder.disableVp8HwCodec()
