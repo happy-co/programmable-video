@@ -10,8 +10,6 @@ import com.twilio.video.I420Frame;
 import java.nio.ByteBuffer;
 
 public class YuvFrame {
-    private static final int PROCESSING_NONE = 0x00;
-    private static final int PROCESSING_CROP_TO_SQUARE = 0x01;
     // Constants for indexing I420Frame information, for readability.
     private static final int I420_Y = 0;
     private static final int I420_V = 1;
@@ -29,7 +27,6 @@ public class YuvFrame {
      *
      * @param i420Frame Source I420Frame.
      */
-    @SuppressWarnings("unused")
     public YuvFrame(final I420Frame i420Frame) {
         fromI420Frame(i420Frame);
     }
