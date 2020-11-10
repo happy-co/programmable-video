@@ -271,7 +271,7 @@ class RemoteParticipant implements Participant {
     if (['audioTrackSubscribed', 'audioTrackUnsubscribed', 'audioTrackEnabled', 'audioTrackDisabled'].contains(eventName)) {
       assert(remoteAudioTrackPublication != null);
       remoteAudioTrack = remoteAudioTrackPublication.remoteAudioTrack;
-      if (remoteAudioTrack == null) {
+      if (remoteAudioTrack == null && data['remoteAudioTrack'] != null) {
         final remoteAudioTrackMap = Map<String, dynamic>.from(data['remoteAudioTrack']);
         remoteAudioTrack = RemoteAudioTrack._fromMap(remoteAudioTrackMap);
       }
@@ -294,7 +294,7 @@ class RemoteParticipant implements Participant {
     if (['dataTrackSubscribed', 'dataTrackUnsubscribed'].contains(eventName)) {
       assert(remoteDataTrackPublication != null);
       remoteDataTrack = remoteDataTrackPublication.remoteDataTrack;
-      if (remoteDataTrack == null) {
+      if (remoteDataTrack == null && data['remoteDataTrack'] != null) {
         final remoteDataTrackMap = Map<String, dynamic>.from(data['remoteDataTrack']);
         remoteDataTrack = RemoteDataTrack._fromMap(remoteDataTrackMap);
       }
@@ -317,7 +317,7 @@ class RemoteParticipant implements Participant {
     if (['videoTrackSubscribed', 'videoTrackUnsubscribed', 'videoTrackEnabled', 'videoTrackDisabled'].contains(eventName)) {
       assert(remoteVideoTrackPublication != null);
       remoteVideoTrack = remoteVideoTrackPublication.remoteVideoTrack;
-      if (remoteVideoTrack == null) {
+      if (remoteVideoTrack == null && data['remoteVideoTrack'] != null) {
         final remoteVideoTrackMap = Map<String, dynamic>.from(data['remoteVideoTrack']);
         remoteVideoTrack = RemoteVideoTrack._fromMap(remoteVideoTrackMap, this);
       }

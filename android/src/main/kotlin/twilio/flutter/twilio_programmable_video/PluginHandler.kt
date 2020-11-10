@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.*
+import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -17,6 +17,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import tvi.webrtc.MediaCodecVideoEncoder
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -41,6 +42,8 @@ class PluginHandler : MethodCallHandler, ActivityAware {
     private var audioManager: AudioManager
 
     private var frameCount: AtomicLong = AtomicLong(0)
+
+    private lateinit var frameToKeep: I420Frame
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(applicationContext: Context) {
@@ -99,43 +102,36 @@ class PluginHandler : MethodCallHandler, ActivityAware {
 
     private fun takePhoto(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
-        if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-            val imageCompression = call.argument<Int>("imageCompression") ?: 100
-            try {
-                val r: Boolean = TwilioProgrammableVideoPlugin.cameraCapturer.takePicture(object: CameraCapturer.PictureListener {
-                    override fun onPictureTaken(pictureData: ByteArray) {
-                        val bitmap: Bitmap = BitmapFactory.decodeByteArray(pictureData, 0, pictureData.size)
-                        val stream = ByteArrayOutputStream()
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
-                        val  byteArray = stream.toByteArray()
-                        bitmap.recycle()
-                        return result.success(byteArray)
-                    }
-                    // Do nothing
-                    override fun onShutter() {}
-                })
-                TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => Did the photo capture work:  $r")
-            } catch (e: java.lang.Exception) {
-                return result.error("ERROR", "Error taking photo", e)
+        val imageCompression = call.argument<Int>("imageCompression") ?: 100
+        return try {
+            val yuvFrame = YuvFrame(frameToKeep)
+            if (!yuvFrame.hasData()) {
+                result.error("ERROR", "Photo data is empty", null)
             }
-        } else {
-            return result.error("NOT FOUND", "No CameraCapturer has been initialized natively", null)
+            val bitmap = yuvFrame.bitmap
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
+            val byteArray = stream.toByteArray()
+            TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => Photo data size: ${byteArray.size}")
+            bitmap.recycle()
+            result.success(byteArray)
+        } catch (e: java.lang.Exception) {
+            result.error("ERROR", "Error taking photo", e)
         }
+
     }
 
     private fun switchCamera(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
-        if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-            val source = if (TwilioProgrammableVideoPlugin.cameraCapturer.cameraSource == CameraCapturer.CameraSource.FRONT_CAMERA) {
-                CameraCapturer.CameraSource.BACK_CAMERA
-            } else {
-                CameraCapturer.CameraSource.FRONT_CAMERA
-            }
-            TwilioProgrammableVideoPlugin.cameraCapturer.switchCamera()
-
-            return result.success(RoomListener.videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer, source))
+        val source = if (TwilioProgrammableVideoPlugin.cameraCapturer.cameraSource == CameraCapturer.CameraSource.FRONT_CAMERA) {
+            CameraCapturer.CameraSource.BACK_CAMERA
+        } else {
+            CameraCapturer.CameraSource.FRONT_CAMERA
         }
-        return result.error("NOT FOUND", "No CameraCapturer has been initialized yet natively", null)
+        TwilioProgrammableVideoPlugin.cameraCapturer.switchCamera()
+
+        return result.success(RoomListener.videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer, source))
+
     }
 
     private fun localParticipantResetVideo(call: MethodCall, result: MethodChannel.Result) {
@@ -165,16 +161,11 @@ class PluginHandler : MethodCallHandler, ActivityAware {
     }
 
     private fun localVideoTrackFrameCount(call: MethodCall, result: MethodChannel.Result) {
-        val localVideoTrackName = call.argument<String>("name")
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackFrameCount => called for $localVideoTrackName")
-        if (localVideoTrackName != null) {
-            val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull { it.trackName == localVideoTrackName }
-            if (localVideoTrack != null) {
-                return result.success(frameCount.get())
-            }
-            return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
+        val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
+        if (localVideoTrack == null) {
+            TwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrack#FrameCount => No video track found")
         }
-        return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
+        return result.success(frameCount.get())
     }
 
     private fun localAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
@@ -294,12 +285,21 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                     val preferredVideoCodecs = optionsObj["preferredVideoCodecs"] as Map<*, *>
 
                     val videoCodecs = ArrayList<VideoCodec>()
-                    for ((videoCodec) in preferredVideoCodecs) {
-                        when (videoCodec) {
-                            Vp8Codec.NAME -> videoCodecs.add(Vp8Codec()) // TODO(WLFN): It has an optional parameter, need to figure out for what: https://github.com/twilio/video-quickstart-android/blob/master/quickstartKotlin/src/main/java/com/twilio/video/quickstart/kotlin/VideoActivity.kt#L106
-                            Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
-                            H264Codec.NAME -> videoCodecs.add(H264Codec())
-                            else -> videoCodecs.add(Vp8Codec())
+                    // Some Android devices have issues rendering some resolutions on H264
+                    // As per: https://bugs.chromium.org/p/webrtc/issues/detail?id=11337
+                    // Force VP8 then turn off Hardware Encoding.
+                    // Once Twilio update their version of WebRTC to include this bug fix we can remove this.
+                    if (TwilioProgrammableVideoPlugin.HARDWARE_H264_BLACKLIST.contains(Build.MODEL)) {
+                        videoCodecs.add(Vp8Codec())
+                        MediaCodecVideoEncoder.disableVp8HwCodec()
+                    } else {
+                        for ((videoCodec) in preferredVideoCodecs) {
+                            when (videoCodec) {
+                                Vp8Codec.NAME -> videoCodecs.add(Vp8Codec())
+                                Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
+                                H264Codec.NAME -> videoCodecs.add(H264Codec())
+                                else -> videoCodecs.add(Vp8Codec())
+                            }
                         }
                     }
                     TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoCodecs to '${videoCodecs.joinToString(", ")}'")
@@ -377,7 +377,7 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                         formats.sortedWith(compareBy({ it.dimensions.width }, { it.dimensions.height }))
 
                         TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => support camera formats")
-                        for(format in formats) {
+                        for (format in formats) {
                             TwilioProgrammableVideoPlugin.debug("${format.dimensions.width} x ${format.dimensions.height}")
                         }
 
@@ -395,12 +395,12 @@ class PluginHandler : MethodCallHandler, ActivityAware {
                                 .build()
 
                         val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, videoCapturer, videoConstraints, videoTrack["name"] as String)
-                        // Reset framecount and add a renderer to count frames
+                        // Reset the frame count and add a renderer to count frames
+                        // Also hold on the current frame being processed for the take photo method
                         frameCount.set(0)
-                        localVideoTrack?.addRenderer(object: VideoRenderer {
-                            override fun renderFrame(frame: I420Frame) {
-                                frameCount.incrementAndGet()
-                            }
+                        localVideoTrack?.addRenderer(fun(it: I420Frame) {
+                            frameCount.incrementAndGet()
+                            frameToKeep = it
                         })
                         videoTracks.add(localVideoTrack)
                     }
