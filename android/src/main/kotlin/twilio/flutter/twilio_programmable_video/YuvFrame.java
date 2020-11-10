@@ -35,7 +35,7 @@ public class YuvFrame {
      * Replaces the data in this YuvFrame with the data from the provided frame. Will create new byte arrays to hold pixel data if necessary,
      * or will reuse existing arrays if they're already the correct size.
      *
-     * @param i420Frame       Source I420Frame.
+     * @param i420Frame Source I420Frame.
      */
     private void fromI420Frame(final I420Frame i420Frame) {
         synchronized (planeLock) {
@@ -119,30 +119,10 @@ public class YuvFrame {
 
         // Allocate an array to hold the ARGB pixel data
         final int[] argb = new int[size];
+        convertYuvToArgbRot0(argb);
 
-        if (rotationDegree == 90 || rotationDegree == -270) {
-            convertYuvToArgbRot90(argb);
-
-            // Create Bitmap from ARGB pixel data.
-            // noinspection SuspiciousNameCombination (Rotating image swaps width/height, name mismatch is fine, Lint.)
-            return Bitmap.createBitmap(argb, height, width, Bitmap.Config.ARGB_8888);
-        } else if (rotationDegree == 180 || rotationDegree == -180) {
-            convertYuvToArgbRot180(argb);
-
-            // Create Bitmap from ARGB pixel data.
-            return Bitmap.createBitmap(argb, width, height, Bitmap.Config.ARGB_8888);
-        } else if (rotationDegree == 270 || rotationDegree == -90) {
-            convertYuvToArgbRot270(argb);
-
-            // Create Bitmap from ARGB pixel data.
-            // noinspection SuspiciousNameCombination (Rotating image swaps width/height, name mismatch is fine, Lint.)
-            return Bitmap.createBitmap(argb, height, width, Bitmap.Config.ARGB_8888);
-        } else {
-            convertYuvToArgbRot0(argb);
-
-            // Create Bitmap from ARGB pixel data.
-            return Bitmap.createBitmap(argb, width, height, Bitmap.Config.ARGB_8888);
-        }
+        // Create Bitmap from ARGB pixel data.
+        return Bitmap.createBitmap(argb, width, height, Bitmap.Config.ARGB_8888);
     }
 
     private void convertYuvToArgbRot0(final int[] outputArgb) {
@@ -189,177 +169,6 @@ public class YuvFrame {
                 outputArgb[p2] = convertYuvToArgb(y2, u, v);
                 outputArgb[p3] = convertYuvToArgb(y3, u, v);
                 outputArgb[p4] = convertYuvToArgb(y4, u, v);
-            }
-        }
-    }
-
-    private void convertYuvToArgbRot90(final int[] outputArgb) {
-        synchronized (planeLock) {
-            int u, v;
-            int y1, y2, y3, y4;
-            int p1, p2, p3, p4;
-            int d1, d2, d3, d4;
-            int uvIndex;
-
-            final int uvWidth = width / 2;  // U/V plane width is half the width of the frame.
-            final int uvHeight = height / 2;  // U/V plane height is half the height of the frame.
-
-            int rotCol;
-            int rotRow;
-
-            // Each U/V cell is overlaid on a 2x2 block of Y cells.
-            // Loop through the size of the U/V planes, and manage the 2x2 Y block on each iteration.
-            for (int row = 0; row < uvHeight; row++) {
-                // Calculate the column on the rotated image from the row on the source image
-                rotCol = (uvHeight - 1) - row;
-
-                for (int col = 0; col < uvWidth; col++) {
-                    // Calculate the row on the rotated image from the column on the source image
-                    rotRow = col;
-
-                    // Calculate the 2x2 grid indices
-                    p1 = (row * width * 2) + (col * 2);
-                    p2 = p1 + 1;
-                    p3 = p1 + width;
-                    p4 = p3 + 1;
-
-                    // Get the U and V values from the source.
-                    uvIndex = (row * uvWidth) + col;
-                    u = uPlane[uvIndex] & 0xff;
-                    v = vPlane[uvIndex] & 0xff;
-                    u = u - 128;
-                    v = v - 128;
-
-                    // Get the Y values for the matching 2x2 pixel block
-                    y1 = yPlane[p1] & 0xff;
-                    y2 = yPlane[p2] & 0xff;
-                    y3 = yPlane[p3] & 0xff;
-                    y4 = yPlane[p4] & 0xff;
-
-                    // Calculate the destination 2x2 grid indices
-                    d1 = (rotRow * height * 2) + (rotCol * 2) + 1;
-                    d2 = d1 + height;
-                    d3 = d1 - 1;
-                    d4 = d3 + height;
-
-                    // Convert each YUV pixel to RGB
-                    outputArgb[d1] = convertYuvToArgb(y1, u, v);
-                    outputArgb[d2] = convertYuvToArgb(y2, u, v);
-                    outputArgb[d3] = convertYuvToArgb(y3, u, v);
-                    outputArgb[d4] = convertYuvToArgb(y4, u, v);
-                }
-            }
-        }
-    }
-
-    private void convertYuvToArgbRot180(final int[] outputArgb) {
-        synchronized (planeLock) {
-            // Calculate the size of the frame
-            int size = width * height;
-
-            // Each U/V cell is overlaid on a 2x2 block of Y cells.
-            // Loop through the size of the U/V planes, and manage the 2x2 Y block on each iteration.
-            int u, v;
-            int y1, y2, y3, y4;
-            int p1, p2, p3, p4;
-            int rowOffset = 0;  // Y and RGB array position is offset by an extra row width each iteration, since they're handled as 2x2 sections.
-
-            final int uvSize = size / 4;   // U/V plane is one quarter the total size of the frame.
-            final int uvWidth = width / 2;  // U/V plane width is half the width of the frame.
-            final int invertSize = size - 1;  // Store size - 1 so it doesn't have to be calculated 4x every iteration.
-
-            for (int i = 0; i < uvSize; i++) {
-                // At the end of each row, increment the Y/RGB row offset by an extra frame width
-                if (i != 0 && (i % (uvWidth)) == 0) {
-                    rowOffset += width;
-                }
-
-                // Calculate the 2x2 grid indices
-                p1 = rowOffset + (i * 2);
-                p2 = p1 + 1;
-                p3 = p1 + width;
-                p4 = p3 + 1;
-
-                // Get the U and V values from the source.
-                u = uPlane[i] & 0xff;
-                v = vPlane[i] & 0xff;
-                u = u - 128;
-                v = v - 128;
-
-                // Get the Y values for the matching 2x2 pixel block
-                y1 = yPlane[p1] & 0xff;
-                y2 = yPlane[p2] & 0xff;
-                y3 = yPlane[p3] & 0xff;
-                y4 = yPlane[p4] & 0xff;
-
-                // Convert each YUV pixel to RGB
-                outputArgb[invertSize - p1] = convertYuvToArgb(y1, u, v);
-                outputArgb[invertSize - p2] = convertYuvToArgb(y2, u, v);
-                outputArgb[invertSize - p3] = convertYuvToArgb(y3, u, v);
-                outputArgb[invertSize - p4] = convertYuvToArgb(y4, u, v);
-            }
-        }
-    }
-
-    private void convertYuvToArgbRot270(final int[] outputArgb) {
-        synchronized (planeLock) {
-            // Calculate the size of the frame
-            int size = width * height;
-
-            int u, v;
-            int y1, y2, y3, y4;
-            int p1, p2, p3, p4;
-            int d1, d2, d3, d4;
-            int uvIndex;
-
-            final int uvWidth = width / 2;  // U/V plane width is half the width of the frame.
-            final int uvHeight = height / 2;  // U/V plane height is half the height of the frame.
-            final int invertSize = size - 1;  // Store size - 1 so it doesn't have to be calculated 4x every iteration.
-
-            int rotCol;
-            int rotRow;
-
-            // Each U/V cell is overlaid on a 2x2 block of Y cells.
-            // Loop through the size of the U/V planes, and manage the 2x2 Y block on each iteration.
-            for (int row = 0; row < uvHeight; row++) {
-                // Calculate the column on the rotated image from the row on the source image
-                rotCol = (uvHeight - 1) - row;
-
-                for (int col = 0; col < uvWidth; col++) {
-                    // Calculate the row on the rotated image from the column on the source image
-                    rotRow = col;
-
-                    // Calculate the 2x2 grid indices
-                    p1 = (row * width * 2) + (col * 2);
-                    p2 = p1 + 1;
-                    p3 = p1 + width;
-                    p4 = p3 + 1;
-
-                    // Get the U and V values from the source.
-                    uvIndex = (row * uvWidth) + col;
-                    u = uPlane[uvIndex] & 0xff;
-                    v = vPlane[uvIndex] & 0xff;
-                    u = u - 128;
-                    v = v - 128;
-
-                    // Get the Y values for the matching 2x2 pixel block
-                    y1 = yPlane[p1] & 0xff;
-                    y2 = yPlane[p2] & 0xff;
-                    y3 = yPlane[p3] & 0xff;
-                    y4 = yPlane[p4] & 0xff;
-
-                    // Calculate the destination 2x2 grid indices
-                    d1 = (rotRow * height * 2) + (rotCol * 2) + 1;
-                    d2 = d1 + height;
-                    d3 = d1 - 1;
-                    d4 = d3 + height;
-
-                    // Convert each YUV pixel to RGB
-                    outputArgb[invertSize - d1] = convertYuvToArgb(y1, u, v);
-                    outputArgb[invertSize - d2] = convertYuvToArgb(y2, u, v);
-                    outputArgb[invertSize - d3] = convertYuvToArgb(y3, u, v);
-                    outputArgb[invertSize - d4] = convertYuvToArgb(y4, u, v);
-                }
             }
         }
     }
