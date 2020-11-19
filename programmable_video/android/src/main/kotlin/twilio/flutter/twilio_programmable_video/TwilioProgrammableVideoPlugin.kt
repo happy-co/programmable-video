@@ -1,10 +1,12 @@
 package twilio.flutter.twilio_programmable_video
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
-import com.twilio.video.Camera2Capturer
 import com.twilio.video.Video
+import com.twilio.video.VideoCapturer
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
@@ -70,13 +72,15 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
         lateinit var roomListener: RoomListener
 
-        lateinit var cameraCapturer: Camera2Capturer
+        lateinit var cameraCapturer: VideoCapturer
 
         var loggingSink: EventChannel.EventSink? = null
 
         var remoteParticipantListener = RemoteParticipantListener()
 
         var localParticipantListener = LocalParticipantListener()
+
+        var handler = Handler(Looper.getMainLooper())
 
         var nativeDebug: Boolean = false
 
@@ -86,7 +90,9 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
         fun debug(msg: String) {
             if (nativeDebug) {
                 Log.d(LOG_TAG, msg)
-                loggingSink?.success(msg)
+                handler.post {
+                    loggingSink?.success(msg)
+                }
             }
         }
     }

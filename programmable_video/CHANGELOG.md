@@ -1,3 +1,7 @@
+## 0.6.3+1
+
+- Added fallback logic for when `Camera2Capturer` is not supported on Android.
+
 ## 0.6.3
 
 - Introduced `networkQualityLevel` property and `onNetworkQualityLevelChanged` event to the `ParticipantWidget`.

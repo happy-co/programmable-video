@@ -144,7 +144,7 @@ class LocalParticipantListener : BaseListener(), LocalParticipant.Listener {
             return mapOf(
                     "name" to localVideoTrack.name,
                     "enabled" to localVideoTrack.isEnabled,
-                    "videoCapturer" to TwilioProgrammableVideoPlugin.pluginHandler.videoCapturerToMap(localVideoTrack.videoCapturer)
+                    "videoCapturer" to VideoCapturerHandler.videoCapturerToMap(localVideoTrack.videoCapturer)
             )
         }
     }
