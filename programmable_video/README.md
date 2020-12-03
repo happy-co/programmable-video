@@ -10,7 +10,7 @@ Check out our comprehensive [example](https://gitlab.com/twilio-flutter/programm
 [![Twilio Programmable Video Example](https://j.gifs.com/5QEyOB.gif)](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/example "Twilio Programmable Video Example")
 
 ## Join the community
-If you have any question or problems, please join us on [Discord](https://discord.gg/42x46NH)
+If you have any question or problems, please join us on [Discord](https://discord.gg/MWnu4nW)
 
 ## FAQ
 Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video/FAQ.md) first before creating a new issue.
