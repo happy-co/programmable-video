@@ -105,8 +105,8 @@ Call `TwilioProgrammableVideo.connect()` to connect to a Room in your Flutter ap
 Room _room;
 final Completer<Room> _completer = Completer<Room>();
 
-void _onConnected(RoomConnectedEvent event) {
-  print('Connected to ${event.room.name}');
+void _onConnected(Room room) {
+  print('Connected to ${room.name}');
   _completer.complete(_room);
 }
 
