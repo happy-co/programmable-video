@@ -5,6 +5,8 @@ import Foundation
 import TwilioVideo
 
 public class PluginHandler: BaseListener {
+    let stillFrameRenderer: StillFrameRenderer = StillFrameRenderer()
+
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -33,14 +35,20 @@ public class PluginHandler: BaseListener {
             localDataTrackSendString(call, result: result)
         case "LocalDataTrack#sendByteBuffer":
             localDataTrackSendByteBuffer(call, result: result)
+        case "LocalParticipant#resetVideo":
+            localParticipantResetVideo(call, result: result)
         case "LocalVideoTrack#enable":
             localVideoTrackEnable(call, result: result)
+        case "LocalVideoTrack#frameCount":
+            localVideoTrackFrameCount(call, result:result)
         case "RemoteAudioTrack#enablePlayback":
             remoteAudioTrackEnable(call, result: result)
         case "RemoteAudioTrack#isPlaybackEnabled":
             isRemoteAudioTrackPlaybackEnabled(call, result: result)
         case "CameraCapturer#switchCamera":
             switchCamera(call, result: result)
+        case "CameraCapturer#takePhoto":
+            takePhoto(call, result: result)
         case "CameraCapturer#hasTorch":
             hasTorch(result: result)
         case "CameraCapturer#setTorch":
@@ -48,6 +56,64 @@ public class PluginHandler: BaseListener {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    func screenshotOfVideoStream(_ imageBuffer: CVImageBuffer?, _ imageCompression: CGFloat) -> Data {
+        var ciImage: CIImage? = nil
+        if let imageBuffer = imageBuffer {
+            ciImage = CIImage(cvPixelBuffer: imageBuffer)
+        }
+        let temporaryContext = CIContext(options: nil)
+
+        var videoImage: CGImage? = nil
+        if let imageBuffer = imageBuffer, let ciImage = ciImage {
+            videoImage = temporaryContext.createCGImage(
+                ciImage,
+                from: CGRect(
+                    x: 0, y: 0,
+                    width: CGFloat(CVPixelBufferGetWidth(imageBuffer)),
+                    height: CGFloat(CVPixelBufferGetHeight(imageBuffer)
+                    )
+                )
+            )
+        }
+        var saveOrientation:UIImage.Orientation = UIImage.Orientation.right
+
+        switch UIDevice.current.orientation {
+            case UIDeviceOrientation.portrait:
+                saveOrientation = UIImage.Orientation.right
+            case UIDeviceOrientation.portraitUpsideDown:
+                saveOrientation = UIImage.Orientation.left
+            case UIDeviceOrientation.landscapeLeft:
+                saveOrientation = UIImage.Orientation.up
+            case UIDeviceOrientation.landscapeRight:
+                saveOrientation = UIImage.Orientation.down
+            default:
+                break
+        }
+
+        var image: UIImage? = nil
+        if let videoImage = videoImage {
+            image = UIImage(cgImage: videoImage, scale: 1.0, orientation: saveOrientation)
+        }
+
+        if let imageData = image?.jpegData(compressionQuality: imageCompression) {
+            return imageData
+        }
+
+        return Data()
+    }
+
+    private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        let arguments = call.arguments as? [String: Any?]
+        let imageCompression = arguments!["imageCompression"] as? CGFloat ?? 100
+        let convertedImageCompression = imageCompression / 100
+
+        if let frameToKeep = stillFrameRenderer.frameToKeep {
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, convertedImageCompression))
+        }
+         return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -62,7 +128,10 @@ public class PluginHandler: BaseListener {
             }
 
             if let captureDevice = captureDevice {
-                cameraSource.selectCaptureDevice(captureDevice, completion: { (_, _, error) in
+                guard let videoFormat = self.getVideoFormat(cameraDevice: captureDevice) else {
+                    return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
+                }
+                cameraSource.selectCaptureDevice(captureDevice, format: videoFormat, completion: { (_, _, error) in
                     if let error = error {
                         self.sendEvent("cameraError", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: nil)], error: error)
                     } else {
@@ -119,6 +188,32 @@ public class PluginHandler: BaseListener {
             return result(nil)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
+        }
+    }
+
+    private func localParticipantResetVideo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localParticipantResetVideo => called")
+        let localVideoTrack = getLocalParticipant()?.localVideoTracks.first
+        guard let videoTrack = localVideoTrack?.localTrack else {
+               return result(FlutterError(code: "NOT_FOUND", message: "No LocalVideoTrack found", details: nil))
+        }
+        getLocalParticipant()?.unpublishVideoTrack(videoTrack)
+        getLocalParticipant()?.publishVideoTrack(videoTrack)
+        return result(true)
+    }
+
+    private func localVideoTrackFrameCount(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' and 'enable' parameters", details: nil))
+        }
+        guard let localVideoTrackName = arguments["name"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+        }
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackFrameCount => called for \(localVideoTrackName), enable=\(String(describing: localVideoTrackEnable))")
+
+        let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
+        if localVideoTrack != nil {
+            return result(self.stillFrameRenderer.frameCount.value)
         }
     }
 
@@ -449,6 +544,11 @@ public class PluginHandler: BaseListener {
 
                         let videoSource = CameraSource()!
                         let localVideoTrack = LocalVideoTrack(source: videoSource, enabled: enable ?? true, name: name ?? nil)!
+                        localVideoTrack.addRenderer(self.stillFrameRenderer)
+
+                        guard let videoFormat = self.getVideoFormat(cameraDevice: cameraDevice) else {
+                            return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
+                        }
 
                         videoSource.startCapture(device: cameraDevice) { (device: AVCaptureDevice, _: VideoFormat, error: Error?) in
                             if let error = error {
@@ -457,6 +557,14 @@ public class PluginHandler: BaseListener {
                                 self.sendEvent("firstFrameAvailable", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: device.position)], error: nil)
                             }
                         }
+
+                        // Sometimes capture does not work when first initlaized on iOS 13.4+
+                        // re-selecting the capture device fixes this problem
+                        videoSource.selectCaptureDevice(cameraDevice, format: videoFormat, completion: { (_, _, error) in
+                            if let error = error {
+                                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting video format errored - code: \((error as NSError).code) message: \((error as NSError).description)")
+                            }
+                        })
                         videoTracks.append(localVideoTrack)
                         SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
@@ -523,6 +631,18 @@ public class PluginHandler: BaseListener {
         }
     }
 
+    private func getVideoFormat(cameraDevice: AVCaptureDevice) -> VideoFormat? {
+        let videoFormats = CameraSource.supportedFormats(captureDevice: cameraDevice)
+
+        guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
+            $0.dimensions.height <= 720 }) else {
+            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
+                return nil
+        }
+        videoFormat.frameRate = 15
+        return videoFormat
+    }
+
     private func debug(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'native' parameter", details: nil))
@@ -534,5 +654,19 @@ public class PluginHandler: BaseListener {
 
         SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
         result(enableNative)
+    }
+}
+
+class StillFrameRenderer: NSObject, VideoRenderer {
+    var frameToKeep: VideoFrame?
+    var frameCount: AtomicInteger = AtomicInteger(value: 0)
+
+    func renderFrame(_ frame: VideoFrame) {
+        frameToKeep = frame
+        frameCount.increment()
+    }
+
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
+        //Do nothing
     }
 }

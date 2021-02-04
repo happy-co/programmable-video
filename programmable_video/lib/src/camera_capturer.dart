@@ -89,6 +89,15 @@ class CameraCapturer implements VideoCapturer {
     }
   }
 
+  /// Takes a photo from the camera capturer.
+  Future<dynamic> takePhoto(int imageCompression) async {
+    final methodData = await MethodChannel('twilio_programmable_video').invokeMethod(
+      'CameraCapturer#takePhoto',
+      {'imageCompression': imageCompression},
+    );
+    return methodData;
+  }
+
   /// Get availability of torch on active [CameraSource].
   ///
   /// This method can be invoked while capturing frames or not.

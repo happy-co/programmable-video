@@ -133,6 +133,9 @@ class Room {
   /// Disconnects from the room.
   Future<void> disconnect() async {
     await ProgrammableVideoPlatform.instance.disconnect();
+  }
+
+  void disposeRoom() async {
     await _roomStream.cancel();
     await _remoteParticipantStream.cancel();
     await _localParticipantStream.cancel();
@@ -184,6 +187,7 @@ class Room {
       }
       _remoteParticipants.clear();
       _onDisconnected.add(RoomDisconnectedEvent(this, TwilioException._fromModel(event.exception)));
+      disposeRoom();
     } else if (event is ParticipantConnected) {
       assert(event.connectedParticipant != null);
       final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);
@@ -267,8 +271,8 @@ class Room {
 
     final remoteDataTrackModel = event.remoteDataTrackModel;
 
-    _remoteParticipants.forEach((RemoteParticipant remoteParticipant) {
-      remoteParticipant.remoteDataTracks.forEach((RemoteDataTrackPublication dataTrackPublication) {
+    _remoteParticipants?.forEach((RemoteParticipant remoteParticipant) {
+      remoteParticipant.remoteDataTracks?.forEach((RemoteDataTrackPublication dataTrackPublication) {
         if (dataTrackPublication.trackSid == remoteDataTrackModel.sid) {
           dataTrackPublication.remoteDataTrack._parseEvents(event);
         }
