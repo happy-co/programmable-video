@@ -396,6 +396,45 @@ TwilioProgrammableVideo.setSpeakerphoneOn(true);
 TwilioProgrammableVideo.setSpeakerphoneOn(false);
 ```
 
+### Playing audio files to provide a rich user experience
+
+For the purposes of playing audio files while using this plugin, we recommend the [`ocarina`](https://pub.dev/packages/ocarina) plugin (v0.0.5 and upwards).
+
+This recommendation comes after surveying the available plugins for this functionality in the Flutter ecosystem for plugins that play nice with this one.
+
+The primary problem observed with other plugins that provide this functionality is that on iOS the majority of them modify the `AVAudioSession` mode, putting it into a playback only mode, and as a result preventing the video call from recording audio.
+
+The secondary problem with audio file playback in iOS is that [the operating system gives priority to the `VoiceProcessingIO` Audio Unit](https://developer.apple.com/forums/thread/22133), causing other audio sources to be played at a greatly diminished volume when this AudioUnit is in use. To address this issue, we provide the custom `AVAudioEngineDevice` which users of the plugin may enable with the example that follows. `AVAudioEngineDevice` was designed with `ocarina` in mind, providing an interface for delegating audio file playback and management from that plugin to the `AVAudioEngineDevice`. It was adapted from [Twilio's example](https://github.com/twilio/video-quickstart-ios/commit/9fffebbef4f2d3cb2a5cf78bcb76949939c810f8).
+
+To enable usage of the `AVAudioEngineDevice`, and delegate audio file playback management from ocarina to it, update your `AppDelegate.swift`s `didFinishLaunch` method as follows:
+
+```swift
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+
+    let audioDevice = AVAudioEngineDevice()
+    SwiftTwilioProgrammableVideoPlugin.audioDevice = audioDevice
+    SwiftOcarinaPlugin.useDelegate(
+        load: audioDevice.addMusicNode,
+        dispose: audioDevice.disposeMusicNode,
+        play: audioDevice.playMusic,
+        pause: audioDevice.pauseMusic,
+        resume: audioDevice.resumeMusic,
+        stop: audioDevice.stopMusic,
+        volume: audioDevice.setMusicVolume,
+        seek: audioDevice.seekPosition,
+        position: audioDevice.getPosition
+    )
+
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+```
+
+Once you have done this, you should be able to continue using this plugin, and `ocarina` as normal.
+
 ## Enable debug logging
 Using the `TwilioProgrammableVideo` class, you can enable native and dart logging of the plugin.
 

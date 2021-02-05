@@ -16,8 +16,6 @@ PODS:
   - firebase_core (0.0.1):
     - Firebase/Core
     - Flutter
-  - firebase_core_web (0.1.0):
-    - Flutter
   - FirebaseAnalytics (6.9.0):
     - FirebaseCore (~> 6.10)
     - FirebaseInstallations (~> 1.7)
@@ -83,7 +81,7 @@ PODS:
   - "permission_handler (5.0.1+1)":
     - Flutter
   - PromisesObjC (1.2.11)
-  - twilio_programmable_video (0.6.1):
+  - twilio_programmable_video (0.6.4):
     - Flutter
     - TwilioVideo (~> 3.7)
   - TwilioVideo (3.7.1)
@@ -139,7 +137,6 @@ SPEC CHECKSUMS:
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   Firebase: c23a36d9e4cdf7877dfcba8dd0c58add66358999
   firebase_core: 335c02abd48672b7c83c683df833d0488a72e73e
-  firebase_core_web: d501d8b946b60c8af265428ce483b0fff5ad52d1
   FirebaseAnalytics: 3bb096873ee0d7fa4b6c70f5e9166b6da413cc7f
   FirebaseCore: d3a978a3cfa3240bf7e4ba7d137fdf5b22b628ec
   FirebaseCoreDiagnostics: 770ac5958e1372ce67959ae4b4f31d8e127c3ac1
@@ -152,12 +149,12 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   native_device_orientation: e24d00be281de72996640885d80e706142707660
-  permission_handler: c2a19c5cb3ed2d7054fc4baa8ff1b86f5dcfedfd
+  permission_handler: eac8e15b4a1a3fba55b761d19f3f4e6b005d15b6
   PromisesObjC: 8c196f5a328c2cba3e74624585467a557dcb482f
-  twilio_programmable_video: 4bdbb78e396695f3dda28b992db82deb0100b055
+  twilio_programmable_video: 70db96dfacbe63bfa0ee7efa0b60b8c31e28f22b
   TwilioVideo: 807526f68043a11f0e17e5c26ef0f0f73d5678e4
   wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0
