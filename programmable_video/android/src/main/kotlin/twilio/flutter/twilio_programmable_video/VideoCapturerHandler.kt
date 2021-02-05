@@ -47,7 +47,7 @@ class VideoCapturerHandler {
             val enableTorch = call.argument<Boolean>("enable")
                 ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
 
-            if (hasTorch()) {
+            if (hasTorch() == true) {
                 if (TwilioProgrammableVideoPlugin.cameraCapturer == null) return result.error("FAILED", "Could not setTorch to enabled: $enableTorch, cameraCapturer is not defined", null)
                 else if (TwilioProgrammableVideoPlugin.cameraCapturer is Camera2Capturer) return setTorchCamera2Capturer(enableTorch, result)
                 else if (TwilioProgrammableVideoPlugin.cameraCapturer is CameraCapturer) return setTorchCameraCapturer(enableTorch, result)
