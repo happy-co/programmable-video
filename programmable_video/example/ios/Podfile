@@ -10,11 +10,7 @@ project 'Runner', {
   'Release' => :release,
 }
 
-def parse_KV_file(file, separator='=')
-  file_abs_path = File.expand_path(file)
-  if !File.exists? file_abs_path
-    return [];
-
+def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
     raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"

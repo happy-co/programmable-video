@@ -64,13 +64,13 @@ class CameraCapturer implements VideoCapturer {
 
   /// Dispose the event streams.
   Future<void> _closeStreams() async {
-    await _cameraStream.cancel();
+    await _cameraStream?.cancel();
     _cameraStream = null;
-    await _onFirstFrameAvailable.close();
+    await _onFirstFrameAvailable?.close();
     onFirstFrameAvailable = null;
-    await _onCameraSwitched.close();
+    await _onCameraSwitched?.close();
     onCameraSwitched = null;
-    await _onCameraError.close();
+    await _onCameraError?.close();
     onCameraError = null;
   }
 

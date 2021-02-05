@@ -1,3 +1,8 @@
+## 0.6.4
+
+- **iOS**: Adjusted `AudioDevice` initialization logic to allow users of the plugin to provide a custom `AudioDevice`.
+- **iOS**: Added `AVAudioEngineDevice`, a custom `AudioDevice`. Details in README.md.
+
 ## 0.6.3+1
 
 - Added fallback logic for when `Camera2Capturer` is not supported on Android.
