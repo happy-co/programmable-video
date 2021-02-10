@@ -416,7 +416,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     }
 
                     if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-                        val formats = videoCapturer.supportedFormats
+                        val formats = TwilioProgrammableVideoPlugin.cameraCapturer.supportedFormats
                         // Not all devices report the formats in the same order
                         formats.sortedWith(compareBy({ it.dimensions.width }, { it.dimensions.height }))
 
