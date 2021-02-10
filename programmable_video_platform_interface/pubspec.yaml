@@ -1,0 +1,28 @@
+name: twilio_programmable_video_platform_interface
+description: A common platform interface for the programmable_video plugin.
+version: 0.2.3
+homepage: https://gitlab.com/twilio-flutter/programmable-video
+repository: https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video_platform_interface
+issue_tracker: https://gitlab.com/twilio-flutter/programmable-video/issues
+# NOTE: We strongly prefer non-breaking changes, even at the expense of a
+# less-clean API. See https://flutter.dev/go/platform-interface-breaking-changes
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.0.5
+  enum_to_string: ^1.0.8
+  plugin_platform_interface: ^1.0.1
+  collection: ^1.14.12
+  equatable: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  pedantic: ^1.8.0+1
+  mockito: ^4.1.1
+
+dependency_overrides:
+  pedantic: ^1.9.0
+
+environment:
+  sdk: ">=2.5.0 <3.0.0"

@@ -1,0 +1,11 @@
+# Disabled gradle-wrapper.jar in this ignore due to Codemagic
+# https://docs.codemagic.io/troubleshooting/common-issues/#version-inconsistency-between-local-and-codemagic
+#gradle-wrapper.jar
+/.gradle
+/captures/
+# Disabled gradlew in this ignore due to Codemagic
+# https://docs.codemagic.io/troubleshooting/common-issues/#version-inconsistency-between-local-and-codemagic
+#/gradlew
+/gradlew.bat
+/local.properties
+GeneratedPluginRegistrant.java

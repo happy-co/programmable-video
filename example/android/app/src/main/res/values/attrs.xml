@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- this file is necessary until the bug below is solved! -->
-<!-- https://github.com/twilio/video-quickstart-android/issues/479 -->
-<resources>
-    <attr name="overlaySurface" format="boolean" />
-</resources>
