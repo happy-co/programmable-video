@@ -177,12 +177,11 @@ class Room {
     }
     _updateFromModel(event.roomModel);
 
-    var twilioException = null;
-    if (event.exception != null) {
-      twilioException = TwilioException._fromModel(event.exception);
-    }
-
     if (event is ConnectFailure) {
+      var twilioException = null;
+      if (event.exception != null) {
+        twilioException = TwilioException._fromModel(event.exception);
+      }
       _onConnectFailure.add(RoomConnectFailureEvent(this, twilioException));
     } else if (event is Connected) {
       _onConnected.add(this);
@@ -191,6 +190,10 @@ class Room {
         participant._dispose();
       }
       _remoteParticipants.clear();
+      var twilioException = null;
+      if (event.exception != null) {
+        twilioException = TwilioException._fromModel(event.exception);
+      }
       _onDisconnected.add(RoomDisconnectedEvent(this, twilioException));
       disposeRoom();
     } else if (event is ParticipantConnected) {
@@ -212,6 +215,10 @@ class Room {
     } else if (event is Reconnected) {
       _onReconnected.add(this);
     } else if (event is Reconnecting) {
+      var twilioException = null;
+      if (event.exception != null) {
+        twilioException = TwilioException._fromModel(event.exception);
+      }
       _onReconnecting.add(RoomReconnectingEvent(this, twilioException));
     } else if (event is RecordingStarted) {
       _onRecordingStarted.add(this);
