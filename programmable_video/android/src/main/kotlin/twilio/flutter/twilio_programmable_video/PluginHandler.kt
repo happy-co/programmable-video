@@ -144,6 +144,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             getLocalParticipant()?.publishTrack(localVideoTrack.localVideoTrack)
             return result.success(true)
         }
+        TwilioProgrammableVideoPlugin.debug("No LocalVideoTrack found or LocalVideoTrack already released while resetting video")
         return result.success(false)
     }
 
