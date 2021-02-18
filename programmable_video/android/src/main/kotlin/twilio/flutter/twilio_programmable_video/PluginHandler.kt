@@ -139,7 +139,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun localParticipantResetVideo(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.debug("PluginHandler.localParticipantResetVideo => called")
         val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
-        if (localVideoTrack != null && localVideoTrack.localVideoTrack.isEnabled) {
+        if (localVideoTrack != null && localVideoTrack.isTrackEnabled) {
             getLocalParticipant()?.unpublishTrack(localVideoTrack.localVideoTrack)
             getLocalParticipant()?.publishTrack(localVideoTrack.localVideoTrack)
             return result.success(true)
