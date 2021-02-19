@@ -2,6 +2,7 @@
 
 - **iOS**: Adjusted `AudioDevice` initialization logic to allow users of the plugin to provide a custom `AudioDevice`.
 - **iOS**: Added `AVAudioEngineDevice`, a custom `AudioDevice`. Details in README.md.
+- **Android**: Fixed build issue with gradle version 4.1.0 and higher
 
 ## 0.6.3+1
 

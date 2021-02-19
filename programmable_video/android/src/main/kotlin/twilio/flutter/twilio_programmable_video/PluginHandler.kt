@@ -431,7 +431,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                         .setAcceptsDelayedFocusGain(true)
                         .setOnAudioFocusChangeListener { }
                         .build()
-                audioManager.requestAudioFocus(audioFocusRequest)
+                audioManager.requestAudioFocus(audioFocusRequest!!)
             } else {
                 audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
                         AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
@@ -459,7 +459,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 audioManager.abandonAudioFocus(null)
             } else if (audioFocusRequest != null) {
-                audioManager.abandonAudioFocusRequest(audioFocusRequest)
+                audioManager.abandonAudioFocusRequest(audioFocusRequest!!)
             }
             audioManager.setSpeakerphoneOn(false)
             audioManager.mode = previousAudioMode
