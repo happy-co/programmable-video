@@ -279,6 +279,8 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'on' parameter", details: nil))
         }
 
+        initializeAudioDevice()
+
         do {
             let audioSession = AVAudioSession.sharedInstance()
             try on ? audioSession.setMode(.videoChat) : audioSession.setMode(.voiceChat)
@@ -306,6 +308,14 @@ public class PluginHandler: BaseListener {
         result(true)
     }
 
+    private func initializeAudioDevice() {
+        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil {
+            SwiftTwilioProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
+            DefaultAudioDevice.DefaultAVAudioSessionConfigurationBlock()
+        }
+        TwilioVideoSDK.audioDevice = SwiftTwilioProgrammableVideoPlugin.audioDevice!
+    }
+
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => called")
@@ -322,11 +332,7 @@ public class PluginHandler: BaseListener {
         }
 
         // Override the device before creating any Rooms or Tracks.
-        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil {
-            SwiftTwilioProgrammableVideoPlugin.audioDevice = DefaultAudioDevice()
-            DefaultAudioDevice.DefaultAVAudioSessionConfigurationBlock()
-        }
-        TwilioVideoSDK.audioDevice = SwiftTwilioProgrammableVideoPlugin.audioDevice!
+        initializeAudioDevice()
 
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
             // Set the room name if it has been passed.

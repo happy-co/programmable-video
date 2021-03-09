@@ -1,8 +1,12 @@
+## 0.6.4+1
+
+- **iOS**: Re-added AudioDevice initialization logic to beginning of setSpeakerPhoneOn.
+
 ## 0.6.4
 
 - **iOS**: Adjusted `AudioDevice` initialization logic to allow users of the plugin to provide a custom `AudioDevice`.
 - **iOS**: Added `AVAudioEngineDevice`, a custom `AudioDevice`. Details in README.md.
-- **Android**: Fixed build issue with gradle version 4.1.0 and higher
+- **Android**: Fixed build issue with gradle version 4.1.0 and higher.
 
 ## 0.6.3+1
 
