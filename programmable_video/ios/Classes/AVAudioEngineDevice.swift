@@ -54,45 +54,66 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     let audioPlayerNodeManager: AVAudioPlayerNodeManager = AVAudioPlayerNodeManager()
 
     // MARK: Init & Dealloc
-
     override public init() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::init => START")
+        AVAudioEngineDevice.getMaximumSliceSize()
         /*
          * Initialize rendering and capturing context. The deviceContext will be be filled in when startRendering or
          * startCapturing gets called.
          */
-        self.renderingContext = AudioRendererContext()
-        self.capturingContext = AudioCapturerContext(
-            bufferList: UnsafeMutablePointer<AudioBufferList>(&self.captureBufferList),
-            mixedAudioBufferList: UnsafeMutablePointer<AudioBufferList?>.allocate(
-                capacity: MemoryLayout<AudioBufferList>.size))
-        self.capturingContext.mixedAudioBufferList.initialize(to: nil)
+        let audioBufferListSize = MemoryLayout<AudioBufferList>.size
+        let renderingCapacity = Int(AVAudioEngineDevice.kMaximumFramesPerBuffer * AVAudioEngineDevice.kPreferredNumberOfChannels * AVAudioEngineDevice.kAudioSampleSize)
+        
+        var pRenderBufferList = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer<AudioBufferList>.allocate(capacity: renderingCapacity))
+        var renderBufferListData = UnsafeMutablePointer<Int8>.allocate(capacity: renderingCapacity)
+        var renderBufferList = AudioBufferList(mNumberBuffers: 1,
+                                             mBuffers: AudioBuffer(
+                                                mNumberChannels: AVAudioEngineDevice.kPreferredNumberOfChannels,
+                                                mDataByteSize: UInt32(0),
+                                                mData: renderBufferListData))
+        pRenderBufferList.unsafeMutablePointer.initialize(to: renderBufferList)
+        
+        self.renderingContext = AudioRendererContext(bufferList: pRenderBufferList, maxFramesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer))
+
+        var pCaptureBufferList = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer<AudioBufferList>.allocate(capacity: renderingCapacity))
+        var captureBufferListData = UnsafeMutablePointer<Int8>.allocate(capacity: renderingCapacity)
+        var captureBufferList = AudioBufferList(mNumberBuffers: 1,
+                                             mBuffers: AudioBuffer(
+                                                mNumberChannels: AVAudioEngineDevice.kPreferredNumberOfChannels,
+                                                mDataByteSize: UInt32(0),
+                                                mData: renderBufferListData))
+        pCaptureBufferList.unsafeMutablePointer.initialize(to: captureBufferList)
+        
+        var pMixedAudioBufferList = UnsafeMutablePointer<AudioBufferList?>.allocate(capacity: audioBufferListSize)
+        pMixedAudioBufferList.initialize(to: nil)
+
+        self.capturingContext = AudioCapturerContext(bufferList: pCaptureBufferList, mixedAudioBufferList: pMixedAudioBufferList)
+
+        // Must initialize rendering and capturing contexts before calling super.init
         super.init()
 
         // Setup the AVAudioEngine along with the rendering context
-        if !self.setupPlayoutAudioEngine() {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to setup AVAudioEngine")
-        }
-
-        // Setup the AVAudioEngine along with the rendering context
-        if !self.setupRecordAudioEngine() {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to setup AVAudioEngine")
+        if !self.setupAudioEngine() {
+            debug("Failed to setup AVAudioEngine")
         }
 
         self.setupAVAudioSession()
         self.renderFormat()
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::init => END")
+        debug("AVAudioEngineDevice::init => END")
     }
 
     deinit {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::deinit")
+        debug("AVAudioEngineDevice::deinit")
         self.disposeAllNodes()
         self.stopRendering()
         self.stopCapturing()
         NotificationCenter.default.removeObserver(self)
         self.teardownAudioEngine()
 
-        self.capturingContext.bufferList.deallocate()
+        self.renderingContext.bufferList.first?.mData?.deallocate()
+        self.renderingContext.bufferList.unsafePointer.deallocate()
+        
+        self.capturingContext.bufferList.first?.mData?.deallocate()
+        self.capturingContext.bufferList.unsafePointer.deallocate()
         self.capturingContext.mixedAudioBufferList.deallocate()
     }
 
@@ -104,22 +125,22 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
      * Determine at runtime the maximum slice size used by VoiceProcessingIO. Setting the stream format and sample rate
      * doesn't appear to impact the maximum size so we prefer to read this value once at initialization time.
      */
-    func initialize() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::initialize")
+    static func getMaximumSliceSize() {
+        debug("AVAudioEngineDevice::getMaximumSliceSize")
         var audioUnitDescription: AudioComponentDescription = AVAudioEngineDevice.audioUnitDescription()
         guard let audioComponent: AudioComponent = AudioComponentFindNext(nil, &audioUnitDescription) else {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not retrieve AudioComponents!")
+            debug("Could not retrieve AudioComponents!")
             return
         }
         var audioUnitRaw: AudioUnit?
         var status: OSStatus = AudioComponentInstanceNew(audioComponent, &audioUnitRaw)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find VoiceProcessingIO AudioComponent instance!")
+            debug("Could not find VoiceProcessingIO AudioComponent instance!")
             return
         }
 
         guard let audioUnit = audioUnitRaw else {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find VoiceProcessingIO AudioComponent instance!")
+            debug("Could not find VoiceProcessingIO AudioComponent instance!")
             return
         }
 
@@ -129,33 +150,24 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Global, AVAudioEngineDevice.kOutputBus,
                                       &framesPerSlice, &propertySize)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not read VoiceProcessingIO AudioComponent instance!")
+            debug("Could not read VoiceProcessingIO AudioComponent instance!")
             AudioComponentInstanceDispose(audioUnit)
             return
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("This device uses a maximum slice size of \(framesPerSlice) frames.")
+        debug("This device uses a maximum slice size of \(framesPerSlice) frames.")
         AVAudioEngineDevice.kMaximumFramesPerBuffer = framesPerSlice
         AudioComponentInstanceDispose(audioUnit)
-
-        var bufferListData = UnsafeMutablePointer<Int8>.allocate(capacity: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer * AVAudioEngineDevice.kPreferredNumberOfChannels * AVAudioEngineDevice.kAudioSampleSize))
-
-        renderingContext.bufferList = AudioBufferList(mNumberBuffers: 1,
-                                                      mBuffers: AudioBuffer(
-                                                       mNumberChannels: AVAudioEngineDevice.kPreferredNumberOfChannels,
-                                                       mDataByteSize: UInt32(0),
-                                                       mData: bufferListData))
     }
 
     // MARK: Private (AVAudioEngine)
-
     func setupAudioEngine() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupAudioEngine")
+        debug("AVAudioEngineDevice::setupAudioEngine")
         return self.setupPlayoutAudioEngine() && self.setupRecordAudioEngine()
     }
 
     func setupRecordAudioEngine() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupRecordAudioEngine")
+        debug("AVAudioEngineDevice::setupRecordAudioEngine")
         assert(recordEngine == nil, "AVAudioEngine is already configured")
 
         /*
@@ -183,7 +195,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         do {
             try engine.enableManualRenderingMode(AVAudioEngineManualRenderingMode.realtime, format: format, maximumFrameCount: AVAudioEngineDevice.kMaximumFramesPerBuffer)
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to setup manual rendering mode, error = \(error)")
+            debug("Failed to setup manual rendering mode, error = \(error)")
             return false
         }
 
@@ -194,20 +206,15 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
          */
         engine.connect(engine.inputNode, to: engine.mainMixerNode, format: format)
 
-        /*
-         * Attach AVAudioPlayerNode node to play music from a file.
-         * AVAudioPlayerNode -> ReverbNode -> MainMixer -> OutputNode (note: ReverbNode is optional)
-         */
-
         // Set the block to provide input data to engine
         let inputNode: AVAudioInputNode = engine.inputNode
         var success: Bool = inputNode.setManualRenderingInputPCMFormat(format) { (inNumberOfFrames: AVAudioFrameCount) -> UnsafePointer<AudioBufferList>? in
             assert(inNumberOfFrames <= AVAudioEngineDevice.kMaximumFramesPerBuffer)
-            return UnsafePointer<AudioBufferList>(self.capturingContext.bufferList)
+            return self.capturingContext.bufferList.unsafePointer
         }
 
         if !success {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to set the manual rendering block")
+            debug("Failed to set the manual rendering block")
             return false
         }
 
@@ -215,10 +222,10 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.capturingContext.renderBlock = engine.manualRenderingBlock
 
         do {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngine::setupRecordAudioEngine => start engine")
+            debug("AVAudioEngine::setupRecordAudioEngine => start engine")
             try engine.start()
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to start AVAudioEngine, error = \(error)")
+            debug("Failed to start AVAudioEngine, error = \(error)")
             return false
         }
 
@@ -227,7 +234,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     // swiftlint:disable:next function_body_length
     func setupPlayoutAudioEngine() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupPlayoutAudioEngine")
+        debug("AVAudioEngineDevice::setupPlayoutAudioEngine")
         assert(self.playoutEngine == nil, "AVAudioEngine is already configured")
 
         /*
@@ -255,7 +262,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         do {
             try engine.enableManualRenderingMode(AVAudioEngineManualRenderingMode.realtime, format: format, maximumFrameCount: AVAudioEngineDevice.kMaximumFramesPerBuffer)
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to setup manual rendering mode, error = \(error)")
+            debug("Failed to setup manual rendering mode, error = \(error)")
             return false
         }
 
@@ -280,15 +287,15 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             assert(inNumberOfFrames <= AVAudioEngineDevice.kMaximumFramesPerBuffer)
 
             let context: AudioRendererContext = self.renderingContext
-            let bufferList = context.bufferList
 
-            guard let audioBuffer = self.renderingContext.bufferList.mBuffers.mData?.assumingMemoryBound(to: Int8.self) else {
+            guard let audioBuffer = self.renderingContext.bufferList.first?.mData?.assumingMemoryBound(to: Int8.self),
+                  let dataByteSize = self.renderingContext.bufferList.first?.mDataByteSize else {
                 return nil
             }
 
-            var audioBufferSizeInBytes: Int = Int(self.renderingContext.bufferList.mBuffers.mDataByteSize)
+            let audioBufferSizeInBytes: Int = Int(dataByteSize)
 
-            if var deviceContext = context.deviceContext {
+            if let deviceContext = context.deviceContext {
                 /*
                  * Pull decoded, mixed audio data from the media engine into the
                  * AudioUnit's AudioBufferList.
@@ -304,12 +311,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                 memset(audioBuffer, 0, audioBufferSizeInBytes)
             }
 
-            var result = bufferList
-            return UnsafePointer<AudioBufferList>(&result)
+            return context.bufferList.unsafePointer
         }
 
         if !success {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to set the manual rendering block")
+            debug("Failed to set the manual rendering block")
             return false
         }
 
@@ -317,19 +323,19 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.renderingContext.renderBlock = engine.manualRenderingBlock
 
         do {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngine::setupPlayoutAudioEngine => start engine")
+            debug("AVAudioEngine::setupPlayoutAudioEngine => start engine")
             try engine.start()
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to start AVAudioEngine, error = \(error)")
+            debug("Failed to start AVAudioEngine, error = \(error)")
             return false
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupPlayoutAudioEngine => end")
+        debug("AVAudioEngineDevice::setupPlayoutAudioEngine => end")
         return true
     }
 
     func teardownRecordAudioEngine() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::teardownRecordAudioEngine")
+        debug("AVAudioEngineDevice::teardownRecordAudioEngine")
         if let engine = self.recordEngine {
             engine.stop()
             self.recordEngine = nil
@@ -337,7 +343,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func teardownPlayoutAudioEngine() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::teardownPlayoutAudioEngine")
+        debug("AVAudioEngineDevice::teardownPlayoutAudioEngine")
         if let engine = self.playoutEngine, engine.isRunning {
             engine.stop()
         }
@@ -345,33 +351,32 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func teardownAudioEngine() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::teardownAudioEngine")
+        debug("AVAudioEngineDevice::teardownAudioEngine")
         self.teardownPlayoutAudioEngine()
         self.teardownRecordAudioEngine()
     }
 
     // MARK: Audio File Playback API
-
     public func playMusic(_ id: Int) {
         safelyPlayMusic {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => QUEUE - DispatchQueue.main.async")
+            debug("AVAudioEngineDevice::playMusic => QUEUE - DispatchQueue.main.async")
             DispatchQueue.main.async {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => START - DispatchQueue.main.async id: \(id)")
+                debug("AVAudioEngineDevice::playMusic => START - DispatchQueue.main.async id: \(id)")
                 self.audioPlayerNodeManager.playNode(id)
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => END - DispatchQueue.main.async: \(id)")
+                debug("AVAudioEngineDevice::playMusic => END - DispatchQueue.main.async: \(id)")
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => END")
+            debug("AVAudioEngineDevice::playMusic => END")
         }
     }
 
     func safelyPlayMusic(_ playCallback: @escaping () -> Void) {
         myPropertyQueue.async {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::safelyPlayMusic => START - myPropertyQueue.async")
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => startingRenderer: \(self.isStartingRenderer), isRendering: \(self.isRendering), stoppingRenderer: \(self.isStoppingRenderer)")
+            debug("AVAudioEngineDevice::safelyPlayMusic => START - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::playMusic => startingRenderer: \(self.isStartingRenderer), isRendering: \(self.isRendering), stoppingRenderer: \(self.isStoppingRenderer)")
 
             // Could collapse isRendering/isStartingRenderer/isStoppingRenderer into a single state enum
             if self.isRendering {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => scheduleMusicOnPlayoutEngine => dispatch")
+                    debug("AVAudioEngineDevice::playMusic => scheduleMusicOnPlayoutEngine => dispatch")
                 // Since the engine is already rendering, no need to queue playCallback on myPropertyQueue to ensure that it occurs after rendering is started
                 playCallback()
             } else if self.isStartingRenderer {
@@ -379,23 +384,23 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                     playCallback()
                 }
             } else {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => startRendering")
+                debug("AVAudioEngineDevice::playMusic => startRendering")
 
                 if self.startRenderingInternal(context: nil) {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => startRendering => scheduleMusicOnPlayoutEngine")
+                    debug("AVAudioEngineDevice::playMusic => startRendering => scheduleMusicOnPlayoutEngine")
                     self.myPropertyQueue.async {
                         playCallback()
                     }
                 } else {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::playMusic => startRendering failed")
+                    debug("AVAudioEngineDevice::playMusic => startRendering failed")
                 }
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::safelyPlayMusic => END - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::safelyPlayMusic => END - myPropertyQueue.async")
         }
     }
 
     public func stopMusic(_ id: Int) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopMusic => \(id)")
+        debug("AVAudioEngineDevice::stopMusic => \(id)")
         self.audioPlayerNodeManager.stopNode(id)
 
         if !self.audioPlayerNodeManager.anyPlaying(),
@@ -408,12 +413,12 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func pauseMusic(_ id: Int) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::pauseNode => \(id)")
+        debug("AVAudioEngineDevice::pauseNode => \(id)")
         self.audioPlayerNodeManager.pauseNode(id)
     }
 
     public func resumeMusic(_ id: Int) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::resumeMusic => \(id)")
+        debug("AVAudioEngineDevice::resumeMusic => \(id)")
         self.audioPlayerNodeManager.resumeNode(id)
     }
 
@@ -423,18 +428,18 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     public func seekPosition(_ id: Int, _ positionInMillis: Int) {
         safelyPlayMusic {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::seekPosition => QUEUE - DispatchQueue.main.async")
+            debug("AVAudioEngineDevice::seekPosition => QUEUE - DispatchQueue.main.async")
             DispatchQueue.main.async {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::seekPosition => START - DispatchQueue.main.async")
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::seekPosition => id: \(id), positionInMillis: \(positionInMillis)")
+                debug("AVAudioEngineDevice::seekPosition => START - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::seekPosition => id: \(id), positionInMillis: \(positionInMillis)")
                 self.audioPlayerNodeManager.seekPosition(id, Int64(positionInMillis))
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::seekPosition => END - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::seekPosition => END - DispatchQueue.main.async")
             }
         }
     }
 
     public func getPosition(_ id: Int) -> Int64 {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::getPosition => id: \(id)")
+        debug("AVAudioEngineDevice::getPosition => id: \(id)")
         return self.audioPlayerNodeManager.getPosition(id)
     }
 
@@ -445,7 +450,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func disposeMusicNode(_ id: Int) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::disposeMusicNode => id: \(id)")
+        debug("AVAudioEngineDevice::disposeMusicNode => id: \(id)")
         guard let playoutEngine = self.playoutEngine,
               let node = self.audioPlayerNodeManager.getNode(id) else {
             return
@@ -474,14 +479,14 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func reattachMusicNodes() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::reattachMusicNodes")
+        debug("AVAudioEngineDevice::reattachMusicNodes")
         self.audioPlayerNodeManager.nodes.values.forEach { (_ node: AVAudioPlayerNodeBundle) in
             attachMusicNode(node)
         }
     }
 
     func attachMusicNode(_ nodeBundle: AVAudioPlayerNodeBundle) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::attachMusicNode => node: \(nodeBundle.id)")
+        debug("AVAudioEngineDevice::attachMusicNode => node: \(nodeBundle.id)")
         guard let playoutEngine = self.playoutEngine else {
             return
         }
@@ -495,9 +500,8 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     // MARK: TVIAudioDeviceRenderer
-
     public func renderFormat() -> AudioFormat? {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::renderFormat")
+        debug("AVAudioEngineDevice::renderFormat")
         if renderingFormat == nil, let activeFormat = AVAudioEngineDevice.activeFormat() {
             /*
              * Assume that the AVAudioSession has already been configured and started and that the values
@@ -511,7 +515,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func initializeRenderer() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::initializeRenderer")
+        debug("AVAudioEngineDevice::initializeRenderer")
         /*
          * In this example we don't need any fixed size buffers or other pre-allocated resources. We will simply write
          * directly to the AudioBufferList provided in the AudioUnit's rendering callback.
@@ -522,20 +526,20 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     public func startRendering(context: AudioDeviceContext?) -> Bool {
         var result: Bool = false
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRendering => START - deviceContext: \(context), onMain: \(Thread.current.isMainThread), isRendering: \(self.isRendering)")
+        debug("AVAudioEngineDevice::startRendering => START - deviceContext: \(context), onMain: \(Thread.current.isMainThread), isRendering: \(self.isRendering)")
         myPropertyQueue.sync {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRendering => START - myPropertyQueue.sync")
+            debug("AVAudioEngineDevice::startRendering => START - myPropertyQueue.sync")
             result = self.startRenderingInternal(context: context)
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRendering => END - myPropertyQueue.sync")
+            debug("AVAudioEngineDevice::startRendering => END - myPropertyQueue.sync")
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRendering => END")
+        debug("AVAudioEngineDevice::startRendering => END")
         return result
     }
 
     // swiftlint:disable:next function_body_length
     func startRenderingInternal(context: AudioDeviceContext?) -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => START - current thread main: \(Thread.current.isMainThread)")
+        debug("AVAudioEngineDevice::startRenderingInternal => START - current thread main: \(Thread.current.isMainThread)")
 
         var result = false
 
@@ -545,7 +549,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         // Pause active audio player nodes while engine is restarted
         if self.audioPlayerNodeManager.anyPlaying() {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => pause active audio nodes")
+            debug("AVAudioEngineDevice::startRenderingInternal => pause active audio nodes")
             /*
             * Since startRenderingInternal should always be run on the local DispatchQueue
             * we do not need to dispatch this call here. Further, we want to ensure this
@@ -562,15 +566,22 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
          * rendering is not already underway.
          */
         if self.audioUnit != nil {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => stop audioUnit")
+            debug("AVAudioEngineDevice::startRenderingInternal => stop audioUnit")
             self.stopAudioUnit()
             self.teardownAudioUnit()
         }
-
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => QUEUE - DispatchQueue.main.async")
+        
+        if !self.setupAudioUnitWithRenderContext(renderContext: &self.renderingContext, captureContext: &self.capturingContext) {
+            result = false
+            self.isStartingRenderer = false
+            self.isRendering = false
+            return false
+        }
+        
+        debug("AVAudioEngineDevice::startRenderingInternal => QUEUE - DispatchQueue.main.async")
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         DispatchQueue.main.async {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => START - DispatchQueue.main.async")
+            debug("AVAudioEngineDevice::startRenderingInternal => START - DispatchQueue.main.async")
 
             if let engine = self.playoutEngine,
                let engineFormat = AudioFormat(
@@ -580,15 +591,15 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                let activeFormat = AVAudioEngineDevice.activeFormat(),
                engineFormat.isEqual(activeFormat) {
                 if engine.isRunning {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => stopping engine")
+                    debug("AVAudioEngineDevice::startRenderingInternal => stopping engine")
                     engine.stop()
                 }
 
                 do {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => starting engine")
+                    debug("AVAudioEngineDevice::startRenderingInternal => starting engine")
                     try engine.start()
                 } catch let error {
-                    SwiftTwilioProgrammableVideoPlugin.debug("Failed to start AVAudioEngine, error = \(error)")
+                    debug("Failed to start AVAudioEngine, error = \(error)")
                 }
             } else {
             /*
@@ -609,14 +620,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                     self.audioPlayerNodeManager.resumeAll()
                 }
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => END - DispatchQueue.main.async")
-        }
-
-        if !self.setupAudioUnitWithRenderContext(renderContext: &self.renderingContext, captureContext: &self.capturingContext) {
-            result = false
-            self.isStartingRenderer = false
-            self.isRendering = false
-            return false
+            debug("AVAudioEngineDevice::startRenderingInternal => END - DispatchQueue.main.async")
         }
 
         result = self.startAudioUnit()
@@ -624,22 +628,22 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.isStartingRenderer = false
         self.isRendering = true
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startRenderingInternal => END")
+        debug("AVAudioEngineDevice::startRenderingInternal => END")
 
         return result
     }
 
     public func stopRendering() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => nodes playing: \(self.audioPlayerNodeManager.anyPlaying()), nodes paused: \(self.audioPlayerNodeManager.anyPaused())")
+        debug("AVAudioEngineDevice::stopRendering => nodes playing: \(self.audioPlayerNodeManager.anyPlaying()), nodes paused: \(self.audioPlayerNodeManager.anyPaused())")
         self.isStoppingRenderer = true
         self.isRendering = false
         myPropertyQueue.async {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => START - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::stopRendering => START - myPropertyQueue.async")
             // If the capturer is running, we will not stop the audio unit.
             if self.capturingContext.deviceContext == nil,
                !self.audioPlayerNodeManager.anyPlaying(),
                !self.audioPlayerNodeManager.anyPaused() {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => stopAudioUnit")
+                debug("AVAudioEngineDevice::stopRendering => stopAudioUnit")
                 self.stopAudioUnit()
                 self.teardownAudioUnit()
             }
@@ -649,23 +653,23 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                engine.isRunning,
                !self.audioPlayerNodeManager.anyPlaying(),
                !self.audioPlayerNodeManager.anyPaused() {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => QUEUE - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::stopRendering => QUEUE - DispatchQueue.main.async")
                 // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
                 DispatchQueue.main.async {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => START - DispatchQueue.main.async")
+                    debug("AVAudioEngineDevice::stopRendering => START - DispatchQueue.main.async")
 
                     // If audio player nodes are in use, we will not stop the engine
                     if let engine = self.playoutEngine {
-                        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => stop playoutEngine")
+                        debug("AVAudioEngineDevice::stopRendering => stop playoutEngine")
                         engine.stop()
                     }
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => END - DispatchQueue.main.async")
+                    debug("AVAudioEngineDevice::stopRendering => END - DispatchQueue.main.async")
                     self.isStoppingRenderer = false
                 }
             } else {
                 self.isStoppingRenderer = false
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopRendering => END - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::stopRendering => END - myPropertyQueue.async")
         }
 
         return true
@@ -673,7 +677,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     // MARK: AudioDeviceCapturer
     public func captureFormat() -> AudioFormat? {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::captureFormat")
+        debug("AVAudioEngineDevice::captureFormat")
         if capturingFormat == nil {
             /*
              * Assume that the AVAudioSession has already been configured and started and that the values
@@ -686,7 +690,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func initializeCapturer() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::initializeCapturer")
+        debug("AVAudioEngineDevice::initializeCapturer")
         captureBufferList.mNumberBuffers = 1
         captureBufferList.mBuffers.mNumberChannels = AVAudioEngineDevice.kPreferredNumberOfChannels
 
@@ -699,28 +703,28 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                                     mDataByteSize: UInt32(0),
                                                     mData: pMixedAudioBufferListData
                                                    ))
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::initializeCapturer => initialized mixAudioBufferList")
+            debug("AVAudioEngineDevice::initializeCapturer => initialized mixAudioBufferList")
         }
 
         return true
     }
 
     public func startCapturing(context: AudioDeviceContext) -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing")
+        debug("AVAudioEngineDevice::startCapturing")
         var result: Bool = true
         myPropertyQueue.sync {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing - START - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::startCapturing - START - myPropertyQueue.async")
             // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
             if self.audioUnit != nil {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => stop audioUnit")
+                debug("AVAudioEngineDevice::startCapturing => stop audioUnit")
                 self.stopAudioUnit()
                 self.teardownAudioUnit()
             }
 
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => QUEUE - DispatchQueue.main.async")
+            debug("AVAudioEngineDevice::startCapturing => QUEUE - DispatchQueue.main.async")
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
             DispatchQueue.main.async {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => START - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::startCapturing => START - DispatchQueue.main.async")
                 if let engine = self.recordEngine,
                    let engineFormat = AudioFormat(
                     channels: Int(engine.manualRenderingFormat.channelCount),
@@ -729,21 +733,21 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                    let activeFormat = AVAudioEngineDevice.activeFormat(),
                    engineFormat.isEqual(activeFormat) {
                     if engine.isRunning {
-                        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => stopping engine")
+                        debug("AVAudioEngineDevice::startCapturing => stopping engine")
                         engine.stop()
                     }
 
                     do {
-                        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => starting engine")
+                        debug("AVAudioEngineDevice::startCapturing => starting engine")
                         try engine.start()
                     } catch let error {
-                        SwiftTwilioProgrammableVideoPlugin.debug("Failed to start AVAudioEngine, error = \(error)")
+                        debug("Failed to start AVAudioEngine, error = \(error)")
                     }
                 } else {
                     self.teardownRecordAudioEngine()
                     self.setupRecordAudioEngine()
                 }
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
             }
 
             self.capturingContext.deviceContext = context
@@ -753,9 +757,9 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                 return
             }
 
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing => startAudioUnit")
+            debug("AVAudioEngineDevice::startCapturing => startAudioUnit")
             result = self.startAudioUnit()
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
+            debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
             return
         }
 
@@ -763,7 +767,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func stopCapturing() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopCapturing => nodes playing: \(self.audioPlayerNodeManager.anyPlaying()), nodes paused: \(self.audioPlayerNodeManager.anyPaused())")
+        debug("AVAudioEngineDevice::stopCapturing => nodes playing: \(self.audioPlayerNodeManager.anyPlaying()), nodes paused: \(self.audioPlayerNodeManager.anyPaused())")
         myPropertyQueue.async {
             // If the renderer is in use by a remote participants audio track, or audio player nodes, we will not stop the audio unit.
             if self.renderingContext.deviceContext == nil,
@@ -776,14 +780,14 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             self.capturingContext.audioUnit = nil
 
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopCapturing => QUEUE - DispatchQueue.main.async")
+            debug("AVAudioEngineDevice::stopCapturing => QUEUE - DispatchQueue.main.async")
             DispatchQueue.main.async {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopCapturing => START - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::stopCapturing => START - DispatchQueue.main.async")
                 if let engine = self.recordEngine, engine.isRunning {
-                    SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopCapturing => stop recordEngine")
+                    debug("AVAudioEngineDevice::stopCapturing => stop recordEngine")
                     engine.stop()
                 }
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopCapturing => END - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::stopCapturing => END - DispatchQueue.main.async")
             }
         }
 
@@ -793,7 +797,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     // MARK: Private (AVAudioSession and CoreAudio)
 
     static func activeFormat() -> AudioFormat? {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::activeFormat")
+        debug("AVAudioEngineDevice::activeFormat")
         /*
          * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
          * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
@@ -805,7 +809,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     static func audioUnitDescription() -> AudioComponentDescription {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::audioUnitDescription")
+        debug("AVAudioEngineDevice::audioUnitDescription")
         var audioUnitDescription: AudioComponentDescription = AudioComponentDescription()
         audioUnitDescription.componentType = kAudioUnitType_Output
         audioUnitDescription.componentSubType = kAudioUnitSubType_VoiceProcessingIO
@@ -816,7 +820,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func setupAVAudioSession() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupAVAudioSession")
+        debug("AVAudioEngineDevice::setupAVAudioSession")
         let session: AVAudioSession = AVAudioSession.sharedInstance()
 
         do {
@@ -830,7 +834,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             try session.setCategory(AVAudioSession.Category.playAndRecord)
             try session.setMode(AVAudioSession.Mode.videoChat)
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Error setting up AudioSession: \(error)")
+            debug("Error setting up AudioSession: \(error)")
         }
 
         self.registerAVAudioSessionObservers()
@@ -838,14 +842,14 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         do {
             try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
         } catch let error {
-            SwiftTwilioProgrammableVideoPlugin.debug("Error activating AVAudioSession: \(error)")
+            debug("Error activating AVAudioSession: \(error)")
         }
 
         if session.maximumInputNumberOfChannels > 0 {
             do {
                 try session.setPreferredInputNumberOfChannels(AudioFormat.ChannelsMono)
             } catch let error {
-                SwiftTwilioProgrammableVideoPlugin.debug("Error setting number of input channels: \(error)")
+                debug("Error setting number of input channels: \(error)")
             }
         }
     }
@@ -853,17 +857,17 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func setupAudioUnitWithRenderContext(renderContext: inout AudioRendererContext,
                                          captureContext: inout AudioCapturerContext) -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupAudioUnitWithRenderContext")
+        debug("AVAudioEngineDevice::setupAudioUnitWithRenderContext")
         // Find and instantiate the VoiceProcessingIO audio unit.
         var audioUnitDescription: AudioComponentDescription = AVAudioEngineDevice.audioUnitDescription()
         guard let audioComponent: AudioComponent = AudioComponentFindNext(nil, &audioUnitDescription) else {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find VoiceProcessingIO AudioComponent!")
+            debug("Could not find VoiceProcessingIO AudioComponent!")
             return false
         }
 
         var status: OSStatus = AudioComponentInstanceNew(audioComponent, &self.audioUnit)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find VoiceProcessingIO AudioComponent instance!")
+            debug("Could not find VoiceProcessingIO AudioComponent instance!")
             return false
         }
 
@@ -872,12 +876,12 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
          * to prevent any additional format conversions after the media engine has mixed our playout audio.
          */
         guard var streamDescription: AudioStreamBasicDescription = self.renderingFormat?.streamDescription() else {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find AudioStreamBasicDescription!")
+            debug("Could not find AudioStreamBasicDescription!")
             return false
         }
 
         guard let audioUnit = self.audioUnit else {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not find AudioUnit.")
+            debug("Could not find AudioUnit.")
             return false
         }
 
@@ -891,7 +895,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Output, AVAudioEngineDevice.kOutputBus,
                                       &enableOutput, uint32Size)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not enable out bus!")
+            debug("Could not enable out bus!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
             return false
@@ -901,7 +905,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Output, AVAudioEngineDevice.kInputBus,
                                       &streamDescription, streamDescriptionSize)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not set stream format on input bus!")
+            debug("Could not set stream format on input bus!")
             return false
         }
 
@@ -909,7 +913,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Input, AVAudioEngineDevice.kOutputBus,
                                       &streamDescription, streamDescriptionSize)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not set stream format on output bus!")
+            debug("Could not set stream format on output bus!")
             return false
         }
 
@@ -919,7 +923,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       uint32Size)
 
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not enable input bus!")
+            debug("Could not enable input bus!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
             return false
@@ -933,7 +937,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Output, AVAudioEngineDevice.kOutputBus, &renderCallback,
                                       auRenderCallbackStructSize)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not set rendering callback!")
+            debug("Could not set rendering callback!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
             return false
@@ -947,7 +951,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       kAudioUnitScope_Input, AVAudioEngineDevice.kInputBus, &captureCallback,
                                       auRenderCallbackStructSize)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not set capturing callback!")
+            debug("Could not set capturing callback!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
             return false
@@ -955,32 +959,32 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         var failedInitializeAttempts: NSInteger = 0
         while status != noErr {
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to initialize the Voice Processing I/O unit. Error= \(status).")
+            debug("Failed to initialize the Voice Processing I/O unit. Error= \(status).")
             failedInitializeAttempts += 1
             if failedInitializeAttempts == AVAudioEngineDevice.kMaxNumberOfAudioUnitInitializeAttempts {
                 break
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("Pause 100ms and try audio unit initialization again.")
+            debug("Pause 100ms and try audio unit initialization again.")
             Thread.sleep(forTimeInterval: 0.1)
             status = AudioUnitInitialize(audioUnit)
         }
 
         // Finally, initialize and start the VoiceProcessingIO audio unit.
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not initialize the audio unit! => OSStatus: \(status)")
+            debug("Could not initialize the audio unit! => OSStatus: \(status)")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
             return false
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::setupAudioUnitWithRenderContext => setting captureContext audioUnit")
+        debug("AVAudioEngineDevice::setupAudioUnitWithRenderContext => setting captureContext audioUnit")
         captureContext.audioUnit = audioUnit
 
         return true
     }
 
     func startAudioUnit() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startAudioUnit => START")
+        debug("AVAudioEngineDevice::startAudioUnit => START")
         guard let audioUnitUnwrapped = self.audioUnit else {
             return false
         }
@@ -988,39 +992,39 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         var result = false
         var failedInitializeAttempts: NSInteger = 0
         while failedInitializeAttempts < AVAudioEngineDevice.kMaxNumberOfAudioUnitInitializeAttempts {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startAudioUnit => failed attempts: \(failedInitializeAttempts)")
+            debug("AVAudioEngineDevice::startAudioUnit => failed attempts: \(failedInitializeAttempts)")
             let status: OSStatus = AudioOutputUnitStart(audioUnitUnwrapped)
             if status == noErr {
                 result = true
                 break
             }
-            SwiftTwilioProgrammableVideoPlugin.debug("Failed to start output on the Voice Processing I/O unit. Error= \(status).")
+            debug("Failed to start output on the Voice Processing I/O unit. Error= \(status).")
             failedInitializeAttempts += 1
 
-            SwiftTwilioProgrammableVideoPlugin.debug("Pause 100ms and try audio unit initialization again.")
+            debug("Pause 100ms and try audio unit initialization again.")
             Thread.sleep(forTimeInterval: 0.1)
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::startAudioUnit => END => started: \(result)")
+        debug("AVAudioEngineDevice::startAudioUnit => END => started: \(result)")
         return result
     }
 
     func stopAudioUnit() -> Bool {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::stopAudioUnit")
+        debug("AVAudioEngineDevice::stopAudioUnit")
         guard let audioUnitUnwrapped = self.audioUnit else {
             return false
         }
 
         let status: OSStatus = AudioOutputUnitStop(audioUnitUnwrapped)
         if status != 0 {
-            SwiftTwilioProgrammableVideoPlugin.debug("Could not stop the audio unit!")
+            debug("Could not stop the audio unit!")
             return false
         }
         return true
     }
 
     func teardownAudioUnit() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::teardownAudioUnit")
+        debug("AVAudioEngineDevice::teardownAudioUnit")
         if let audioUnitUnwrapped = self.audioUnit {
             AudioUnitUninitialize(audioUnitUnwrapped)
             AudioComponentInstanceDispose(audioUnitUnwrapped)
@@ -1030,7 +1034,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     // MARK: NSNotification Observers
     func deviceContext() -> AudioDeviceContext? {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::deviceContext")
+        debug("AVAudioEngineDevice::deviceContext")
         if self.renderingContext.deviceContext != nil {
             return self.renderingContext.deviceContext
         } else if self.capturingContext.deviceContext != nil {
@@ -1040,7 +1044,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func registerAVAudioSessionObservers() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::registerAVAudioSessionObservers")
+        debug("AVAudioEngineDevice::registerAVAudioSessionObservers")
         // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
         var center: NotificationCenter = NotificationCenter.default
 
@@ -1060,7 +1064,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleAudioInterruption(notification: Notification) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleAudioInterruption")
+        debug("AVAudioEngineDevice::handleAudioInterruption")
         guard let userInfo = notification.userInfo,
               let type: AVAudioSession.InterruptionType = userInfo[AVAudioSessionInterruptionTypeKey] as? AVAudioSession.InterruptionType else {
             return
@@ -1071,11 +1075,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             if let context = self.deviceContext() {
                 AudioDeviceExecuteWorkerBlock(context: context) {
                     if type == AVAudioSession.InterruptionType.began {
-                        SwiftTwilioProgrammableVideoPlugin.debug("Interruption began.")
+                        debug("Interruption began.")
                         self.interrupted = true
                         self.stopAudioUnit()
                     } else {
-                        SwiftTwilioProgrammableVideoPlugin.debug("Interruption ended.")
+                        debug("Interruption ended.")
                         self.interrupted = false
                         self.startAudioUnit()
                     }
@@ -1085,13 +1089,13 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleApplicationDidBecomeActive(notification: Notification) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleApplicationDidBecomeActive")
+        debug("AVAudioEngineDevice::handleApplicationDidBecomeActive")
         myPropertyQueue.async {
             // If the worker block is executed, then context is guaranteed to be valid.
             if let context = self.deviceContext() {
                 AudioDeviceExecuteWorkerBlock(context: context) {
                     if self.interrupted {
-                        SwiftTwilioProgrammableVideoPlugin.debug("Synthesizing an interruption ended event for iOS 9.x devices.")
+                        debug("Synthesizing an interruption ended event for iOS 9.x devices.")
                         self.interrupted = false
                         self.startAudioUnit()
                     }
@@ -1101,7 +1105,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleRouteChange(notification: NSNotification) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleRouteChange")
+        debug("AVAudioEngineDevice::handleRouteChange")
         // Check if the sample rate, or channels changed and trigger a format change if it did.
         guard let userInfo = notification.userInfo,
               let reason = userInfo[AVAudioSessionRouteChangeReasonKey] as? AVAudioSession.RouteChangeReason else {
@@ -1135,13 +1139,13 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func handleValidRouteChange() {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleValidRouteChange")
+        debug("AVAudioEngineDevice::handleValidRouteChange")
         // Nothing to process while we are interrupted. We will interrogate the AVAudioSession once the interruption ends.
         if self.interrupted || self.audioUnit == nil {
             return
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("A route change ocurred while the AudioUnit was started. Checking the active audio format.")
+        debug("A route change ocurred while the AudioUnit was started. Checking the active audio format.")
 
         // Determine if the format actually changed. We only care about sample rate and number of channels.
         guard let activeFormat: AudioFormat = AVAudioEngineDevice.activeFormat() else {
@@ -1149,7 +1153,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         }
         // Notify Video SDK about the format change
         if !activeFormat.isEqual(renderingFormat) || !activeFormat.isEqual(capturingFormat) {
-            SwiftTwilioProgrammableVideoPlugin.debug("Format changed, restarting with \(activeFormat)")
+            debug("Format changed, restarting with \(activeFormat)")
 
             // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
             renderingFormat = nil
@@ -1164,7 +1168,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleMediaServiceLost(notification: Notification) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleMediaServiceLost")
+        debug("AVAudioEngineDevice::handleMediaServiceLost")
         self.teardownAudioEngine()
 
         myPropertyQueue.async {
@@ -1178,7 +1182,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleMediaServiceRestored(notification: Notification) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngineDevice::handleMediaServiceRestored")
+        debug("AVAudioEngineDevice::handleMediaServiceRestored")
         self.setupAudioEngine()
 
         myPropertyQueue.async {
@@ -1200,6 +1204,8 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
                                         inBusNumber: UInt32,
                                         inNumberFrames: UInt32,
                                         ioData: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
+    let abl = UnsafeMutableAudioBufferListPointer(ioData)
+    
     guard let ioData = ioData else {
         return noErr
     }
@@ -1208,7 +1214,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
     assert(ioData.pointee.mBuffers.mNumberChannels > 0)
 
     var context = inRefCon.assumingMemoryBound(to: AudioRendererContext.self)
-    context.pointee.bufferList = ioData.pointee
+    context.pointee.bufferList.unsafeMutablePointer.initialize(to: ioData.pointee)
 
     var audioBufferSizeInBytes: UInt32 = ioData.pointee.mBuffers.mDataByteSize
 
@@ -1222,6 +1228,8 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
         return outputStatus
     }
 
+    // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
+//    debug("AVAudioEngineDevicePlayoutCallback => inNumberOfFrames: \(inNumberFrames), audioBufferSizeInBytes: \(audioBufferSizeInBytes), abl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee), input buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     let status: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, ioData, &outputStatus)
 
     /*
@@ -1230,12 +1238,16 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
      */
     if inNumberFrames > maxFramesPerBuffer || status != AVAudioEngineManualRenderingStatus.success {
         if inNumberFrames > maxFramesPerBuffer {
-            SwiftTwilioProgrammableVideoPlugin.debug("Can handle a max of \(maxFramesPerBuffer) frames but got \(inNumberFrames).")
+            debug("Can handle a max of \(maxFramesPerBuffer) frames but got \(inNumberFrames).")
         }
+        // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
+//        debug("AVAudioEngineDevicePlayoutCallback => render silence - outputStatus: \(outputStatus) status: \(status.rawValue)")
         ioActionFlags.pointee = AudioUnitRenderActionFlags(rawValue: ioActionFlags.pointee.rawValue | AudioUnitRenderActionFlags.unitRenderAction_OutputIsSilence.rawValue)
         memset(ioData.pointee.mBuffers.mData, 0, Int(audioBufferSizeInBytes))
     }
-
+    
+    // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
+//    debug("AVAudioEngineDevicePlayoutCallback => END inputData: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee) outputStatus: \(outputStatus) status: \(status.rawValue)")
     return noErr
 }
 
@@ -1247,7 +1259,7 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
                                        inNumberFrames: UInt32,
                                        ioData: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
     if inNumberFrames > AVAudioEngineDevice.kMaximumFramesPerBuffer {
-        SwiftTwilioProgrammableVideoPlugin.debug("Expected \(AVAudioEngineDevice.kMaximumFramesPerBuffer) frames but got \(inNumberFrames).")
+        debug("Expected no more than \(AVAudioEngineDevice.kMaximumFramesPerBuffer) frames but got \(inNumberFrames).")
         return noErr
     }
 
@@ -1257,12 +1269,14 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
         return noErr
     }
 
-    context.pointee.bufferList.pointee.mBuffers.mDataByteSize = inNumberFrames * UInt32(MemoryLayout<UInt16>.size) * AVAudioEngineDevice.kPreferredNumberOfChannels
+    let abl = context.pointee.bufferList
+
+    abl.unsafeMutablePointer.pointee.mBuffers.mDataByteSize = inNumberFrames * UInt32(MemoryLayout<UInt16>.size) * AVAudioEngineDevice.kPreferredNumberOfChannels
     // The buffer will be filled by VoiceProcessingIO AudioUnit
-    context.pointee.bufferList.pointee.mBuffers.mData = nil
+    abl.unsafeMutablePointer.pointee.mBuffers.mData = nil
 
     guard let audioUnit = context.pointee.audioUnit else {
-        SwiftTwilioProgrammableVideoPlugin.debug("Expected AudioCapturerContext to have AudioUnit.")
+        debug("Expected AudioCapturerContext to have AudioUnit.")
         return noErr
     }
 
@@ -1272,7 +1286,7 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
                              inTimestamp,
                              1,
                              inNumberFrames,
-                             context.pointee.bufferList)
+                             context.pointee.bufferList.unsafeMutablePointer)
 
     if context.pointee.mixedAudioBufferList.pointee == nil {
         return noErr
@@ -1280,20 +1294,25 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
 
     var mixedAudioBufferList: UnsafeMutablePointer<AudioBufferList> = UnsafeMutablePointer<AudioBufferList>( &context.pointee.mixedAudioBufferList.pointee!)
 
-    mixedAudioBufferList.pointee.mBuffers.mNumberChannels =
-        context.pointee.bufferList.pointee.mBuffers.mNumberChannels
-    mixedAudioBufferList.pointee.mBuffers.mDataByteSize =
-        context.pointee.bufferList.pointee.mBuffers.mDataByteSize
+    if let numberChannels = abl.first?.mNumberChannels {
+        mixedAudioBufferList.pointee.mBuffers.mNumberChannels = numberChannels
+    }
+    
+    if let dataByteSize = abl.first?.mDataByteSize {
+        mixedAudioBufferList.pointee.mBuffers.mDataByteSize = dataByteSize
+    }
 
     guard let renderBlock: AVAudioEngineManualRenderingBlock = context.pointee.renderBlock else {
         return noErr
     }
 
+    // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
+//    debug("AVAudioEngineDeviceRecordCallback => inNumberOfFrames: \(inNumberFrames), abl buffer: \(abl.first?.mData?.assumingMemoryBound(to: Int8.self).pointee), input buffer: \(ioData?.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     var outputStatus: OSStatus = noErr
     let ret: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, mixedAudioBufferList, &outputStatus)
 
     if ret != AVAudioEngineManualRenderingStatus.success {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioEngine failed mix audio => \(String(describing: ret.rawValue))")
+        debug("AVAudioEngine failed mix audio => \(String(describing: ret.rawValue))")
     }
 
     if let audioBuffer = mixedAudioBufferList.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self),
@@ -1312,13 +1331,18 @@ class AudioRendererContext {
     var maxFramesPerBuffer: Int?
 
     // Buffer passed to AVAudioEngine's manualRenderingBlock to receive the mixed audio data.
-    var bufferList: AudioBufferList = AudioBufferList()
+    var bufferList: UnsafeMutableAudioBufferListPointer
 
     /*
      * Points to AVAudioEngine's manualRenderingBlock. This block is called from within the VoiceProcessingIO playout
      * callback in order to receive mixed audio data from AVAudioEngine in real time.
      */
     var renderBlock: AVAudioEngineManualRenderingBlock?
+
+    init(bufferList: UnsafeMutableAudioBufferListPointer, maxFramesPerBuffer: Int) {
+        self.bufferList = bufferList
+        self.maxFramesPerBuffer = maxFramesPerBuffer
+    }
 }
 
 class AudioCapturerContext {
@@ -1326,7 +1350,7 @@ class AudioCapturerContext {
     var deviceContext: AudioDeviceContext?
 
     // Preallocated buffer list. Please note the buffer itself will be provided by Core Audio's VoiceProcessingIO audio unit.
-    var bufferList: UnsafeMutablePointer<AudioBufferList>
+    var bufferList: UnsafeMutableAudioBufferListPointer
 
     // Preallocated mixed (AudioUnit mic + AVAudioPlayerNode file) audio buffer list.
     var mixedAudioBufferList: UnsafeMutablePointer<AudioBufferList?>
@@ -1340,7 +1364,7 @@ class AudioCapturerContext {
      */
     var renderBlock: AVAudioEngineManualRenderingBlock?
 
-    init(bufferList: UnsafeMutablePointer<AudioBufferList>, mixedAudioBufferList: UnsafeMutablePointer<AudioBufferList?>) {
+    init(bufferList: UnsafeMutableAudioBufferListPointer, mixedAudioBufferList: UnsafeMutablePointer<AudioBufferList?>) {
         self.bufferList = bufferList
         self.mixedAudioBufferList = mixedAudioBufferList
     }
@@ -1378,7 +1402,7 @@ public class AVAudioPlayerNodeManager {
 
     func getNode(_ id: Int) -> AVAudioPlayerNodeBundle? {
         guard let node = nodes[id] else {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::getNode => node not found for id: \(id)")
+            debug("AVAudioPlayerNodeManager::getNode => node not found for id: \(id)")
             return nil
         }
 
@@ -1396,11 +1420,10 @@ public class AVAudioPlayerNodeManager {
 
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
-
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::play => file: \(fileName(node.file)), from: \(position), for: \(frameCount), loop: \(node.loop)")
-
+            debug("AVAudioPlayerNodeManager::play => file: \(fileName(node.file)), from: \(position), for: \(frameCount), loop: \(node.loop)")
+            
             node.player.scheduleSegment(node.file, startingFrame: position, frameCount: frameCount, at: nil) {
-                SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop)")
+                debug("AVAudioPlayerNodeManager::segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop)")
                 if node.loop && node.playing && !self.isPaused(node.id) {
                     node.playing = false
                     self.play(node.id)
@@ -1426,7 +1449,7 @@ public class AVAudioPlayerNodeManager {
         guard let node = nodes[id] else {
             return
         }
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::stopNode => file: \(fileName(node.file))")
+        debug("AVAudioPlayerNodeManager::stopNode => file: \(fileName(node.file))")
 
         if isPaused(id) {
             node.pauseTime = nil
@@ -1450,7 +1473,7 @@ public class AVAudioPlayerNodeManager {
         fadeOutNode(node)
         node.player.stop()
         pausedNodes[node.id] = node
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::pauseNode => paused node \(node.id) pauseTime: \(node.pauseTime)")
+        debug("AVAudioPlayerNodeManager::pauseNode => paused node \(node.id) pauseTime: \(node.pauseTime)")
     }
 
     public func resumeNode(_ id: Int) {
@@ -1463,8 +1486,7 @@ public class AVAudioPlayerNodeManager {
             return
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::resumeNode => node \(node.id), frame: \(pausePosition), volume: \(node.volume)")
-
+        debug("AVAudioPlayerNodeManager::resumeNode => node \(node.id), frame: \(pausePosition), volume: \(node.volume)")
         node.resumeAfterRendererStarted = false
         seekPosition(id, pausePosition)
         fadeInNode(node)
@@ -1479,23 +1501,23 @@ public class AVAudioPlayerNodeManager {
         node.volume = volume
         var gain = volumeToGain(volume)
 
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::setMusicVolume => id: \(id), volume: \(volume), gain: \(gain)")
+        debug("AVAudioPlayerNodeManager::setMusicVolume => id: \(id), volume: \(volume), gain: \(gain)")
 
         node.eq.globalGain = Float(gain)
     }
 
     func fadeOutNode(_ node: AVAudioPlayerNodeBundle) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeOutNode => START - node \(node.id), volume \(node.volume)")
+        debug("AVAudioPlayerNodeManager::fadeOutNode => START - node \(node.id), volume \(node.volume)")
         var volume = gainToVolume(node.eq.globalGain)
         var increment = volume / 10
         fadeOut(node, volume, increment)
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeOutNode => END - node \(node.id)")
+        debug("AVAudioPlayerNodeManager::fadeOutNode => END - node \(node.id)")
     }
 
     func fadeOut(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume >= 0 ? volume : 0
         node.eq.globalGain = volumeToGain(volume)
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeOut => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("AVAudioPlayerNodeManager::fadeOut => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
 
         if volume > 0 {
             let timeSecs = 0.001  /// 1 ms
@@ -1506,16 +1528,16 @@ public class AVAudioPlayerNodeManager {
     }
 
     func fadeInNode(_ node: AVAudioPlayerNodeBundle) {
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeInNode => START - node \(node.id), volume \(node.volume)")
+        debug("AVAudioPlayerNodeManager::fadeInNode => START - node \(node.id), volume \(node.volume)")
         var increment = node.volume / 10
         fadeIn(node, 0, increment)
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeInNode => END - node \(node.id)")
+        debug("AVAudioPlayerNodeManager::fadeInNode => END - node \(node.id)")
     }
 
     func fadeIn(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume <= node.volume ? volume : node.volume
         node.eq.globalGain = volumeToGain(vol)
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::fadeIn => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("AVAudioPlayerNodeManager::fadeIn => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
 
         if volume < node.volume {
             let timeSecs = 0.001  /// 1 ms
@@ -1563,7 +1585,7 @@ public class AVAudioPlayerNodeManager {
         if framePosition < 0 || framePosition >= node.file.length {
             framePosition = 0
         }
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::seekPosition => id: \(id), positionInMillis: \(positionInMillis), framePosition: \(framePosition), lengthInFrames: \(node.file.length)")
+        debug("AVAudioPlayerNodeManager::seekPosition => id: \(id), positionInMillis: \(positionInMillis), framePosition: \(framePosition), lengthInFrames: \(node.file.length)")
 
         node.playing = false
         node.player.stop()
@@ -1611,11 +1633,11 @@ public class AVAudioPlayerNodeManager {
     public func anyPlaying() -> Bool {
         var result = false
         for nodeBundle in nodes.values where nodeBundle.player.isPlaying {
-            SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::anyPlaying => node \(nodeBundle.id) is playing")
+            debug("AVAudioPlayerNodeManager::anyPlaying => node \(nodeBundle.id) is playing")
             result = true
             break
         }
-        SwiftTwilioProgrammableVideoPlugin.debug("AVAudioPlayerNodeManager::anyPlaying => \(result)")
+        debug("AVAudioPlayerNodeManager::anyPlaying => \(result)")
         return result
     }
 
@@ -1666,4 +1688,9 @@ class AVAudioPlayerNodeBundle {
         self.eq = eq
         self.volume = volume
     }
+}
+
+// Can swap internal usage to NSLog if you need to guarantee logging at app startup
+func debug(_ msg: String) {
+    SwiftTwilioProgrammableVideoPlugin.debug(msg)
 }
