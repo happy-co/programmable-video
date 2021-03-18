@@ -1,3 +1,7 @@
+## 0.7.0
+
+- **BREAKING CHANGE**: Updated plugin_platform_interface dep.
+
 ## 0.6.4+1
 
 - **iOS**: Re-added AudioDevice initialization logic to beginning of setSpeakerPhoneOn.
