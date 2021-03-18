@@ -1064,9 +1064,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleAudioInterruption(notification: Notification) {
-        debug("AVAudioEngineDevice::handleAudioInterruption")
+        debug("AVAudioEngineDevice::handleAudioInterruption => type: \(notification)")
         guard let userInfo = notification.userInfo,
-              let type: AVAudioSession.InterruptionType = userInfo[AVAudioSessionInterruptionTypeKey] as? AVAudioSession.InterruptionType else {
+              let reasonRaw = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type: AVAudioSession.InterruptionType = AVAudioSession.InterruptionType(rawValue: reasonRaw) else {
+            debug("AVAudioEngineDevice::handleAudioInterruption => parse error")
             return
         }
 
@@ -1105,10 +1107,12 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     @objc private func handleRouteChange(notification: NSNotification) {
-        debug("AVAudioEngineDevice::handleRouteChange")
+        debug("AVAudioEngineDevice::handleRouteChange => reason: \(notification)")
         // Check if the sample rate, or channels changed and trigger a format change if it did.
         guard let userInfo = notification.userInfo,
-              let reason = userInfo[AVAudioSessionRouteChangeReasonKey] as? AVAudioSession.RouteChangeReason else {
+              let reasonRaw = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonRaw) else {
+            debug("AVAudioEngineDevice::handleRouteChange => parse error")
             return
         }
 
@@ -1692,5 +1696,6 @@ class AVAudioPlayerNodeBundle {
 
 // Can swap internal usage to NSLog if you need to guarantee logging at app startup
 func debug(_ msg: String) {
-    SwiftTwilioProgrammableVideoPlugin.debug(msg)
+//    SwiftTwilioProgrammableVideoPlugin.debug(msg)
+    NSLog(msg)
 }
