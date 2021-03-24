@@ -115,10 +115,15 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
       onLoading: widget.roomBloc.onLoading,
       loadingText: 'Creating the room...',
       progressHeight: 2,
-      child: FlatButton(
+      child: TextButton(
         key: Key('join-button'),
-        color: Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor,
-        disabledColor: Colors.grey.shade300,
+        style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return Colors.grey.shade300;
+          } else {
+            return Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor;
+          }
+        })),
         child: FittedBox(
           child: Text(
             'JOIN',
