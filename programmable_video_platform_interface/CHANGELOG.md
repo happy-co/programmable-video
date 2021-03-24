@@ -1,3 +1,7 @@
+## 0.3.0
+
+- **BREAKING CHANGE**: Updated plugin_platform_interface dep.
+
 ## 0.2.3
 
 - Added support for Network Quality API.
