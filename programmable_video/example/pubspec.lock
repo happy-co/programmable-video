@@ -170,7 +170,7 @@ packages:
     source: hosted
     version: "6.0.0"
   firebase_core:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_core
       url: "https://pub.dartlang.org"
@@ -527,7 +527,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.7.0"
+    version: "0.7.0+1"
   twilio_programmable_video_platform_interface:
     dependency: transitive
     description:

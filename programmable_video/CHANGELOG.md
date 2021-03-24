@@ -1,3 +1,7 @@
+## 0.7.0+1
+
+- **iOS**: Updates to AVAudioEngineDevice memory management
+
 ## 0.7.0
 
 - **BREAKING CHANGE**: Updated plugin_platform_interface dep.
