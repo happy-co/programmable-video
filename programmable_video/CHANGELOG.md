@@ -1,6 +1,7 @@
 ## 0.7.0+1
 
-- **iOS**: Updates to AVAudioEngineDevice memory management
+- **iOS**: Updated AVAudioEngineDevice memory management.
+- **iOS**: Refactored AVAudioEngineDevice initialization process.
 
 ## 0.7.0
 
