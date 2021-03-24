@@ -1696,6 +1696,5 @@ class AVAudioPlayerNodeBundle {
 
 // Can swap internal usage to NSLog if you need to guarantee logging at app startup
 func debug(_ msg: String) {
-//    SwiftTwilioProgrammableVideoPlugin.debug(msg)
-    NSLog(msg)
+    SwiftTwilioProgrammableVideoPlugin.debug(msg)
 }
