@@ -62,7 +62,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
          */
         let audioBufferListSize = MemoryLayout<AudioBufferList>.size
         let renderingCapacity = Int(AVAudioEngineDevice.kMaximumFramesPerBuffer * AVAudioEngineDevice.kPreferredNumberOfChannels * AVAudioEngineDevice.kAudioSampleSize)
-        
+
         var pRenderBufferList = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer<AudioBufferList>.allocate(capacity: renderingCapacity))
         var renderBufferListData = UnsafeMutablePointer<Int8>.allocate(capacity: renderingCapacity)
         var renderBufferList = AudioBufferList(mNumberBuffers: 1,
@@ -71,7 +71,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                                 mDataByteSize: UInt32(0),
                                                 mData: renderBufferListData))
         pRenderBufferList.unsafeMutablePointer.initialize(to: renderBufferList)
-        
+
         self.renderingContext = AudioRendererContext(bufferList: pRenderBufferList, maxFramesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer))
 
         var pCaptureBufferList = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer<AudioBufferList>.allocate(capacity: renderingCapacity))
@@ -82,7 +82,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                                 mDataByteSize: UInt32(0),
                                                 mData: renderBufferListData))
         pCaptureBufferList.unsafeMutablePointer.initialize(to: captureBufferList)
-        
+
         var pMixedAudioBufferList = UnsafeMutablePointer<AudioBufferList?>.allocate(capacity: audioBufferListSize)
         pMixedAudioBufferList.initialize(to: nil)
 
@@ -111,7 +111,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         self.renderingContext.bufferList.first?.mData?.deallocate()
         self.renderingContext.bufferList.unsafePointer.deallocate()
-        
+
         self.capturingContext.bufferList.first?.mData?.deallocate()
         self.capturingContext.bufferList.unsafePointer.deallocate()
         self.capturingContext.mixedAudioBufferList.deallocate()
@@ -570,14 +570,14 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             self.stopAudioUnit()
             self.teardownAudioUnit()
         }
-        
+
         if !self.setupAudioUnitWithRenderContext(renderContext: &self.renderingContext, captureContext: &self.capturingContext) {
             result = false
             self.isStartingRenderer = false
             self.isRendering = false
             return false
         }
-        
+
         debug("AVAudioEngineDevice::startRenderingInternal => QUEUE - DispatchQueue.main.async")
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         DispatchQueue.main.async {
@@ -1209,7 +1209,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
                                         inNumberFrames: UInt32,
                                         ioData: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
     let abl = UnsafeMutableAudioBufferListPointer(ioData)
-    
+
     guard let ioData = ioData else {
         return noErr
     }
@@ -1232,8 +1232,10 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
         return outputStatus
     }
 
-    // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
-//    debug("AVAudioEngineDevicePlayoutCallback => inNumberOfFrames: \(inNumberFrames), audioBufferSizeInBytes: \(audioBufferSizeInBytes), abl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee), input buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
+    // Next log statement left in for debugging purposes. Commented out to minimize operations on the real time audio thread
+//    debug("AVAudioEngineDevicePlayoutCallback => inNumberOfFrames: \(inNumberFrames),
+//        audioBufferSizeInBytes: \(audioBufferSizeInBytes), abl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee),
+    input buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     let status: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, ioData, &outputStatus)
 
     /*
@@ -1249,7 +1251,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
         ioActionFlags.pointee = AudioUnitRenderActionFlags(rawValue: ioActionFlags.pointee.rawValue | AudioUnitRenderActionFlags.unitRenderAction_OutputIsSilence.rawValue)
         memset(ioData.pointee.mBuffers.mData, 0, Int(audioBufferSizeInBytes))
     }
-    
+
     // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
 //    debug("AVAudioEngineDevicePlayoutCallback => END inputData: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee) outputStatus: \(outputStatus) status: \(status.rawValue)")
     return noErr
@@ -1301,7 +1303,7 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
     if let numberChannels = abl.first?.mNumberChannels {
         mixedAudioBufferList.pointee.mBuffers.mNumberChannels = numberChannels
     }
-    
+
     if let dataByteSize = abl.first?.mDataByteSize {
         mixedAudioBufferList.pointee.mBuffers.mDataByteSize = dataByteSize
     }
@@ -1311,7 +1313,8 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
     }
 
     // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
-//    debug("AVAudioEngineDeviceRecordCallback => inNumberOfFrames: \(inNumberFrames), abl buffer: \(abl.first?.mData?.assumingMemoryBound(to: Int8.self).pointee), input buffer: \(ioData?.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
+//    debug("AVAudioEngineDeviceRecordCallback => inNumberOfFrames: \(inNumberFrames), abl buffer: \(abl.first?.mData?.assumingMemoryBound(to: Int8.self).pointee),
+//    input buffer: \(ioData?.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     var outputStatus: OSStatus = noErr
     let ret: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, mixedAudioBufferList, &outputStatus)
 
@@ -1425,7 +1428,7 @@ public class AVAudioPlayerNodeManager {
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
             debug("AVAudioPlayerNodeManager::play => file: \(fileName(node.file)), from: \(position), for: \(frameCount), loop: \(node.loop)")
-            
+
             node.player.scheduleSegment(node.file, startingFrame: position, frameCount: frameCount, at: nil) {
                 debug("AVAudioPlayerNodeManager::segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop)")
                 if node.loop && node.playing && !self.isPaused(node.id) {
