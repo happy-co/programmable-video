@@ -16,14 +16,11 @@ class VideoCapturerHandler {
     companion object {
         @JvmStatic
         fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result) {
-            /* TODO: Fix our photo capture renderer to work with Camera2Capturer
             if (Camera2Capturer.isSupported(TwilioProgrammableVideoPlugin.pluginHandler.applicationContext)) {
                 initializeCamera2Capturer(videoCapturerMap, result)
             } else {
                 initializeCameraCapturer(videoCapturerMap, result)
             }
-            */
-            initializeCameraCapturer(videoCapturerMap, result)
         }
 
         @JvmStatic
