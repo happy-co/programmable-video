@@ -1235,7 +1235,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
     // Next log statement left in for debugging purposes. Commented out to minimize operations on the real time audio thread
 //    debug("AVAudioEngineDevicePlayoutCallback => inNumberOfFrames: \(inNumberFrames),
 //        audioBufferSizeInBytes: \(audioBufferSizeInBytes), abl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee),
-    input buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
+//    input buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     let status: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, ioData, &outputStatus)
 
     /*

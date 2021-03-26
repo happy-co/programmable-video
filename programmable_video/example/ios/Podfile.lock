@@ -45,7 +45,7 @@ PODS:
   - "permission_handler (5.1.0+2)":
     - Flutter
   - PromisesObjC (1.2.12)
-  - "twilio_programmable_video (0.7.0+1)":
+  - "twilio_programmable_video (0.7.0+2)":
     - Flutter
     - TwilioVideo (~> 3.7)
   - TwilioVideo (3.8.0)
@@ -109,7 +109,7 @@ SPEC CHECKSUMS:
   native_device_orientation: 3b4cfc9565a7b879cc4fde282b3e27745e852d0d
   permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
-  twilio_programmable_video: 4911f9c945771cde818c403ab9015735334e3208
+  twilio_programmable_video: 5ed12896c1ff71a5e860986f2f03a6a92a9d9ecd
   TwilioVideo: c13a51ceca375e91620eb7578d2573c90cf53b46
   wakelock: 0d4a70faf8950410735e3f61fb15d517c8a6efc4
 
