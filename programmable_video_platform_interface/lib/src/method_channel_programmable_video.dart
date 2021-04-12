@@ -74,6 +74,11 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     return _methodChannel.invokeMethod('getSpeakerphoneOn');
   }
 
+  @override
+  Future<bool> deviceHasReceiver() {
+    return _methodChannel.invokeMethod('deviceHasReceiver');
+  }
+
   /// Calls native code to connect to a room.
   @override
   Future<int> connectToRoom(ConnectOptionsModel connectOptions) {

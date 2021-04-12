@@ -75,7 +75,7 @@ class ConnectOptionsModel {
       'connectOptions': {
         'accessToken': accessToken,
         'roomName': roomName,
-        'region': EnumToString.parse(region),
+        'region': EnumToString.convertToString(region),
         'preferredAudioCodecs': preferredAudioCodecs != null ? Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)) : null,
         'preferredVideoCodecs': preferredVideoCodecs != null ? Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)) : null,
         'audioTracks': audioTracks != null ? Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((TrackModel a) => a.toMap())) : null,

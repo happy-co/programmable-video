@@ -79,6 +79,25 @@ class TwilioProgrammableVideo {
     return await ProgrammableVideoPlatform.instance.getSpeakerphoneOn();
   }
 
+  /// This check is extraneous to the plugin itself, and its reliability and implementation varies by platform
+  /// as follows:
+  ///
+  /// **Android SDK >=23:** Queries audio output devices and returns true if one is found with type `TYPE_BUILTIN_EARPIECE`
+  /// **Android SDK <23:** Returns true since there is officially no method of querying
+  ///     available audio devices on earlier SDKs. See: https://github.com/google/oboe/issues/67
+  ///
+  /// **iOS:**  Since iOS only allows querying of audio output devices that are currently in usage, we:
+  ///     1. Set the `AVAudioSession` mode to `voiceChat`, storing the current mode
+  ///     2. Query the outputs for the `currentRoute`
+  ///     3. Check if any of the outputs are of type `AVAudioSession.Port.builtInReceiver`
+  ///     4. Set the `AVAudioSession` mode to whatever it was before 1.
+  ///
+  /// Given the implementation for iOS, it is recommended to perform this check once at startup
+  /// rather than at a later time when you might have an active audio session.
+  static Future<bool> deviceHasReceiver() async {
+    return await ProgrammableVideoPlatform.instance.deviceHasReceiver();
+  }
+
   /// Request permission for camera and microphone.
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.

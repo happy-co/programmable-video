@@ -43,7 +43,7 @@ class LocalVideoTrackModel extends TrackModel {
       'enable': enabled,
       'name': name,
       'videoCapturer': {
-        'cameraSource': EnumToString.parse(cameraCapturer.source),
+        'cameraSource': EnumToString.convertToString(cameraCapturer.source),
         'type': 'CameraCapturer',
       },
     };

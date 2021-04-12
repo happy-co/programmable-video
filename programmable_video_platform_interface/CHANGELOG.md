@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Added method for checking if device has a builtin earpiece.
+
 ## 0.3.0
 
 - **BREAKING CHANGE**: Updated plugin_platform_interface dep.

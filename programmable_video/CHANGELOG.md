@@ -1,3 +1,7 @@
+## 0.7.1
+
+- Added method for checking if device has a builtin earpiece.
+
 ## 0.7.0+2
 
 - **iOS**: Fixed an uncommented line fragment that `swiftlint` missed in `AVAudioEngineDevice`.

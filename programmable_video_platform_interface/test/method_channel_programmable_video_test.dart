@@ -45,19 +45,19 @@ void main() {
     final cameraChannel = MockEventChannel();
     when(cameraChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => cameraController.stream);
 
-    roomController = StreamController<dynamic>.broadcast();
+    roomController = StreamController<dynamic>.broadcast(sync: true);
     final roomChannel = MockEventChannel();
     when(roomChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => roomController.stream);
 
-    remoteParticipantController = StreamController<dynamic>.broadcast();
+    remoteParticipantController = StreamController<dynamic>.broadcast(sync: true);
     final remoteParticipantChannel = MockEventChannel();
     when(remoteParticipantChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => remoteParticipantController.stream);
 
-    localParticipantController = StreamController<dynamic>.broadcast();
+    localParticipantController = StreamController<dynamic>.broadcast(sync: true);
     final localParticipantChannel = MockEventChannel();
     when(localParticipantChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => localParticipantController.stream);
 
-    remoteDataTrackController = StreamController<dynamic>.broadcast();
+    remoteDataTrackController = StreamController<dynamic>.broadcast(sync: true);
     final remoteDataTrackChannel = MockEventChannel();
     when(remoteDataTrackChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => remoteDataTrackController.stream);
 
@@ -263,7 +263,7 @@ void main() {
           enableDominantSpeaker: false,
           preferredAudioCodecs: null,
           preferredVideoCodecs: null,
-          region: null,
+          region: Region.us1,
           roomName: '',
           videoTracks: null,
           enableNetworkQuality: false,
@@ -278,7 +278,7 @@ void main() {
             'connectOptions': {
               'accessToken': '123',
               'roomName': '',
-              'region': null,
+              'region': 'us1',
               'preferredAudioCodecs': null,
               'preferredVideoCodecs': null,
               'audioTracks': null,
@@ -348,14 +348,16 @@ void main() {
     BaseRoomEvent lastEvent;
     StreamSubscription subscription;
     setUp(() {
-      subscription = instance.roomStream(0).listen((data) => lastEvent = data);
+      subscription = instance.roomStream(0).listen((data) {
+        lastEvent = data;
+      });
     });
     tearDown(() async {
       await subscription.cancel();
     });
 
     test('connectFailure event map should result in ConnectFailure', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'connectFailure',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -364,7 +366,7 @@ void main() {
     });
 
     test('connected event map should result in Connected', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'connected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -373,7 +375,7 @@ void main() {
     });
 
     test('disconnected event map should result in Disconnected', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'disconnected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -382,7 +384,7 @@ void main() {
     });
 
     test('participantConnected event map should result in ParticipantConnected', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'participantConnected',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -394,7 +396,7 @@ void main() {
     });
 
     test('participantDisconnected event map should result in ParticipantDisconnected', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'participantDisconnected',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -406,7 +408,7 @@ void main() {
     });
 
     test('reconnected event map should result in Reconnected', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'reconnected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -415,7 +417,7 @@ void main() {
     });
 
     test('reconnecting event map should result in Reconnecting', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'reconnecting',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -424,7 +426,7 @@ void main() {
     });
 
     test('recordingStarted event map should result in RecordingStarted', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'recordingStarted',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -433,7 +435,7 @@ void main() {
     });
 
     test('recordingStopped event map should result in RecordingStopped', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'recordingStopped',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -442,7 +444,7 @@ void main() {
     });
 
     test('dominantSpeakerChanged event map should result in DominantSpeakerChanged', () async {
-      await roomController.add({
+      roomController.add({
         'name': 'dominantSpeakerChanged',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -454,7 +456,7 @@ void main() {
     });
 
     test('invalid map should result in SkipAbleRoomEvent', () async {
-      await roomController.add({'data': {}});
+      roomController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRoomEvent>());
     });
   });
@@ -474,7 +476,7 @@ void main() {
     });
 
     test('audioTrackDisabled event map should result in RemoteAudioTrackDisabled', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackDisabled',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -486,7 +488,7 @@ void main() {
     });
 
     test('audioTrackEnabled event map should result in RemoteAudioTrackEnabled', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackEnabled',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -498,7 +500,7 @@ void main() {
     });
 
     test('audioTrackSubscribed event map should result in RemoteAudioTrackSubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackSubscribed',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -511,7 +513,7 @@ void main() {
     });
 
     test('audioTrackSubscriptionFailed event map should result in RemoteAudioTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -520,7 +522,7 @@ void main() {
     });
 
     test('audioTrackUnpublished event map should result in RemoteAudioTrackUnpublished', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap},
         'error': null
@@ -529,7 +531,7 @@ void main() {
     });
 
     test('audioTrackUnsubscribed event map should result in RemoteAudioTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'audioTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap, 'remoteAudioTrack': EventChannelMaps.remoteAudioTrackMap},
         'error': null
@@ -538,7 +540,7 @@ void main() {
     });
 
     test('dataTrackPublished event map should result in RemoteDataTrackPublished', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'dataTrackPublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': null
@@ -547,7 +549,7 @@ void main() {
     });
 
     test('dataTrackSubscribed event map should result in RemoteDataTrackSubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'dataTrackSubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap, 'remoteDataTrack': EventChannelMaps.remoteDataTrackMap},
         'error': null
@@ -556,7 +558,7 @@ void main() {
     });
 
     test('dataTrackSubscriptionFailed event map should result in RemoteDataTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'dataTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -565,7 +567,7 @@ void main() {
     });
 
     test('dataTrackUnpublished event map should result in RemoteDataTrackUnpublished', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'dataTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': null
@@ -574,7 +576,7 @@ void main() {
     });
 
     test('dataTrackUnsubscribed event map should result in RemoteDataTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'dataTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap, 'remoteDataTrack': EventChannelMaps.remoteDataTrackMap},
         'error': null
@@ -583,7 +585,7 @@ void main() {
     });
 
     test('videoTrackDisabled event map should result in RemoteVideoTrackDisabled', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackDisabled',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -592,7 +594,7 @@ void main() {
     });
 
     test('videoTrackEnabled event map should result in RemoteVideoTrackEnabled', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackEnabled',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -601,7 +603,7 @@ void main() {
     });
 
     test('videoTrackPublished event map should result in RemoteVideoTrackPublished', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackPublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -610,7 +612,7 @@ void main() {
     });
 
     test('videoTrackSubscribed event map should result in RemoteVideoTrackSubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackSubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -619,7 +621,7 @@ void main() {
     });
 
     test('videoTrackSubscriptionFailed event map should result in RemoteVideoTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -628,7 +630,7 @@ void main() {
     });
 
     test('videoTrackUnpublished event map should result in RemoteVideoTrackUnpublished', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -637,7 +639,7 @@ void main() {
     });
 
     test('videoTrackUnsubscribed event map should result in RemoteVideoTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+      remoteParticipantController.add({
         'name': 'videoTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap, 'remoteVideoTrack': EventChannelMaps.remoteVideoTrackMap},
         'error': null
@@ -646,7 +648,7 @@ void main() {
     });
 
     test('invalid map should result in SkipAbleRemoteParticipantEvent', () async {
-      await remoteParticipantController.add({'data': {}});
+      remoteParticipantController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRemoteParticipantEvent>());
     });
   });
@@ -666,7 +668,7 @@ void main() {
     });
 
     test('audioTrackPublished event map should result in LocalAudioTrackPublished', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'audioTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localAudioTrackPublication': EventChannelMaps.localAudioTrackPublicationMap},
         'error': null
@@ -675,7 +677,7 @@ void main() {
     });
 
     test('audioTrackPublicationFailed event map should result in LocalAudioTrackPublicationFailed', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'audioTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localAudioTrack': EventChannelMaps.localAudioTrackMap},
         'error': EventChannelMaps.errorMap
@@ -684,7 +686,7 @@ void main() {
     });
 
     test('dataTrackPublished event map should result in LocalDataTrackPublished', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'dataTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localDataTrackPublication': EventChannelMaps.localDataTrackPublicationMap},
         'error': null
@@ -693,7 +695,7 @@ void main() {
     });
 
     test('dataTrackPublicationFailed event map should result in LocalDataTrackPublicationFailed', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'dataTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localDataTrack': EventChannelMaps.localDataTrackMap},
         'error': EventChannelMaps.errorMap
@@ -702,7 +704,7 @@ void main() {
     });
 
     test('videoTrackPublished event map should result in LocalVideoTrackPublished', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'videoTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localVideoTrackPublication': EventChannelMaps.localVideoTrackPublicationMap},
         'error': null
@@ -711,7 +713,7 @@ void main() {
     });
 
     test('videoTrackPublicationFailed event map should result in LocalVideoTrackPublicationFailed', () async {
-      await localParticipantController.add({
+      localParticipantController.add({
         'name': 'videoTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localVideoTrack': EventChannelMaps.localVideoTrackMap},
         'error': EventChannelMaps.errorMap
@@ -720,7 +722,7 @@ void main() {
     });
 
     test('invalid map should result in SkipAbleLocalParticipantEvent', () async {
-      await localParticipantController.add({'data': {}});
+      localParticipantController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleLocalParticipantEvent>());
     });
   });
@@ -741,12 +743,12 @@ void main() {
 
     final remoteDataTrackMap = EventChannelMaps.remoteDataTrackMap;
     test('invalid map should result in SkipAbleRemoteDataTrackEvent', () async {
-      await remoteDataTrackController.add({'data': {}});
+      remoteDataTrackController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRemoteDataTrackEvent>());
     });
 
     test('valid map with unknown event name should result in UnknownEvent', () async {
-      await remoteDataTrackController.add({
+      remoteDataTrackController.add({
         'name': 'unimplemented',
         'data': {'remoteDataTrack': remoteDataTrackMap}
       });
@@ -754,7 +756,7 @@ void main() {
     });
 
     test('stringMessage event map should result in StringMessage', () async {
-      await remoteDataTrackController.add({
+      remoteDataTrackController.add({
         'name': 'stringMessage',
         'data': {'message': 'hi', 'remoteDataTrack': remoteDataTrackMap}
       });
@@ -762,7 +764,7 @@ void main() {
     });
 
     test('bufferMessage event map should result in BufferMessage', () async {
-      await remoteDataTrackController.add({
+      remoteDataTrackController.add({
         'name': 'bufferMessage',
         'data': {
           'message': [5, 1, 0],

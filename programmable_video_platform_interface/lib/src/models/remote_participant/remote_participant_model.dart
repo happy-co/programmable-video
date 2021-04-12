@@ -1,3 +1,4 @@
+import 'package:dartlin/dartlin.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/foundation.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
@@ -56,7 +57,10 @@ class RemoteParticipantModel {
       }
     }
 
-    var networkQualityLevel = EnumToString.fromString(NetworkQualityLevel.values, map['networkQualityLevel']) ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+    final networkQualityLevel = (map['networkQualityLevel'] as String)?.let((it) {
+          return EnumToString.fromString(NetworkQualityLevel.values, it);
+        }) ??
+        NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
 
     return RemoteParticipantModel(
         identity: map['identity'],
