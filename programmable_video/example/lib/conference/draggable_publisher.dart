@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:twilio_programmable_video_example/conference/clipped_video.dart';
 
@@ -125,11 +126,11 @@ class _DraggablePublisherState extends State<DraggablePublisher> {
     if (_isButtonBarVisible) {
       return _viewPaddingTop;
     }
-    final _defaultViewPaddingTop = Platform.isIOS
-        ? 20.0
-        : Platform.isAndroid
-            ? 24.0
-            : 0.0;
+    final _defaultViewPaddingTop = kIsWeb
+        ? 0.0
+        : Platform.isIOS
+            ? 20.0
+            : 24;
     if (_viewPaddingTop > _defaultViewPaddingTop) {
       // There must be a hardware notch in the display.
       return _viewPaddingTop;

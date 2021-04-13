@@ -83,6 +83,10 @@ class TwilioProgrammableVideo {
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.
   static Future<bool> requestPermissionForCameraAndMicrophone() async {
+    if (kIsWeb) {
+      return true;
+    }
+
     await [Permission.camera, Permission.microphone].request();
     final micPermission = await Permission.microphone.status;
     final camPermission = await Permission.camera.status;

@@ -33,6 +33,21 @@ dartdoc_platform_interface:
       - programmable_video_platform_interface/README.md
       - .gitlab-ci.yml
 
+dartdoc_web:
+  stage: lint
+  script:
+    - cd programmable_video_web
+    - flutter pub get
+    - pub global activate dartdoc
+    - pub global run dartdoc:dartdoc --no-auto-include-dependencies --quiet
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - programmable_video_web/lib/**/*
+      - programmable_video_web/README.md
+      - .gitlab-ci.yml
+
 firebase_functions_programmable_video:
   image: node:8.15.0-alpine
   stage: lint
@@ -77,6 +92,19 @@ flutter_analyze_platform_interface:
       - merge_requests
     changes:
       - programmable_video_platform_interface/lib/**/*.dart
+      - .gitlab-ci.yml
+
+flutter_analyze_web:
+  stage: lint
+  script:
+    - cd programmable_video_web
+    - flutter analyze --pub
+    - flutter format -l 240 -n . --set-exit-if-changed
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - programmable_video_web/lib/**/*.dart
       - .gitlab-ci.yml
 
 kotlin_analyze_programmable_video:

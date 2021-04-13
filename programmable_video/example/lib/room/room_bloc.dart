@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:twilio_programmable_video_example/debug.dart';
 import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_programmable_video_example/models/twilio_room_request.dart';
 import 'package:twilio_programmable_video_example/models/twilio_room_token_request.dart';
 import 'package:twilio_programmable_video_example/room/room_model.dart';
 import 'package:twilio_programmable_video_example/shared/services/backend_service.dart';
-import 'package:twilio_programmable_video_example/shared/services/platform_service.dart';
+import 'package:uuid/uuid.dart';
 
 class RoomBloc {
   final BackendService backendService;
@@ -43,20 +42,11 @@ class RoomBloc {
     }
   }
 
-  Future<String> _getDeviceId() async {
-    try {
-      return await PlatformService.deviceId;
-    } catch (err) {
-      Debug.log(err);
-      return DateTime.now().millisecondsSinceEpoch.toString();
-    }
-  }
-
   Future _createToken() async {
     final twilioRoomTokenResponse = await backendService.createToken(
       TwilioRoomTokenRequest(
         uniqueName: model.name,
-        identity: await _getDeviceId(),
+        identity: Uuid().v1(),
       ),
     );
     updateWith(

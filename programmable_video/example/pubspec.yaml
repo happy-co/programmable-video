@@ -16,8 +16,8 @@ dependencies:
   enum_to_string: ^1.0.9
   recase: ^3.0.0
   intl: ^0.16.1
-  device_info: '>=0.4.1+4 <2.0.0'
-  wakelock: ^0.1.4
+  uuid: ^2.2.2
+  wakelock: ^0.4.0
   after_layout: ^1.0.7
   firebase_core: ^1.0.1
 
@@ -34,6 +34,8 @@ dev_dependencies:
   pedantic: 1.8.0+1
   twilio_programmable_video:
     path: ../
+  programmable_video_web:
+    path: ../../programmable_video_web
 
 dependency_overrides:
   pedantic: ^1.9.0

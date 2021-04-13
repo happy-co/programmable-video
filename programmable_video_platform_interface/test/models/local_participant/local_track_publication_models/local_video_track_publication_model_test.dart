@@ -32,7 +32,7 @@ void main() {
           'name': localVideoTrack.name,
           'enabled': localVideoTrack.enabled,
           'videoCapturer': {
-            'cameraSource': EnumToString.parse(localVideoTrack.cameraCapturer.source),
+            'cameraSource': EnumToString.convertToString(localVideoTrack.cameraCapturer.source),
             'type': localVideoTrack.cameraCapturer.type,
           }
         },

@@ -7,7 +7,7 @@ abstract class BaseCameraEvent {
   const BaseCameraEvent(this.model);
 
   @override
-  String toString() => 'CameraEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'CameraEvent: { cameraSource: ${EnumToString.convertToString(model.source)} }';
 }
 
 /// Use this event if camera was switched
@@ -17,7 +17,7 @@ class CameraSwitched extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'CameraSwitchedEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'CameraSwitchedEvent: { cameraSource: ${EnumToString.convertToString(model.source)} }';
 }
 
 /// Use this event if camera was switched
@@ -27,7 +27,7 @@ class FirstFrameAvailable extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'FirstFrameAvailableEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'FirstFrameAvailableEvent: { cameraSource: ${EnumToString.convertToString(model.source)} }';
 }
 
 /// Use this event if camera was switched
@@ -40,7 +40,7 @@ class CameraError extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'CameraErrorEvent: { cameraSource: ${EnumToString.parse(model.source)}, exception: $exception }';
+  String toString() => 'CameraErrorEvent: { cameraSource: ${EnumToString.convertToString(model.source)}, exception: $exception }';
 }
 
 class SkipableCameraEvent extends BaseCameraEvent {

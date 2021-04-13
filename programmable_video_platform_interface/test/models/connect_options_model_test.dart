@@ -68,7 +68,7 @@ void main() {
           'connectOptions': {
             'accessToken': accessToken,
             'roomName': roomName,
-            'region': EnumToString.parse(region),
+            'region': EnumToString.convertToString(region),
             'preferredAudioCodecs': Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)),
             'preferredVideoCodecs': Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)),
             'audioTracks': Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((TrackModel a) => a.toMap())),

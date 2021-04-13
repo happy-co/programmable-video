@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:twilio_programmable_video_example/debug.dart';
@@ -60,16 +61,20 @@ class _CircleButtonState extends State<CircleButton> {
   @override
   void initState() {
     super.initState();
-    _orientationSubscription = _orientationStream.listen(
-      _handleOrientationChange,
-      onError: (dynamic err) => Debug.log(err),
-    );
+    if (!kIsWeb) {
+      _orientationSubscription = _orientationStream.listen(
+        _handleOrientationChange,
+        onError: (dynamic err) => Debug.log(err),
+      );
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
-    _orientationSubscription.cancel();
+    if (!kIsWeb) {
+      _orientationSubscription.cancel();
+    }
   }
 
   @override

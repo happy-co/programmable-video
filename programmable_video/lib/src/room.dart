@@ -183,7 +183,11 @@ class Room {
         participant._dispose();
       }
       _remoteParticipants.clear();
-      _onDisconnected.add(RoomDisconnectedEvent(this, TwilioException._fromModel(event.exception)));
+
+      _onDisconnected.add(RoomDisconnectedEvent(
+        this,
+        event.exception?.let((it) => TwilioException._fromModel(it)),
+      ));
     } else if (event is ParticipantConnected) {
       assert(event.connectedParticipant != null);
       final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);

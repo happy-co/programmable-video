@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
@@ -35,7 +38,60 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     this._remoteDataTrackChannel,
   );
 
+  Widget _videoTrackWidget(Map<String, Object> creationParams, Key key) {
+    if (Platform.isAndroid) {
+      return AndroidView(
+        key: key,
+        viewType: 'twilio_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+
+    if (Platform.isIOS) {
+      return UiKitView(
+        key: key,
+        viewType: 'twilio_programmable_video/views',
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+
+    throw Exception('No widget implementation found for platform \'${Platform.operatingSystem}\'');
+  }
+
   //#region Functions
+  /// Calls native code to create a widget displaying the LocalVideoTrack's video.
+  @override
+  Widget createLocalVideoTrackWidget({bool mirror = true, Key key}) {
+    key ??= ValueKey('Twilio_LocalParticipant');
+
+    final creationParams = {
+      'isLocal': true,
+      'mirror': mirror,
+    };
+
+    return _videoTrackWidget(creationParams, key);
+  }
+
+  /// Calls native code to create a widget displaying a RemoteVideoTrack's video.
+  @override
+  Widget createRemoteVideoTrackWidget({
+    String remoteParticipantSid,
+    String remoteVideoTrackSid,
+    bool mirror = true,
+    Key key,
+  }) {
+    key ??= ValueKey(remoteParticipantSid);
+
+    final creationParams = {
+      'remoteParticipantSid': remoteParticipantSid,
+      'remoteVideoTrackSid': remoteVideoTrackSid,
+      'mirror': mirror,
+    };
+
+    return _videoTrackWidget(creationParams, key);
+  }
 
   final MethodChannel _methodChannel;
 
@@ -57,6 +113,8 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   }
 
   /// Calls native code to set the speaker mode on or off.
+  ///
+  /// Returns the new state of the speaker mode.
   @override
   Future<bool> setSpeakerphoneOn(bool on) {
     assert(on != null);
@@ -80,7 +138,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     return _methodChannel.invokeMethod('connect', connectOptions.toMap());
   }
 
-  /// Calls native code to set the state of the local video track.
+  /// Calls native code to set the state of the LocalVideoTrack.
   ///
   /// The results of this operation are signaled to other Participants in the same Room.
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.

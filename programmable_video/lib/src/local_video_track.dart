@@ -2,8 +2,6 @@ part of twilio_programmable_video;
 
 /// A local video track that gets video frames from a specified [VideoCapturer].
 class LocalVideoTrack extends VideoTrack {
-  Widget _widget;
-
   final VideoCapturer _videoCapturer;
 
   /// Check if it is enabled.
@@ -53,38 +51,10 @@ class LocalVideoTrack extends VideoTrack {
   /// By default the widget will be mirrored, to change that set [mirror] to false.
   /// If you provide a [key] make sure it is unique among all [VideoTrack]s otherwise Flutter might send the wrong creation params to the native side.
   Widget widget({bool mirror = true, Key key}) {
-    key ??= ValueKey('Twilio_LocalParticipant');
-
-    var creationParams = {
-      'isLocal': true,
-      'mirror': mirror,
-    };
-
-    if (Platform.isAndroid) {
-      return _widget ??= AndroidView(
-        key: key,
-        viewType: 'twilio_programmable_video/views',
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (int viewId) {
-          TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
-        },
-      );
-    }
-
-    if (Platform.isIOS) {
-      return _widget ??= UiKitView(
-        key: key,
-        viewType: 'twilio_programmable_video/views',
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (int viewId) {
-          TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
-        },
-      );
-    }
-
-    throw Exception('No widget implementation found for platform \'${Platform.operatingSystem}\'');
+    return ProgrammableVideoPlatform.instance.createLocalVideoTrackWidget(
+      mirror: mirror,
+      key: key,
+    );
   }
 
   /// Create [LocalVideoTrackModel] from properties.

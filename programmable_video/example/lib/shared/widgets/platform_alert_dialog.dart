@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -17,7 +18,7 @@ class PlatformAlertDialog extends PlatformWidget {
   final String cancelActionText;
 
   Future<bool> show(BuildContext context) async {
-    return Platform.isIOS
+    return !kIsWeb && Platform.isIOS
         ? await showCupertinoDialog<bool>(
             context: context,
             builder: (BuildContext context) => this,

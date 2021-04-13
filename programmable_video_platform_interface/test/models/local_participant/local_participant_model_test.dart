@@ -37,7 +37,7 @@ void main() {
       'name': localVideoTrack.name,
       'enabled': localVideoTrack.enabled,
       'videoCapturer': {
-        'cameraSource': EnumToString.parse(localVideoTrack.cameraCapturer.source),
+        'cameraSource': EnumToString.convertToString(localVideoTrack.cameraCapturer.source),
         'type': localVideoTrack.cameraCapturer.type,
       }
     },
@@ -163,7 +163,7 @@ void main() {
         'identity': identity,
         'sid': sid,
         'signalingRegion': signalingRegion,
-        'networkQualityLevel': EnumToString.parse(networkQualityLevel),
+        'networkQualityLevel': EnumToString.convertToString(networkQualityLevel),
         'localAudioTrackPublications': [localAudioTrackPublicationMap],
         'localDataTrackPublications': [localDataTrackPublicationMap],
         'localVideoTrackPublications': [localVideoTrackPublicationMap]

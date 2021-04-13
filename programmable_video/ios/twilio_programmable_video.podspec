@@ -8,10 +8,12 @@ Pod::Spec.new do |s|
   s.summary          = 'Twilio Programmable Video Flutter package.'
   s.description      = project.description
   s.homepage         = project.homepage
-  s.license          = { :file => '../LICENSE', :type => 'MIT' }
+  s.license          = { :type => 'MIT', :file => '../LICENSE' }
   s.author           = 'Twilio Flutter'
-  s.source           = { :path => '.' }
+  s.source           = { :http => 'https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video' }
   s.source_files = 'Classes/**/*'
+  s.public_header_files = 'Classes/**/*.h'
+  s.static_framework = true
 
   s.dependency 'Flutter'
   s.dependency 'TwilioVideo', '~> 3.7'

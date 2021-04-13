@@ -43,13 +43,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
+  dartlin:
+    dependency: "direct main"
+    description:
+      name: dartlin
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.1"
   enum_to_string:
     dependency: "direct main"
     description:
       name: enum_to_string
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.9"
+    version: "1.0.14"
   equatable:
     dependency: transitive
     description:

@@ -41,23 +41,23 @@ void main() {
   StreamController remoteDataTrackController;
 
   setUpAll(() {
-    cameraController = StreamController<dynamic>.broadcast();
+    cameraController = StreamController<dynamic>.broadcast(sync: true);
     final cameraChannel = MockEventChannel();
     when(cameraChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => cameraController.stream);
 
-    roomController = StreamController<dynamic>.broadcast();
+    roomController = StreamController<dynamic>.broadcast(sync: true);
     final roomChannel = MockEventChannel();
     when(roomChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => roomController.stream);
 
-    remoteParticipantController = StreamController<dynamic>.broadcast();
+    remoteParticipantController = StreamController<dynamic>.broadcast(sync: true);
     final remoteParticipantChannel = MockEventChannel();
     when(remoteParticipantChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => remoteParticipantController.stream);
 
-    localParticipantController = StreamController<dynamic>.broadcast();
+    localParticipantController = StreamController<dynamic>.broadcast(sync: true);
     final localParticipantChannel = MockEventChannel();
     when(localParticipantChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => localParticipantController.stream);
 
-    remoteDataTrackController = StreamController<dynamic>.broadcast();
+    remoteDataTrackController = StreamController<dynamic>.broadcast(sync: true);
     final remoteDataTrackChannel = MockEventChannel();
     when(remoteDataTrackChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => remoteDataTrackController.stream);
 
@@ -354,8 +354,8 @@ void main() {
       await subscription.cancel();
     });
 
-    test('connectFailure event map should result in ConnectFailure', () async {
-      await roomController.add({
+    test('connectFailure event map should result in ConnectFailure', () {
+      roomController.add({
         'name': 'connectFailure',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -363,8 +363,8 @@ void main() {
       expect(lastEvent, isA<ConnectFailure>());
     });
 
-    test('connected event map should result in Connected', () async {
-      await roomController.add({
+    test('connected event map should result in Connected', () {
+      roomController.add({
         'name': 'connected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -372,8 +372,8 @@ void main() {
       expect(lastEvent, isA<Connected>());
     });
 
-    test('disconnected event map should result in Disconnected', () async {
-      await roomController.add({
+    test('disconnected event map should result in Disconnected', () {
+      roomController.add({
         'name': 'disconnected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -381,8 +381,8 @@ void main() {
       expect(lastEvent, isA<Disconnected>());
     });
 
-    test('participantConnected event map should result in ParticipantConnected', () async {
-      await roomController.add({
+    test('participantConnected event map should result in ParticipantConnected', () {
+      roomController.add({
         'name': 'participantConnected',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -393,8 +393,8 @@ void main() {
       expect(lastEvent, isA<ParticipantConnected>());
     });
 
-    test('participantDisconnected event map should result in ParticipantDisconnected', () async {
-      await roomController.add({
+    test('participantDisconnected event map should result in ParticipantDisconnected', () {
+      roomController.add({
         'name': 'participantDisconnected',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -405,8 +405,8 @@ void main() {
       expect(lastEvent, isA<ParticipantDisconnected>());
     });
 
-    test('reconnected event map should result in Reconnected', () async {
-      await roomController.add({
+    test('reconnected event map should result in Reconnected', () {
+      roomController.add({
         'name': 'reconnected',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -414,8 +414,8 @@ void main() {
       expect(lastEvent, isA<Reconnected>());
     });
 
-    test('reconnecting event map should result in Reconnecting', () async {
-      await roomController.add({
+    test('reconnecting event map should result in Reconnecting', () {
+      roomController.add({
         'name': 'reconnecting',
         'data': {'room': EventChannelMaps.roomMap},
         'error': EventChannelMaps.errorMap
@@ -423,8 +423,8 @@ void main() {
       expect(lastEvent, isA<Reconnecting>());
     });
 
-    test('recordingStarted event map should result in RecordingStarted', () async {
-      await roomController.add({
+    test('recordingStarted event map should result in RecordingStarted', () {
+      roomController.add({
         'name': 'recordingStarted',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -432,8 +432,8 @@ void main() {
       expect(lastEvent, isA<RecordingStarted>());
     });
 
-    test('recordingStopped event map should result in RecordingStopped', () async {
-      await roomController.add({
+    test('recordingStopped event map should result in RecordingStopped', () {
+      roomController.add({
         'name': 'recordingStopped',
         'data': {'room': EventChannelMaps.roomMap},
         'error': null
@@ -441,8 +441,8 @@ void main() {
       expect(lastEvent, isA<RecordingStopped>());
     });
 
-    test('dominantSpeakerChanged event map should result in DominantSpeakerChanged', () async {
-      await roomController.add({
+    test('dominantSpeakerChanged event map should result in DominantSpeakerChanged', () {
+      roomController.add({
         'name': 'dominantSpeakerChanged',
         'data': {
           'room': EventChannelMaps.roomMap,
@@ -453,8 +453,8 @@ void main() {
       expect(lastEvent, isA<DominantSpeakerChanged>());
     });
 
-    test('invalid map should result in SkipAbleRoomEvent', () async {
-      await roomController.add({'data': {}});
+    test('invalid map should result in SkipAbleRoomEvent', () {
+      roomController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRoomEvent>());
     });
   });
@@ -473,8 +473,8 @@ void main() {
       await subscription.cancel();
     });
 
-    test('audioTrackDisabled event map should result in RemoteAudioTrackDisabled', () async {
-      await remoteParticipantController.add({
+    test('audioTrackDisabled event map should result in RemoteAudioTrackDisabled', () {
+      remoteParticipantController.add({
         'name': 'audioTrackDisabled',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -485,8 +485,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackDisabled>());
     });
 
-    test('audioTrackEnabled event map should result in RemoteAudioTrackEnabled', () async {
-      await remoteParticipantController.add({
+    test('audioTrackEnabled event map should result in RemoteAudioTrackEnabled', () {
+      remoteParticipantController.add({
         'name': 'audioTrackEnabled',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -497,8 +497,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackEnabled>());
     });
 
-    test('audioTrackSubscribed event map should result in RemoteAudioTrackSubscribed', () async {
-      await remoteParticipantController.add({
+    test('audioTrackSubscribed event map should result in RemoteAudioTrackSubscribed', () {
+      remoteParticipantController.add({
         'name': 'audioTrackSubscribed',
         'data': {
           'remoteParticipant': EventChannelMaps.remoteParticipantMap,
@@ -510,8 +510,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackSubscribed>());
     });
 
-    test('audioTrackSubscriptionFailed event map should result in RemoteAudioTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+    test('audioTrackSubscriptionFailed event map should result in RemoteAudioTrackSubscriptionFailed', () {
+      remoteParticipantController.add({
         'name': 'audioTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -519,8 +519,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackSubscriptionFailed>());
     });
 
-    test('audioTrackUnpublished event map should result in RemoteAudioTrackUnpublished', () async {
-      await remoteParticipantController.add({
+    test('audioTrackUnpublished event map should result in RemoteAudioTrackUnpublished', () {
+      remoteParticipantController.add({
         'name': 'audioTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap},
         'error': null
@@ -528,8 +528,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackUnpublished>());
     });
 
-    test('audioTrackUnsubscribed event map should result in RemoteAudioTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+    test('audioTrackUnsubscribed event map should result in RemoteAudioTrackUnsubscribed', () {
+      remoteParticipantController.add({
         'name': 'audioTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteAudioTrackPublication': EventChannelMaps.remoteAudioTrackPublicationMap, 'remoteAudioTrack': EventChannelMaps.remoteAudioTrackMap},
         'error': null
@@ -537,8 +537,8 @@ void main() {
       expect(lastEvent, isA<RemoteAudioTrackUnsubscribed>());
     });
 
-    test('dataTrackPublished event map should result in RemoteDataTrackPublished', () async {
-      await remoteParticipantController.add({
+    test('dataTrackPublished event map should result in RemoteDataTrackPublished', () {
+      remoteParticipantController.add({
         'name': 'dataTrackPublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': null
@@ -546,8 +546,8 @@ void main() {
       expect(lastEvent, isA<RemoteDataTrackPublished>());
     });
 
-    test('dataTrackSubscribed event map should result in RemoteDataTrackSubscribed', () async {
-      await remoteParticipantController.add({
+    test('dataTrackSubscribed event map should result in RemoteDataTrackSubscribed', () {
+      remoteParticipantController.add({
         'name': 'dataTrackSubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap, 'remoteDataTrack': EventChannelMaps.remoteDataTrackMap},
         'error': null
@@ -555,8 +555,8 @@ void main() {
       expect(lastEvent, isA<RemoteDataTrackSubscribed>());
     });
 
-    test('dataTrackSubscriptionFailed event map should result in RemoteDataTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+    test('dataTrackSubscriptionFailed event map should result in RemoteDataTrackSubscriptionFailed', () {
+      remoteParticipantController.add({
         'name': 'dataTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -564,8 +564,8 @@ void main() {
       expect(lastEvent, isA<RemoteDataTrackSubscriptionFailed>());
     });
 
-    test('dataTrackUnpublished event map should result in RemoteDataTrackUnpublished', () async {
-      await remoteParticipantController.add({
+    test('dataTrackUnpublished event map should result in RemoteDataTrackUnpublished', () {
+      remoteParticipantController.add({
         'name': 'dataTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap},
         'error': null
@@ -573,8 +573,8 @@ void main() {
       expect(lastEvent, isA<RemoteDataTrackUnpublished>());
     });
 
-    test('dataTrackUnsubscribed event map should result in RemoteDataTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+    test('dataTrackUnsubscribed event map should result in RemoteDataTrackUnsubscribed', () {
+      remoteParticipantController.add({
         'name': 'dataTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteDataTrackPublication': EventChannelMaps.remoteDataTrackPublicationMap, 'remoteDataTrack': EventChannelMaps.remoteDataTrackMap},
         'error': null
@@ -582,8 +582,8 @@ void main() {
       expect(lastEvent, isA<RemoteDataTrackUnsubscribed>());
     });
 
-    test('videoTrackDisabled event map should result in RemoteVideoTrackDisabled', () async {
-      await remoteParticipantController.add({
+    test('videoTrackDisabled event map should result in RemoteVideoTrackDisabled', () {
+      remoteParticipantController.add({
         'name': 'videoTrackDisabled',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -591,8 +591,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackDisabled>());
     });
 
-    test('videoTrackEnabled event map should result in RemoteVideoTrackEnabled', () async {
-      await remoteParticipantController.add({
+    test('videoTrackEnabled event map should result in RemoteVideoTrackEnabled', () {
+      remoteParticipantController.add({
         'name': 'videoTrackEnabled',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -600,8 +600,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackEnabled>());
     });
 
-    test('videoTrackPublished event map should result in RemoteVideoTrackPublished', () async {
-      await remoteParticipantController.add({
+    test('videoTrackPublished event map should result in RemoteVideoTrackPublished', () {
+      remoteParticipantController.add({
         'name': 'videoTrackPublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -609,8 +609,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackPublished>());
     });
 
-    test('videoTrackSubscribed event map should result in RemoteVideoTrackSubscribed', () async {
-      await remoteParticipantController.add({
+    test('videoTrackSubscribed event map should result in RemoteVideoTrackSubscribed', () {
+      remoteParticipantController.add({
         'name': 'videoTrackSubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -618,8 +618,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackSubscribed>());
     });
 
-    test('videoTrackSubscriptionFailed event map should result in RemoteVideoTrackSubscriptionFailed', () async {
-      await remoteParticipantController.add({
+    test('videoTrackSubscriptionFailed event map should result in RemoteVideoTrackSubscriptionFailed', () {
+      remoteParticipantController.add({
         'name': 'videoTrackSubscriptionFailed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': EventChannelMaps.errorMap
@@ -627,8 +627,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackSubscriptionFailed>());
     });
 
-    test('videoTrackUnpublished event map should result in RemoteVideoTrackUnpublished', () async {
-      await remoteParticipantController.add({
+    test('videoTrackUnpublished event map should result in RemoteVideoTrackUnpublished', () {
+      remoteParticipantController.add({
         'name': 'videoTrackUnpublished',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap},
         'error': null
@@ -636,8 +636,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackUnpublished>());
     });
 
-    test('videoTrackUnsubscribed event map should result in RemoteVideoTrackUnsubscribed', () async {
-      await remoteParticipantController.add({
+    test('videoTrackUnsubscribed event map should result in RemoteVideoTrackUnsubscribed', () {
+      remoteParticipantController.add({
         'name': 'videoTrackUnsubscribed',
         'data': {'remoteParticipant': EventChannelMaps.remoteParticipantMap, 'remoteVideoTrackPublication': EventChannelMaps.remoteVideoTrackPublicationMap, 'remoteVideoTrack': EventChannelMaps.remoteVideoTrackMap},
         'error': null
@@ -645,8 +645,8 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackUnsubscribed>());
     });
 
-    test('invalid map should result in SkipAbleRemoteParticipantEvent', () async {
-      await remoteParticipantController.add({'data': {}});
+    test('invalid map should result in SkipAbleRemoteParticipantEvent', () {
+      remoteParticipantController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRemoteParticipantEvent>());
     });
   });
@@ -665,8 +665,8 @@ void main() {
       await subscription.cancel();
     });
 
-    test('audioTrackPublished event map should result in LocalAudioTrackPublished', () async {
-      await localParticipantController.add({
+    test('audioTrackPublished event map should result in LocalAudioTrackPublished', () {
+      localParticipantController.add({
         'name': 'audioTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localAudioTrackPublication': EventChannelMaps.localAudioTrackPublicationMap},
         'error': null
@@ -674,8 +674,8 @@ void main() {
       expect(lastEvent, isA<LocalAudioTrackPublished>());
     });
 
-    test('audioTrackPublicationFailed event map should result in LocalAudioTrackPublicationFailed', () async {
-      await localParticipantController.add({
+    test('audioTrackPublicationFailed event map should result in LocalAudioTrackPublicationFailed', () {
+      localParticipantController.add({
         'name': 'audioTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localAudioTrack': EventChannelMaps.localAudioTrackMap},
         'error': EventChannelMaps.errorMap
@@ -683,8 +683,8 @@ void main() {
       expect(lastEvent, isA<LocalAudioTrackPublicationFailed>());
     });
 
-    test('dataTrackPublished event map should result in LocalDataTrackPublished', () async {
-      await localParticipantController.add({
+    test('dataTrackPublished event map should result in LocalDataTrackPublished', () {
+      localParticipantController.add({
         'name': 'dataTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localDataTrackPublication': EventChannelMaps.localDataTrackPublicationMap},
         'error': null
@@ -692,8 +692,8 @@ void main() {
       expect(lastEvent, isA<LocalDataTrackPublished>());
     });
 
-    test('dataTrackPublicationFailed event map should result in LocalDataTrackPublicationFailed', () async {
-      await localParticipantController.add({
+    test('dataTrackPublicationFailed event map should result in LocalDataTrackPublicationFailed', () {
+      localParticipantController.add({
         'name': 'dataTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localDataTrack': EventChannelMaps.localDataTrackMap},
         'error': EventChannelMaps.errorMap
@@ -701,8 +701,8 @@ void main() {
       expect(lastEvent, isA<LocalDataTrackPublicationFailed>());
     });
 
-    test('videoTrackPublished event map should result in LocalVideoTrackPublished', () async {
-      await localParticipantController.add({
+    test('videoTrackPublished event map should result in LocalVideoTrackPublished', () {
+      localParticipantController.add({
         'name': 'videoTrackPublished',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localVideoTrackPublication': EventChannelMaps.localVideoTrackPublicationMap},
         'error': null
@@ -710,8 +710,8 @@ void main() {
       expect(lastEvent, isA<LocalVideoTrackPublished>());
     });
 
-    test('videoTrackPublicationFailed event map should result in LocalVideoTrackPublicationFailed', () async {
-      await localParticipantController.add({
+    test('videoTrackPublicationFailed event map should result in LocalVideoTrackPublicationFailed', () {
+      localParticipantController.add({
         'name': 'videoTrackPublicationFailed',
         'data': {'localParticipant': EventChannelMaps.localParticipantMap, 'localVideoTrack': EventChannelMaps.localVideoTrackMap},
         'error': EventChannelMaps.errorMap
@@ -719,8 +719,8 @@ void main() {
       expect(lastEvent, isA<LocalVideoTrackPublicationFailed>());
     });
 
-    test('invalid map should result in SkipAbleLocalParticipantEvent', () async {
-      await localParticipantController.add({'data': {}});
+    test('invalid map should result in SkipAbleLocalParticipantEvent', () {
+      localParticipantController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleLocalParticipantEvent>());
     });
   });
@@ -740,29 +740,29 @@ void main() {
     });
 
     final remoteDataTrackMap = EventChannelMaps.remoteDataTrackMap;
-    test('invalid map should result in SkipAbleRemoteDataTrackEvent', () async {
-      await remoteDataTrackController.add({'data': {}});
+    test('invalid map should result in SkipAbleRemoteDataTrackEvent', () {
+      remoteDataTrackController.add({'data': {}});
       expect(lastEvent, isA<SkipAbleRemoteDataTrackEvent>());
     });
 
-    test('valid map with unknown event name should result in UnknownEvent', () async {
-      await remoteDataTrackController.add({
+    test('valid map with unknown event name should result in UnknownEvent', () {
+      remoteDataTrackController.add({
         'name': 'unimplemented',
         'data': {'remoteDataTrack': remoteDataTrackMap}
       });
       expect(lastEvent, isA<UnknownEvent>());
     });
 
-    test('stringMessage event map should result in StringMessage', () async {
-      await remoteDataTrackController.add({
+    test('stringMessage event map should result in StringMessage', () {
+      remoteDataTrackController.add({
         'name': 'stringMessage',
         'data': {'message': 'hi', 'remoteDataTrack': remoteDataTrackMap}
       });
       expect(lastEvent, isA<StringMessage>());
     });
 
-    test('bufferMessage event map should result in BufferMessage', () async {
-      await remoteDataTrackController.add({
+    test('bufferMessage event map should result in BufferMessage', () {
+      remoteDataTrackController.add({
         'name': 'bufferMessage',
         'data': {
           'message': [5, 1, 0],

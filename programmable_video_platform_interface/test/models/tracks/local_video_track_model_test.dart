@@ -45,7 +45,7 @@ void main() {
       final map = {
         'name': name,
         'enabled': enabled,
-        'videoCapturer': {'cameraSource': EnumToString.parse(cameraSource), 'type': type}
+        'videoCapturer': {'cameraSource': EnumToString.convertToString(cameraSource), 'type': type}
       };
       final model = LocalVideoTrackModel.fromEventChannelMap(map);
       expect(model.name, name);
@@ -86,7 +86,7 @@ void main() {
         'enable': enabled,
         'name': name,
         'videoCapturer': {
-          'cameraSource': EnumToString.parse(cameraCapturer.source),
+          'cameraSource': EnumToString.convertToString(cameraCapturer.source),
           'type': cameraCapturer.type,
         },
       });
