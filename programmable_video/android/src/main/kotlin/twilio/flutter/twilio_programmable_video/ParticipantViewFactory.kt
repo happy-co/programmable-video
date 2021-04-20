@@ -33,12 +33,12 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
             }
 
             if (videoTrack != null) {
-                val videoView: VideoView = if (videoTrack is LocalVideoTrack) {
+                val videoView: VideoView = if (videoTrack is LocalVideoTrack && plugin.getAllowCamera2()) {
                     // If this is the local video track, we want to provide the frame to the plugin handler for taking photo requests.
                     object: VideoView(context) {
                         override fun renderFrame(frame: I420Frame) {
-                            super.renderFrame(frame)
                             plugin.onRenderFrame(frame)
+                            super.renderFrame(frame)
                         }
                     }
                 } else {
