@@ -19,15 +19,12 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import tvi.webrtc.MediaCodecVideoEncoder
-import tvi.webrtc.voiceengine.WebRtcAudioUtils
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.collections.ArrayList
-import kotlin.collections.component1
+import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
 class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private data class TakePhotoRequest(val call: MethodCall, val result: MethodChannel.Result)
@@ -376,21 +373,12 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 val preferredVideoCodecs = optionsObj["preferredVideoCodecs"] as Map<*, *>
 
                 val videoCodecs = ArrayList<VideoCodec>()
-                // Some Android devices have issues rendering some resolutions on H264
-                // As per: https://bugs.chromium.org/p/webrtc/issues/detail?id=11337
-                // Force VP8 then turn off Hardware Encoding.
-                // Once Twilio update their version of WebRTC to include this bug fix we can remove this.
-                if (TwilioProgrammableVideoPlugin.HARDWARE_H264_BLACKLIST.contains(Build.MODEL) && !allowCamera2) {
-                    videoCodecs.add(Vp8Codec())
-                    MediaCodecVideoEncoder.disableVp8HwCodec()
-                } else {
-                    for ((videoCodec) in preferredVideoCodecs) {
-                        when (videoCodec) {
-                            Vp8Codec.NAME -> videoCodecs.add(Vp8Codec()) // TODO(WLFN): It has an optional parameter, need to figure out for what: https://github.com/twilio/video-quickstart-android/blob/master/quickstartKotlin/src/main/java/com/twilio/video/quickstart/kotlin/VideoActivity.kt#L106
-                            Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
-                            H264Codec.NAME -> videoCodecs.add(H264Codec())
-                            else -> videoCodecs.add(Vp8Codec())
-                        }
+                for ((videoCodec) in preferredVideoCodecs) {
+                    when (videoCodec) {
+                        Vp8Codec.NAME -> videoCodecs.add(Vp8Codec()) // TODO(WLFN): It has an optional parameter, need to figure out for what: https://github.com/twilio/video-quickstart-android/blob/master/quickstartKotlin/src/main/java/com/twilio/video/quickstart/kotlin/VideoActivity.kt#L106
+                        Vp9Codec.NAME -> videoCodecs.add(Vp9Codec())
+                        H264Codec.NAME -> videoCodecs.add(H264Codec())
+                        else -> videoCodecs.add(Vp8Codec())
                     }
                 }
                 TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting videoCodecs to '${videoCodecs.joinToString(", ")}'")
