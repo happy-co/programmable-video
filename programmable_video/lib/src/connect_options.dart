@@ -47,6 +47,8 @@ class ConnectOptions {
   /// Choosing between `subscribe-to-all` or `subscribe-to-none` subscription rule
   final bool enableAutomaticSubscription;
 
+  final bool allowCamera2;
+
   ConnectOptions(
     this.accessToken, {
     this.audioTracks,
@@ -60,6 +62,7 @@ class ConnectOptions {
     this.networkQualityConfiguration,
     this.enableDominantSpeaker,
     this.enableAutomaticSubscription,
+    this.allowCamera2 = false,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
@@ -108,6 +111,7 @@ class ConnectOptions {
       roomName: roomName,
       enableNetworkQuality: enableNetworkQuality,
       networkQualityConfiguration: networkQualityConfiguration?._toModel(),
+      allowCamera2: allowCamera2,
     );
   }
 }

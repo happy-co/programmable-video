@@ -15,15 +15,12 @@ import io.flutter.plugin.common.MethodChannel
 class VideoCapturerHandler {
     companion object {
         @JvmStatic
-        fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result) {
-            /* TODO: Fix our photo capture renderer to work with Camera2Capturer
-            if (Camera2Capturer.isSupported(TwilioProgrammableVideoPlugin.pluginHandler.applicationContext)) {
+        fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result, allowCamera2: Boolean = false) {
+            if (Camera2Capturer.isSupported(TwilioProgrammableVideoPlugin.pluginHandler.applicationContext) && allowCamera2) {
                 initializeCamera2Capturer(videoCapturerMap, result)
             } else {
                 initializeCameraCapturer(videoCapturerMap, result)
             }
-            */
-            initializeCameraCapturer(videoCapturerMap, result)
         }
 
         @JvmStatic

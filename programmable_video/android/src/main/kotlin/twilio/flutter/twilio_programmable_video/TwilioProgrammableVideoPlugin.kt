@@ -70,17 +70,6 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
         lateinit var pluginHandler: PluginHandler
 
-        @JvmStatic
-        val HARDWARE_H264_BLACKLIST = hashSetOf(
-                "Pixel 3",
-                "Pixel 3a",
-                "Pixel 3 XL",
-                "Pixel 4",
-                "Pixel 4a",
-                "Pixel 4 XL",
-                "Pixel 5"
-        )
-
         lateinit var roomListener: RoomListener
 
         lateinit var cameraCapturer: VideoCapturer
