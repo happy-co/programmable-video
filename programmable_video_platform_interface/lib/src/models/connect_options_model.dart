@@ -46,6 +46,8 @@ class ConnectOptionsModel {
   /// Network Quality API.
   final NetworkQualityConfigurationModel networkQualityConfiguration;
 
+  final bool allowCamera2;
+
   ConnectOptionsModel(
     this.accessToken, {
     this.audioTracks,
@@ -59,6 +61,7 @@ class ConnectOptionsModel {
     this.enableAutomaticSubscription,
     this.enableNetworkQuality,
     this.networkQualityConfiguration,
+    this.allowCamera2,
   })  : assert(accessToken != null),
         assert(accessToken.isNotEmpty),
         assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
@@ -84,7 +87,8 @@ class ConnectOptionsModel {
         'enableDominantSpeaker': enableDominantSpeaker,
         'enableAutomaticSubscription': enableAutomaticSubscription,
         'enableNetworkQuality': enableNetworkQuality,
-        'networkQualityConfiguration': networkQualityConfiguration != null ? networkQualityConfiguration.toMap() : null
+        'networkQualityConfiguration': networkQualityConfiguration != null ? networkQualityConfiguration.toMap() : null,
+        'allowCamera2': allowCamera2
       },
     };
   }

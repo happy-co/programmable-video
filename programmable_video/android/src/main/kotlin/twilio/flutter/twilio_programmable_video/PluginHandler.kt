@@ -330,12 +330,15 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         val optionsObj = call.argument<Map<String, Any>>("connectOptions")
             ?: return result.error("MISSING_PARAMS", "Missing 'connectOptions' parameter", null)
 
-        allowCamera2 = call.argument<Boolean>("allowCamera2") ?: false
-
         setAudioFocus(true)
 
         try {
             val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
+
+            if (optionsObj["allowCamera2"] != null && optionsObj["allowCamera2"] is Boolean) {
+                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting allowCamera2 to '${optionsObj["allowCamera2"]}'")
+                allowCamera2 = optionsObj["allowCamera2"] as Boolean
+            }
 
             // Set the room name if it has been passed.
             if (optionsObj["roomName"] != null) {
