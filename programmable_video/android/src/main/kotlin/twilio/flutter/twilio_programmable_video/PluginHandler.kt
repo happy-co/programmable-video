@@ -152,7 +152,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     val quality = call.argument<Int>("imageCompression") ?: 100
                     val nv21Data = YuvUtils.createNV21Data(i420Buffer)
                     val jpegData = YuvUtils.createJPEGData(nv21Data, i420Buffer.width, i420Buffer.height, quality)
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => Photo data size: ${jpegData.size}")
+                    TwilioProgrammableVideoPlugin.debug("PluginHandler.onRenderFrame => Photo data size: ${jpegData.size}")
                     result.success(jpegData)
                 } else {
                     result.error("ERROR", "Photo data is empty", null)
