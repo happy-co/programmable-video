@@ -299,29 +299,14 @@ public class PluginHandler: BaseListener {
     }
 
     private func deviceHasReceiver(result: @escaping FlutterResult) {
-        let currentMode = AVAudioSession.sharedInstance().mode
-        var hasReceiver = false
+        // Per https://stackoverflow.com/a/41374958 and https://developer.apple.com/documentation/avfaudio/avaudiosessionportbuiltinreceiver
+        // of all iOS devices, typically only iPhones have a build in receiver.
+        // Therefore, we check device type rather than checking for outputs
+        // since iOS will only show active outputs, and therefore requires manipulation of
+        // the AVAudioSession configuration to otherwise determine if the device ∂handlehas a receiver.
+        let hasReceiver = UIDevice.current.userInterfaceIdiom == .phone
 
-        if currentMode != .voiceChat {
-            do {
-                try AVAudioSession.sharedInstance().setMode(.voiceChat)
-            } catch let error as NSError {
-                return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
-            }
-        }
-
-        let receivers = AVAudioSession.sharedInstance().currentRoute.outputs
-        hasReceiver = receivers.first( where: { $0.portType == AVAudioSession.Port.builtInReceiver }) != nil
-
-        if AVAudioSession.sharedInstance().mode != currentMode {
-            do {
-                try AVAudioSession.sharedInstance().setMode(currentMode)
-            } catch let error as NSError {
-                return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
-            }
-        }
-
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.deviceHasReceiver => called \(hasReceiver)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.deviceHasReceiver => hasReceiver: \(hasReceiver)")
         return result(hasReceiver)
     }
 
@@ -332,6 +317,10 @@ public class PluginHandler: BaseListener {
         if let camera = SwiftTwilioProgrammableVideoPlugin.cameraSource {
             camera.stopCapture()
             SwiftTwilioProgrammableVideoPlugin.cameraSource = nil
+        }
+        
+        if let onDisconnect = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnDisconnected {
+            onDisconnect()
         }
 
         result(true)
@@ -349,7 +338,7 @@ public class PluginHandler: BaseListener {
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'connectOpotions' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'connectOptions' parameter", details: nil))
         }
 
         guard let optionsObj = arguments["connectOptions"] as? [String: Any?] else {
@@ -508,6 +497,10 @@ public class PluginHandler: BaseListener {
 
             builder.isDominantSpeakerEnabled = optionsObj["enableDominantSpeaker"] as? Bool ?? false
             builder.isAutomaticSubscriptionEnabled = optionsObj["enableAutomaticSubscription"] as? Bool ?? true
+        }
+        
+        if let onConnected = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnConnected {
+            onConnected()
         }
 
         let roomId = 1

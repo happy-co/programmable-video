@@ -17,9 +17,13 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     public static var loggingSink: FlutterEventSink?
 
-    public static var audioDevice: AudioDevice?
-
     public static var nativeDebug = false
+    
+    internal static var audioDevice: AudioDevice?
+    
+    internal static var audioDeviceOnConnected: (() -> Void)?
+    
+    internal static var audioDeviceOnDisconnected: (() -> Void)?
 
     public static func debug(_ msg: String) {
         if SwiftTwilioProgrammableVideoPlugin.nativeDebug {
@@ -34,6 +38,18 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftTwilioProgrammableVideoPlugin()
         instance.onRegister(registrar)
+    }
+    
+    public static func setCustomAudioDevice(_ device: AudioDevice, onConnected: @escaping () -> Void, onDisconnected: @escaping () -> Void) {
+        audioDevice = device
+        audioDeviceOnConnected = onConnected
+        audioDeviceOnDisconnected = onDisconnected
+    }
+    
+    public static func clearCustomAudioDevice() {
+        audioDevice = nil
+        audioDeviceOnConnected = nil
+        audioDeviceOnDisconnected = nil
     }
 
     private var methodChannel: FlutterMethodChannel?

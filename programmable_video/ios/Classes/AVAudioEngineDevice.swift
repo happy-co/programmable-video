@@ -96,7 +96,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Failed to setup AVAudioEngine")
         }
 
-        self.setupAVAudioSession()
         self.renderFormat()
         debug("AVAudioEngineDevice::init => END")
     }
@@ -855,6 +854,22 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             }
         }
     }
+    
+    public func onConnected() {
+        // TODO: Add in conditional to handle scenario where engine is running prior to connection
+        setupAVAudioSession()
+    }
+
+    public func onDisconnected() {
+        // TODO: Add in conditional to handle scenario where engine should remain running after disconnection
+        do {
+            NotificationCenter.default.removeObserver(self)
+            let session = AVAudioSession.sharedInstance()
+            try session.setActive(false, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
+        } catch let error {
+            debug("Error deactivating AVAudioSession: \(error)")
+        }
+    }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func setupAudioUnitWithRenderContext(renderContext: inout AudioRendererContext,
@@ -1198,9 +1213,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     @objc private func handleMediaServiceLost(notification: Notification) {
         debug("AVAudioEngineDevice::handleMediaServiceLost")
-        self.teardownAudioEngine()
 
         myPropertyQueue.async {
+            DispatchQueue.main.async {
+                self.teardownAudioEngine()
+            }
             // If the worker block is executed, then context is guaranteed to be valid.
             if let context = self.deviceContext() {
                 AudioDeviceExecuteWorkerBlock(context: context) {
@@ -1212,9 +1229,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     @objc private func handleMediaServiceRestored(notification: Notification) {
         debug("AVAudioEngineDevice::handleMediaServiceRestored")
-        self.setupAudioEngine()
 
         myPropertyQueue.async {
+            DispatchQueue.main.async {
+                self.setupAudioEngine()
+            }
             // If the worker block is executed, then context is guaranteed to be valid.
             if let context = self.deviceContext() {
                 AudioDeviceExecuteWorkerBlock(context: context) {
