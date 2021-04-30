@@ -101,6 +101,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
             "deviceHasReceiver" -> deviceHasReceiver(result)
+            "getStats" -> getStats(result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
@@ -249,6 +250,12 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         }
         TwilioProgrammableVideoPlugin.debug("PluginHandler.deviceHasReceiver => called $hasReceiver")
         return result.success(hasReceiver)
+    }
+
+    private fun getStats(result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.roomListener.room?.getStats {
+            result.success(StatsMapper.statsReportsToMap(it))
+        }
     }
 
     private fun disconnect(call: MethodCall, result: MethodChannel.Result) {

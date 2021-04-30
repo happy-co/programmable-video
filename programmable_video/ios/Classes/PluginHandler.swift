@@ -47,6 +47,8 @@ public class PluginHandler: BaseListener {
             hasTorch(result: result)
         case "CameraCapturer#setTorch":
             setTorch(call, result: result)
+        case "getStats":
+            getStats(result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -335,6 +337,11 @@ public class PluginHandler: BaseListener {
         }
 
         result(true)
+    }
+    private func getStats(result:@escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.getStats {
+            result(StatsMapper.statsReportsToDict($0))
+        }
     }
 
     private func initializeAudioDevice() {

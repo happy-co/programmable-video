@@ -11,6 +11,7 @@ class MockInterface extends ProgrammableVideoPlatform {
   var speakerPhoneOn;
   var getSpeakerPhoneOnWasCalled = false;
   var deviceHasReceiverWasCalled = false;
+  var getStatsWasCalled = false;
   var connectToRoomWasCalled = false;
   var enableAudioTrackWasCalled = false;
   var enableVideoTrackWasCalled = false;
@@ -61,6 +62,12 @@ class MockInterface extends ProgrammableVideoPlatform {
   Future<bool> deviceHasReceiver() {
     deviceHasReceiverWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => true);
+  }
+
+  @override
+  Future<Map<dynamic, dynamic>> getStats() {
+    getStatsWasCalled = true;
+    return Future.delayed(Duration(milliseconds: 1), () => {});
   }
 
   @override

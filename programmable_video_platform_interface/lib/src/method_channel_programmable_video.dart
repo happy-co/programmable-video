@@ -74,6 +74,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     return _methodChannel.invokeMethod('getSpeakerphoneOn');
   }
 
+  /// Calls native code to get stats.
+  @override
+  Future<Map<dynamic, dynamic>> getStats() async {
+    return _methodChannel.invokeMethod('getStats');
+  }
+
   @override
   Future<bool> deviceHasReceiver() {
     return _methodChannel.invokeMethod('deviceHasReceiver');
