@@ -16,6 +16,9 @@ class Room {
   /// Stream for the native remote data track events.
   StreamSubscription<BaseRemoteDataTrackEvent> _remoteDataTrackStream;
 
+  /// Stream for the native remote data track events.
+  StreamSubscription<BaseAudioNotificationEvent> _audioNotificationStream;
+
   String _sid;
 
   String _name;
@@ -117,6 +120,7 @@ class Room {
     _remoteParticipantStream = ProgrammableVideoPlatform.instance.remoteParticipantStream(_internalId).listen(_parseRemoteParticipantEvents);
     _localParticipantStream = ProgrammableVideoPlatform.instance.localParticipantStream(_internalId).listen(_parseLocalParticipantEvents);
     _remoteDataTrackStream = ProgrammableVideoPlatform.instance.remoteDataTrackStream(_internalId).listen(_parseRemoteDataTrackEvents);
+    _audioNotificationStream = ProgrammableVideoPlatform.instance.audioNotificationStream(_internalId).listen(_parseAudioNotificationEvents);
 
     onDominantSpeakerChange = _onDominantSpeakerChange.stream;
     onConnectFailure = _onConnectFailure.stream;
@@ -137,6 +141,7 @@ class Room {
     await _remoteParticipantStream.cancel();
     await _localParticipantStream.cancel();
     await _remoteDataTrackStream.cancel();
+    await _audioNotificationStream.cancel();
     _localParticipant?._dispose();
   }
 
@@ -274,6 +279,27 @@ class Room {
         }
       });
     });
+  }
+
+  // TODO: actually parse audio notification events and notify listeners
+  /// Parse native audio notification events.
+  void _parseAudioNotificationEvents(BaseAudioNotificationEvent event) {
+    TwilioProgrammableVideo._log("AudioNotificationEvent => Event '$event'");
+
+    // If no RemoteDataTrack data is received, skip the event.
+    if (event is SkipAbleAudioEvent) {
+      return;
+    }
+
+    // final remoteDataTrackModel = event.remoteDataTrackModel;
+    //
+    // _remoteParticipants.forEach((RemoteParticipant remoteParticipant) {
+    //   remoteParticipant.remoteDataTracks.forEach((RemoteDataTrackPublication dataTrackPublication) {
+    //     if (dataTrackPublication.trackSid == remoteDataTrackModel.sid) {
+    //       dataTrackPublication.remoteDataTrack._parseEvents(event);
+    //     }
+    //   });
+    // });
   }
 
   /// Update this instances state from RoomEvents

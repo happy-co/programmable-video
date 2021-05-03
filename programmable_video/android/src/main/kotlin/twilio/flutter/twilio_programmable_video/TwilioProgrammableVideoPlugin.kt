@@ -31,6 +31,8 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
     private lateinit var remoteDataTrackChannel: EventChannel
 
+    private lateinit var audioNotificationChannel: EventChannel
+
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
     // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
     // plugin registration via this function while apps migrate to use the new Android APIs
@@ -85,6 +87,8 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
         var nativeDebug: Boolean = false
 
         var remoteDataTrackListener = RemoteDataTrackListener()
+
+        var audioNotificationListener = AudioNotificationListener()
 
         @JvmStatic
         fun debug(msg: String) {
@@ -182,6 +186,21 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
             override fun onCancel(arguments: Any) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel detached")
                 remoteDataTrackListener.events = null
+            }
+        })
+
+        audioNotificationChannel = EventChannel(messenger, "twilio_programmable_video/audio_notification")
+        audioNotificationChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => AudioNotification eventChannel attached")
+                audioNotificationListener.listenForRouteChanges(applicationContext)
+                audioNotificationListener.events = events
+            }
+
+            override fun onCancel(arguments: Any) {
+                debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => AudioNotification eventChannel detached")
+                audioNotificationListener.stopListeningForRouteChanges(applicationContext)
+                audioNotificationListener.events = null
             }
         })
 

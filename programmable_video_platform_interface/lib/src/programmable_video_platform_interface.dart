@@ -58,6 +58,11 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
     throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
   }
 
+  /// Calls native code to set the speaker and bluetooth settings.
+  Future setAudioSettings(bool speakerPhoneEnabled, bool bluetoothPreferred) {
+    throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
+  }
+
   /// Calls native code to check if speaker mode is enabled.
   Future<bool> getSpeakerphoneOn() {
     throw UnimplementedError('getSpeakerphoneOn() has not been implemented.');
@@ -156,6 +161,13 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   /// This stream is used to update the RemoteDataTrack in a plugin implementation.
   Stream<BaseRemoteDataTrackEvent> remoteDataTrackStream(int internalId) {
     throw UnimplementedError('remoteDataTrackStream() has not been implemented');
+  }
+
+  /// Stream of the BaseRemoteDataTrackEvent model.
+  ///
+  /// This stream is used to update the RemoteDataTrack in a plugin implementation.
+  Stream<BaseAudioNotificationEvent> audioNotificationStream(int internalId) {
+    throw UnimplementedError('audioNotificationStream() has not been implemented');
   }
 
   /// Stream of dynamic that contains all the native logging output.

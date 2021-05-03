@@ -5,6 +5,8 @@ import Foundation
 import TwilioVideo
 
 public class PluginHandler: BaseListener {
+    let audioSettings = AudioSettings()
+    
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -23,6 +25,8 @@ public class PluginHandler: BaseListener {
             connect(call, result: result)
         case "disconnect":
             disconnect(call, result: result)
+        case "setAudioSettings":
+            setAudioSettings(call, result: result)
         case "setSpeakerphoneOn":
             setSpeakerphoneOn(call, result: result)
         case "getSpeakerphoneOn":
@@ -270,6 +274,46 @@ public class PluginHandler: BaseListener {
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalDataTrack found with the name '\(localDataTrackName)'", details: nil))
     }
+    
+    private func getAudioMode() -> AVAudioSession.Mode {
+        let mode: AVAudioSession.Mode = audioSettings.speakerEnabled ? .videoChat : .voiceChat
+        return mode
+    }
+    
+    private func getAudioOptions() -> AVAudioSession.CategoryOptions {
+        let options: AVAudioSession.CategoryOptions = audioSettings.bluetoothPreferred ? AVAudioSession.CategoryOptions.allowBluetooth : []
+        return options
+    }
+    
+    private func setAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setAudioSettings => called")
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerPhoneEnabled' and 'bluetoothPreferred' parameters", details: nil))
+        }
+
+        guard let speakerPhoneEnabled = arguments["speakerPhoneEnabled"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerPhoneEnabled' parameter", details: nil))
+        }
+
+        guard let bluetoothPreferred = arguments["bluetoothPreferred"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'bluetoothPreferred' parameter", details: nil))
+        }
+        
+        initializeAudioDevice()
+
+        do {
+            audioSettings.speakerEnabled = speakerPhoneEnabled
+            audioSettings.bluetoothPreferred = bluetoothPreferred
+            
+            let audioSession = AVAudioSession.sharedInstance()
+            let mode: AVAudioSession.Mode = getAudioMode()
+            let options: AVAudioSession.CategoryOptions = getAudioOptions()
+            try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
+            return result(nil)
+        } catch let error as NSError {
+            return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
+        }
+    }
 
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setSpeakerphoneOn => called")
@@ -284,8 +328,13 @@ public class PluginHandler: BaseListener {
         initializeAudioDevice()
 
         do {
+            audioSettings.speakerEnabled = on
+            
             let audioSession = AVAudioSession.sharedInstance()
-            try on ? audioSession.setMode(.videoChat) : audioSession.setMode(.voiceChat)
+            let mode: AVAudioSession.Mode = getAudioMode()
+            let options: AVAudioSession.CategoryOptions = getAudioOptions()
+            try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
+            
             return result(on)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))

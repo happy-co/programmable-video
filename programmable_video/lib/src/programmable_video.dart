@@ -69,9 +69,23 @@ class TwilioProgrammableVideo {
   /// Set the speaker mode on or off.
   ///
   /// Note: Call this method after the [Room.onConnected] event on iOS. Calling it before will not result in a audio routing change.
+  @Deprecated('Use setAudioSettings for more reliable audio output management.')
   static Future<bool> setSpeakerphoneOn(bool on) async {
     assert(on != null);
     return await ProgrammableVideoPlatform.instance.setSpeakerphoneOn(on);
+  }
+
+  // TODO: comment this
+  static Future setAudioSettings({
+    @required bool speakerPhoneEnabled,
+    @required bool bluetoothPreferred,
+  }) async {
+    assert(speakerPhoneEnabled != null);
+    assert(bluetoothPreferred != null);
+    return await ProgrammableVideoPlatform.instance.setAudioSettings(
+      speakerPhoneEnabled,
+      bluetoothPreferred,
+    );
   }
 
   /// Check if speaker mode is enabled.

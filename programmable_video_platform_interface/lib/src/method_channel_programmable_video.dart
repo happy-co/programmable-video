@@ -21,6 +21,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
         _remoteParticipantChannel = EventChannel('twilio_programmable_video/remote'),
         _localParticipantChannel = EventChannel('twilio_programmable_video/local'),
         _remoteDataTrackChannel = EventChannel('twilio_programmable_video/remote_data_track'),
+        _audioNotificationChannel = EventChannel('twilio_programmable_video/audio_notification'),
         super();
 
   /// This constructor is only used for testing and shouldn't be accessed by
@@ -33,6 +34,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     this._remoteParticipantChannel,
     this._localParticipantChannel,
     this._remoteDataTrackChannel,
+    this._audioNotificationChannel,
   );
 
   //#region Functions
@@ -64,6 +66,36 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       'setSpeakerphoneOn',
       {
         'on': on,
+      },
+    );
+  }
+
+
+  /// Calls native code to set the speaker and bluetooth settings.
+  ///
+  /// Bluetooth is given priority over speakers.
+  /// In short, if:
+  /// `speakerPhoneEnabled == true && bluetoothEnabled == true`
+  /// and a bluetooth device is connected, it will be used.
+  /// If no bluetooth device is connected, the speaker will be used.
+  ///
+  /// if:
+  /// `speakerPhoneEnabled == true && bluetoothEnabled == false`
+  /// and a bluetooth device is connected, the speaker will be used.
+  ///
+  /// if: `speakerPhoneEnabled == false && bluetoothEnabled == false`
+  /// The receiver, if the device has one, will be used.
+  /// If there is a wired headset connected to an android device in this
+  /// scenario, it will be used.
+  @override
+  Future setAudioSettings(bool speakerPhoneEnabled, bool bluetoothPreferred) {
+    assert(speakerPhoneEnabled != null);
+    assert(bluetoothPreferred != null);
+    return _methodChannel.invokeMethod(
+      'setAudioSettings',
+      {
+        'speakerPhoneEnabled': speakerPhoneEnabled,
+        'bluetoothPreferred': bluetoothPreferred
       },
     );
   }
@@ -753,6 +785,46 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
         break;
       default:
         return UnknownEvent(remoteDataTrackModel, eventName);
+        break;
+    }
+  }
+
+//#endregion
+
+//#region audioNotificationStream
+
+  /// EventChannel over which the native code sends audio route change notifications.
+  final EventChannel _audioNotificationChannel;
+
+  Stream<BaseAudioNotificationEvent> _audioNotificationStream;
+
+  /// Stream of the BaseRemoteDataTrackEvent model.
+  ///
+  /// This stream is used to update the RemoteDataTrack in a plugin implementation.
+  @override
+  Stream<BaseAudioNotificationEvent> audioNotificationStream(int internalId) {
+    _audioNotificationStream ??= _audioNotificationChannel.receiveBroadcastStream(internalId).map(_parseAudioNotificationEvent);
+    return _audioNotificationStream;
+  }
+
+  /// Parses a map send from native code to a [BaseRemoteDataTrackEvent].
+  BaseAudioNotificationEvent _parseAudioNotificationEvent(dynamic event) {
+    final eventName = event['name'];
+    // final data = Map<String, dynamic>.from(event['data']);
+    // If no RemoteDataTrack data is received, skip the event.
+    // if (data['remoteDataTrack'] == null) {
+    //   return SkipAbleRemoteDataTrackEvent();
+    // }
+    // final remoteDataTrackModel = RemoteDataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(data['remoteDataTrack']));
+    switch (eventName) {
+      case 'newDeviceAvailable':
+        return NewDeviceAvailableEvent();
+        break;
+      case 'oldDeviceUnavailable':
+        return OldDeviceUnavailableEvent();
+        break;
+      default:
+        return SkipAbleAudioEvent();
         break;
     }
   }

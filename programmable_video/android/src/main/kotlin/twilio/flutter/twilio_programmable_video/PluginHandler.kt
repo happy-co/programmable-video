@@ -2,14 +2,15 @@ package twilio.flutter.twilio_programmable_video
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.NonNull
 import com.twilio.video.AudioCodec
 import com.twilio.video.ConnectOptions
@@ -57,6 +58,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private var audioManager: AudioManager
 
+    internal var audioSettings: AudioSettings = AudioSettings()
+
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(applicationContext: Context) {
         this.applicationContext = applicationContext
@@ -98,6 +101,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "debug" -> debug(call, result)
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
+            "setAudioSettings" -> setAudioSettings(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
             "deviceHasReceiver" -> deviceHasReceiver(result)
@@ -224,16 +228,70 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         return null
     }
 
+    private fun setAudioSettings(call: MethodCall, result: MethodChannel.Result) {
+        val speakerPhoneEnabled = call.argument<Boolean>("speakerPhoneEnabled")
+                ?: return result.error("MISSING_PARAMS", "The parameter 'speakerPhoneEnabled' was not given", null)
+        val bluetoothPreferred = call.argument<Boolean>("bluetoothPreferred")
+                ?: return result.error("MISSING_PARAMS", "The parameter 'bluetoothPreferred' was not given", null)
+
+        audioSettings.speakerEnabled = speakerPhoneEnabled
+        audioSettings.bluetoothPreferred = bluetoothPreferred
+
+        applyAudioSettings()
+
+        result.success(null)
+    }
+
+    internal fun applyAudioSettings() {
+        setSpeakerPhoneOnInternal()
+        applyBluetoothSettings()
+    }
+
+    internal fun applyBluetoothSettings() {
+        TwilioProgrammableVideoPlugin.debug("PluginHandler::setBluetoothOnInternal => on: ${audioSettings.bluetoothPreferred} scoOn: ${audioManager.isBluetoothScoOn}")
+        Handler(Looper.getMainLooper()).postDelayed({
+            setBluetoothSco(audioSettings.bluetoothPreferred)
+            audioManager.isBluetoothScoOn = audioSettings.bluetoothPreferred
+        }, 1000)
+    }
+
+    internal fun setBluetoothSco(on: Boolean) {
+        if (on) {
+            audioManager.startBluetoothSco()
+            TwilioProgrammableVideoPlugin.debug("PluginHandler::startBluetoothSco => on: ${audioSettings.bluetoothPreferred} scoOn: ${audioManager.isBluetoothScoOn}")
+        } else {
+            audioManager.stopBluetoothSco()
+            TwilioProgrammableVideoPlugin.debug("PluginHandler::stopBluetoothSco => on: ${audioSettings.bluetoothPreferred} scoOn: ${audioManager.isBluetoothScoOn}")
+        }
+    }
+
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
         val on = call.argument<Boolean>("on")
             ?: return result.error("MISSING_PARAMS", "The parameter 'on' was not given", null)
 
-        audioManager.isSpeakerphoneOn = on
-        return result.success(on)
+        audioSettings.speakerEnabled = on
+        setSpeakerPhoneOnInternal()
+
+        if (!audioSettings.speakerEnabled && audioSettings.bluetoothPreferred) {
+            applyBluetoothSettings()
+        }
+        return result.success(audioSettings.speakerEnabled)
+    }
+
+    private fun setSpeakerPhoneOnInternal() {
+        TwilioProgrammableVideoPlugin.debug("PluginHandler::setSpeakerPhoneOnInternal => on: ${audioSettings.speakerEnabled}\n bluetoothEnable: ${audioSettings.bluetoothPreferred}\n bluetoothScoOn: ${audioManager.isBluetoothScoOn}")
+        if (!audioSettings.bluetoothPreferred ||
+            BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET) != BluetoothProfile.STATE_CONNECTED) {
+            applySpeakerPhoneSettings()
+        }
+    }
+
+    internal fun applySpeakerPhoneSettings() {
+        audioManager.isSpeakerphoneOn = audioSettings.speakerEnabled
     }
 
     private fun getSpeakerphoneOn(result: MethodChannel.Result) {
-        return result.success(audioManager.isSpeakerphoneOn())
+        return result.success(audioManager.isSpeakerphoneOn)
     }
 
     /*
@@ -404,6 +462,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             optionsBuilder.enableDominantSpeaker(if (optionsObj["enableDominantSpeaker"] != null) optionsObj["enableDominantSpeaker"] as Boolean else false)
             optionsBuilder.enableAutomaticSubscription(if (optionsObj["enableAutomaticSubscription"] != null) optionsObj["enableAutomaticSubscription"] as Boolean else true)
 
+            applyAudioSettings()
+
             val roomId = 1 // Future preparation, for when we might want to support multiple rooms.
             TwilioProgrammableVideoPlugin.roomListener = RoomListener(roomId, optionsBuilder.build())
             result.success(roomId)
@@ -467,18 +527,13 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
             audioManager.isMicrophoneMute = false
             this.activity?.volumeControlStream = AudioManager.STREAM_VOICE_CALL
-
-            myNoisyAudioStreamReceiver = BecomingNoisyReceiver(audioManager, applicationContext)
-            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
-            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED))
-            applicationContext.registerReceiver(myNoisyAudioStreamReceiver, IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED))
         } else {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 audioManager.abandonAudioFocus(null)
             } else if (audioFocusRequest != null) {
                 audioManager.abandonAudioFocusRequest(audioFocusRequest!!)
             }
-            audioManager.setSpeakerphoneOn(false)
+            audioManager.isSpeakerphoneOn = false
             audioManager.mode = previousAudioMode
             audioManager.isMicrophoneMute = previousMicrophoneMute
             this.activity?.volumeControlStream = previousVolumeControlStream
