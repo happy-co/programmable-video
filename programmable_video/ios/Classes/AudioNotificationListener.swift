@@ -52,7 +52,7 @@ internal class AudioNotificationListener: BaseListener {
     
     func bluetoothAudioConnected() -> Bool {
         let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
-        return outputs.filter( {
+        return !outputs.filter( {
             $0.portType == .bluetoothA2DP ||
             $0.portType == .bluetoothHFP ||
             $0.portType == .bluetoothLE

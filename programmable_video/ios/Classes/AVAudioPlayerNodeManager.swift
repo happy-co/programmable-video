@@ -23,6 +23,7 @@ internal class AVAudioPlayerNodeManager {
         nodes[id] = nodeBundle
         setMusicVolume(id, volume)
 
+        debug("AVAudioPlayerNodeManager::addNode =>\n\tid: \(id)\n\tfile: \(fileName(nodeBundle.file))\n\tloop: \(nodeBundle.loop)")
         return nodeBundle
     }
 
@@ -36,6 +37,10 @@ internal class AVAudioPlayerNodeManager {
 
     func shouldReattachNodes() -> Bool {
         return !nodes.values.isEmpty
+    }
+    
+    func isActive() -> Bool {
+        return self.anyPaused() || self.anyPlaying()
     }
 
     func getNode(_ id: Int) -> AVAudioPlayerNodeBundle? {
@@ -120,7 +125,9 @@ internal class AVAudioPlayerNodeManager {
             return
         }
 
-        if node.player.isPlaying {
+        // TODO: review
+//        if node.player.isPlaying {
+        if node.playing {
             return
         }
 
@@ -129,7 +136,6 @@ internal class AVAudioPlayerNodeManager {
         pausedNodes.removeValue(forKey: node.id)
         seekPosition(id, pausePosition)
 //        fadeInNode(node)
-//        pausedNodes.removeValue(forKey: node.id)
     }
 
     public func setMusicVolume(_ id: Int, _ volume: Double) {
