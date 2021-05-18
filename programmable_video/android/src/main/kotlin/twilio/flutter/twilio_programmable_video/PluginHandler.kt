@@ -399,6 +399,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 optionsBuilder.audioTracks(audioTracks)
             }
 
+            optionsBuilder.encodingParameters(EncodingParameters(16, 0))
+
             // Set the local data tracks if it has been passed.
             if (optionsObj["dataTracks"] != null) {
                 val dataTrackMap = optionsObj["dataTracks"] as Map<*, *>
@@ -471,13 +473,13 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                             }
 
                             var highestDimensions = VideoDimensions.HD_720P_VIDEO_DIMENSIONS
-                            val highestFPS = VideoConstraints.FPS_15
+                            val highestFPS = VideoConstraints.FPS_24
                             for (format in formats) {
-                                // Find a format closest to 720p 15fps
-                                if (format.dimensions.height >= VideoDimensions.HD_720P_VIDEO_HEIGHT && format.framerate >= VideoConstraints.FPS_15) {
+                                // Find a format closest to 720p 24fps
+                                if (format.dimensions.height >= VideoDimensions.HD_720P_VIDEO_HEIGHT && format.framerate >= VideoConstraints.FPS_24) {
                                     highestDimensions = format.dimensions
                                 } else {
-                                    // We don't want anything lower than 720p 15fps
+                                    // We don't want anything lower than 720p 24fps
                                     break
                                 }
                             }
@@ -511,8 +513,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                             val videoConstraints = VideoConstraints.Builder()
                                     .minVideoDimensions(videoDimensions)
                                     .maxVideoDimensions(videoDimensions)
-                                    .maxFps(VideoConstraints.FPS_15)
-                                    .minFps(VideoConstraints.FPS_15)
+                                    .maxFps(VideoConstraints.FPS_24)
+                                    .minFps(VideoConstraints.FPS_24)
                                     .build()
 
                             val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer, videoConstraints, videoTrack["name"] as String)
