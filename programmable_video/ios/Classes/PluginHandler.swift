@@ -493,6 +493,8 @@ public class PluginHandler: BaseListener {
                 builder.audioTracks = audioTracks
             }
 
+            builder.encodingParameters = EncodingParameters(audioBitrate: 16, videoBitrate: 0)
+
             // Set the local data tracks if it has been passed.
             if let dataTracksDict = optionsObj["dataTracks"] as? [AnyHashable: [String: Any]] {
                 var dataTracks: [LocalDataTrack] = []
@@ -639,7 +641,7 @@ public class PluginHandler: BaseListener {
             SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
                 return nil
         }
-        videoFormat.frameRate = 15
+        videoFormat.frameRate = 24
         return videoFormat
     }
 
