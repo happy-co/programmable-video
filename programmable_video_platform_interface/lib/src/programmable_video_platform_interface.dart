@@ -80,6 +80,15 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
     throw UnimplementedError('getSpeakerphoneOn() has not been implemented.');
   }
 
+  /// Calls native code to get stats
+  Future<Map<dynamic, dynamic>> getStats() {
+    throw UnimplementedError('getStats() has not been implemented.');
+  }
+
+  Future<bool> deviceHasReceiver() {
+    throw UnimplementedError('deviceHasReceiver() has not been implemented.');
+  }
+
   /// Calls native code to connect to a room.
   Future<int> connectToRoom(ConnectOptionsModel connectOptions) {
     throw UnimplementedError('connectToRoom() has not been implemented.');

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
@@ -99,6 +100,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "disconnect" -> disconnect(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
+            "deviceHasReceiver" -> deviceHasReceiver(result)
+            "getStats" -> getStats(result)
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
@@ -232,6 +235,27 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun getSpeakerphoneOn(result: MethodChannel.Result) {
         return result.success(audioManager.isSpeakerphoneOn())
+    }
+
+    /*
+     * Automatically returns true on SDKs lower than 23 as there is officially no method of querying
+     * available audio devices on earlier SDKs. See: https://github.com/google/oboe/issues/67
+     */
+    private fun deviceHasReceiver(result: MethodChannel.Result) {
+        val hasReceiver = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            devices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
+        } else {
+            true
+        }
+        TwilioProgrammableVideoPlugin.debug("PluginHandler.deviceHasReceiver => called $hasReceiver")
+        return result.success(hasReceiver)
+    }
+
+    private fun getStats(result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.roomListener.room?.getStats {
+            result.success(StatsMapper.statsReportsToMap(it))
+        }
     }
 
     private fun disconnect(call: MethodCall, result: MethodChannel.Result) {

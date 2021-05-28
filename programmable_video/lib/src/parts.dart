@@ -57,3 +57,4 @@ part 'track_publication.dart';
 part 'video_capturer.dart';
 part 'video_track.dart';
 part 'video_track_publication.dart';
+part 'stats_report.dart';

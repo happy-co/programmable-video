@@ -79,6 +79,25 @@ class TwilioProgrammableVideo {
     return await ProgrammableVideoPlatform.instance.getSpeakerphoneOn();
   }
 
+  /// This check is extraneous to the plugin itself, and its reliability and implementation varies by platform
+  /// as follows:
+  ///
+  /// **Android SDK >=23:** Queries audio output devices and returns true if one is found with type `TYPE_BUILTIN_EARPIECE`
+  /// **Android SDK <23:** Returns true since there is officially no method of querying
+  ///     available audio devices on earlier SDKs. See: https://github.com/google/oboe/issues/67
+  ///
+  /// **iOS:**  Since iOS only allows querying of audio output devices that are currently in usage, we:
+  ///     1. Set the `AVAudioSession` mode to `voiceChat`, storing the current mode
+  ///     2. Query the outputs for the `currentRoute`
+  ///     3. Check if any of the outputs are of type `AVAudioSession.Port.builtInReceiver`
+  ///     4. Set the `AVAudioSession` mode to whatever it was before 1.
+  ///
+  /// Given the implementation for iOS, it is recommended to perform this check once at startup
+  /// rather than at a later time when you might have an active audio session.
+  static Future<bool> deviceHasReceiver() async {
+    return await ProgrammableVideoPlatform.instance.deviceHasReceiver();
+  }
+
   /// Request permission for camera and microphone.
   ///
   /// Uses the PermissionHandler plugin. Returns the granted result.
@@ -125,5 +144,84 @@ class TwilioProgrammableVideo {
       }
     }
     throw Exception('Permissions not granted');
+  }
+
+  static Future<List<StatsReport>> getStats() async {
+    final statsMap = await ProgrammableVideoPlatform.instance.getStats();
+
+    return statsMap.entries.map((entry) {
+      final statReport = StatsReport(entry.key);
+      final values = entry.value;
+      values['localAudioTrackStats'].forEach((localAudioTrackStat) {
+        statReport.addLocalAudioTrackStats(LocalAudioTrackStats(
+          localAudioTrackStat['trackSide'],
+          localAudioTrackStat['packetsLost'],
+          localAudioTrackStat['codec'],
+          localAudioTrackStat['ssrc'],
+          localAudioTrackStat['timestamp'],
+          localAudioTrackStat['bytesSent'],
+          localAudioTrackStat['packetsSent'],
+          localAudioTrackStat['roundTripTime'],
+          localAudioTrackStat['audioLevel'],
+          localAudioTrackStat['jitter'],
+        ));
+      });
+
+      values['remoteAudioTrackStats'].forEach((remoteAudioTrackStat) {
+        statReport.addAudioTrackStats(RemoteAudioTrackStats(
+          remoteAudioTrackStat['trackSide'],
+          remoteAudioTrackStat['packetsLost'],
+          remoteAudioTrackStat['codec'],
+          remoteAudioTrackStat['ssrc'],
+          remoteAudioTrackStat['timestamp'],
+          remoteAudioTrackStat['bytesReceived'],
+          remoteAudioTrackStat['packetsReceived'],
+          remoteAudioTrackStat['audioLevel'],
+          remoteAudioTrackStat['jitter'],
+        ));
+      });
+
+      values['remoteAudioTrackStats'].forEach((remoteVideoTrackStat) {
+        statReport.addVideoTrackStats(RemoteVideoTrackStats(
+          remoteVideoTrackStat['trackSide'],
+          remoteVideoTrackStat['packetsLost'],
+          remoteVideoTrackStat['codec'],
+          remoteVideoTrackStat['ssrc'],
+          remoteVideoTrackStat['timestamp'],
+          remoteVideoTrackStat['bytesReceived'],
+          remoteVideoTrackStat['packetsReceived'],
+          VideoDimensions(
+            remoteVideoTrackStat['dimensionsHeight'],
+            remoteVideoTrackStat['dimensionsWidth'],
+          ),
+          remoteVideoTrackStat['frameRate'],
+        ));
+      });
+
+      values['localVideoTrackStats'].forEach((localVideoTrackStat) {
+        statReport.addLocalVideoTrackStats(LocalVideoTrackStats(
+          localVideoTrackStat['trackSide'],
+          localVideoTrackStat['packetsLost'],
+          localVideoTrackStat['codec'],
+          localVideoTrackStat['ssrc'],
+          localVideoTrackStat['timestamp'],
+          localVideoTrackStat['bytesSent'],
+          localVideoTrackStat['packetsSent'],
+          localVideoTrackStat['roundTripTime'],
+          VideoDimensions(
+            localVideoTrackStat['captureDimensionsHeight'],
+            localVideoTrackStat['captureDimensionsWidth'],
+          ),
+          VideoDimensions(
+            localVideoTrackStat['dimensionsHeight'],
+            localVideoTrackStat['dimensionsWidth'],
+          ),
+          localVideoTrackStat['capturedFrameRate'],
+          localVideoTrackStat['frameRate'],
+        ));
+      });
+
+      return statReport;
+    }).toList();
   }
 }

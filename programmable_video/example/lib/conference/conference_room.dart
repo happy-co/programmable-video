@@ -115,6 +115,11 @@ class ConferenceRoom with ChangeNotifier {
     }
   }
 
+  Future<List<StatsReport>> getStats() async {
+    var stats = await TwilioProgrammableVideo.getStats();
+    return stats;
+  }
+
   Future<void> sendMessage(String message) async {
     final tracks = _room.localParticipant.localDataTracks;
     final localDataTrack = tracks.isEmpty ? null : tracks[0].localDataTrack;

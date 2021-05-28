@@ -47,6 +47,28 @@ void main() {
     });
   });
 
+  group('.deviceHasReceiver()', () {
+    final mockInterface = MockInterface();
+    setUpAll(() => ProgrammableVideoPlatform.instance = mockInterface);
+
+    test('should call interface code to check if device has a receiver', () async {
+      final result = await TwilioProgrammableVideo.deviceHasReceiver();
+      expect(mockInterface.deviceHasReceiverWasCalled, true);
+      expect(result, true);
+    });
+  });
+
+  group('.getStats()', () {
+    final mockInterface = MockInterface();
+    setUpAll(() => ProgrammableVideoPlatform.instance = mockInterface);
+
+    test('should call interface code to get Stats', () async {
+      final result = await TwilioProgrammableVideo.getStats();
+      expect(mockInterface.getStatsWasCalled, true);
+      expect(result, []);
+    });
+  });
+
   group('.requestPermissionForCameraAndMicrophone()', () {
     test('should request camera and microphone permission', () async {
       var nativeRequestPermissionsIsCalled = false;

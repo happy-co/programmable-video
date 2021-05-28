@@ -27,6 +27,8 @@ public class PluginHandler: BaseListener {
             setSpeakerphoneOn(call, result: result)
         case "getSpeakerphoneOn":
             getSpeakerphoneOn(result: result)
+        case "deviceHasReceiver":
+            deviceHasReceiver(result: result)
         case "LocalAudioTrack#enable":
             localAudioTrackEnable(call, result: result)
         case "LocalDataTrack#sendString":
@@ -45,6 +47,8 @@ public class PluginHandler: BaseListener {
             hasTorch(result: result)
         case "CameraCapturer#setTorch":
             setTorch(call, result: result)
+        case "getStats":
+            getStats(result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -296,6 +300,33 @@ public class PluginHandler: BaseListener {
         return result(speakerPhoneOn)
     }
 
+    private func deviceHasReceiver(result: @escaping FlutterResult) {
+        let currentMode = AVAudioSession.sharedInstance().mode
+        var hasReceiver = false
+
+        if currentMode != .voiceChat {
+            do {
+                try AVAudioSession.sharedInstance().setMode(.voiceChat)
+            } catch let error as NSError {
+                return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
+            }
+        }
+
+        let receivers = AVAudioSession.sharedInstance().currentRoute.outputs
+        hasReceiver = receivers.first( where: { $0.portType == AVAudioSession.Port.builtInReceiver }) != nil
+
+        if AVAudioSession.sharedInstance().mode != currentMode {
+            do {
+                try AVAudioSession.sharedInstance().setMode(currentMode)
+            } catch let error as NSError {
+                return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
+            }
+        }
+
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.deviceHasReceiver => called \(hasReceiver)")
+        return result(hasReceiver)
+    }
+
     private func disconnect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.disconnect => called")
         SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.disconnect()
@@ -306,6 +337,11 @@ public class PluginHandler: BaseListener {
         }
 
         result(true)
+    }
+    private func getStats(result:@escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.getStats {
+            result(StatsMapper.statsReportsToDict($0))
+        }
     }
 
     private func initializeAudioDevice() {

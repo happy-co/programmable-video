@@ -263,7 +263,7 @@ void main() {
           enableDominantSpeaker: false,
           preferredAudioCodecs: null,
           preferredVideoCodecs: null,
-          region: null,
+          region: Region.us1,
           roomName: '',
           videoTracks: null,
           enableNetworkQuality: false,
@@ -278,7 +278,7 @@ void main() {
             'connectOptions': {
               'accessToken': '123',
               'roomName': '',
-              'region': null,
+              'region': 'us1',
               'preferredAudioCodecs': null,
               'preferredVideoCodecs': null,
               'audioTracks': null,
@@ -348,7 +348,9 @@ void main() {
     BaseRoomEvent lastEvent;
     StreamSubscription subscription;
     setUp(() {
-      subscription = instance.roomStream(0).listen((data) => lastEvent = data);
+      subscription = instance.roomStream(0).listen((data) {
+        lastEvent = data;
+      });
     });
     tearDown(() async {
       await subscription.cancel();
