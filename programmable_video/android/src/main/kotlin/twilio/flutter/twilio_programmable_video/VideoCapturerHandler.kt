@@ -200,6 +200,7 @@ class VideoCapturerHandler {
                 cameraIdCorrespondsToActiveCamera(capturer, it)
             } ?: return false
             return cameraManager.getCameraCharacteristics(activeCameraId)[CameraCharacteristics.FLASH_INFO_AVAILABLE]
+                    ?: false
         }
 
         private fun hasTorchCamera2Capturer(): Boolean {
@@ -208,6 +209,7 @@ class VideoCapturerHandler {
             val cameraManager: CameraManager = getCameraManager()
             val capturer = TwilioProgrammableVideoPlugin.cameraCapturer as Camera2Capturer
             return cameraManager.getCameraCharacteristics(capturer.cameraId)[CameraCharacteristics.FLASH_INFO_AVAILABLE]
+                    ?: false
         }
 
         private fun hasTorch(): Boolean {
