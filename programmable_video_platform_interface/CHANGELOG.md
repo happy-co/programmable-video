@@ -1,3 +1,7 @@
+## 0.4.0
+
+- **BREAKING CHANGE**: Added null safety support.
+
 ## 0.3.2
 
 - Added method for fetching stats.

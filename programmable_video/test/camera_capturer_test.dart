@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video/src/parts.dart';
-
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
+
 import 'mock_platform_interface.dart';
 
 void main() {
@@ -49,10 +49,6 @@ void main() {
       expect(firstInstance.cameraSource, CameraSource.FRONT_CAMERA);
 
       expect(firstInstance, secondInstance);
-    });
-
-    test('should not construct without a `CameraSource`', () async {
-      expect(() => CameraCapturer(null), throwsAssertionError);
     });
   });
 }

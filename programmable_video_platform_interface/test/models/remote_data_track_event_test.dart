@@ -17,7 +17,7 @@ void main() {
     });
 
     test('BufferMessage.toString() should return correct String', () {
-      final message = null;
+      final dynamic message = null;
       final event = BufferMessage(remoteDataTrack, message);
       expect(
         event.toString(),

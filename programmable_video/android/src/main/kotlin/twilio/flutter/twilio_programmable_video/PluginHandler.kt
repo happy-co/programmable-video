@@ -28,7 +28,6 @@ import com.twilio.video.PcmaCodec
 import com.twilio.video.PcmuCodec
 import com.twilio.video.RemoteAudioTrackPublication
 import com.twilio.video.RemoteParticipant
-import com.twilio.video.TwilioException
 import com.twilio.video.VideoCodec
 import com.twilio.video.Vp8Codec
 import com.twilio.video.Vp9Codec
@@ -192,12 +191,12 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun remoteAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val remoteAudioTrackSid = call.argument<String>("sid")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
+            ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
         val enable = call.argument<Boolean>("enable")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
         TwilioProgrammableVideoPlugin.debug("PluginHandler.remoteAudioTrackEnable => sid: $remoteAudioTrackSid enable: $enable")
         val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
-                ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
+            ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
 
         remoteAudioTrack.remoteAudioTrack?.enablePlayback(enable)
         return result.success(null)
@@ -205,17 +204,17 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun isRemoteAudioTrackPlaybackEnabled(call: MethodCall, result: MethodChannel.Result) {
         val remoteAudioTrackSid = call.argument<String>("sid")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
+            ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
         TwilioProgrammableVideoPlugin.debug("PluginHandler.isRemoteAudioTrackPlaybackEnabled => sid: $remoteAudioTrackSid")
         val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
-                ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
+            ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
 
         return result.success(remoteAudioTrack.remoteAudioTrack?.isPlaybackEnabled)
     }
 
     private fun getRemoteAudioTrack(sid: String): RemoteAudioTrackPublication? {
         val remoteParticipants = TwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants
-                ?: return null
+            ?: return null
 
         var remoteAudioTrack: RemoteAudioTrackPublication? = null
         for (remoteParticipant in remoteParticipants) {
@@ -375,19 +374,19 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 optionsBuilder.dataTracks(dataTracks)
             }
 
-                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting enableNetworkQuality to '${optionsObj["enableNetworkQuality"]}'")
-                optionsBuilder.enableNetworkQuality(optionsObj["enableNetworkQuality"] as Boolean)
+            TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting enableNetworkQuality to '${optionsObj["enableNetworkQuality"]}'")
+            optionsBuilder.enableNetworkQuality(optionsObj["enableNetworkQuality"] as Boolean)
 
-                if (optionsObj["networkQualityConfiguration"] != null) {
-                    val networkQualityConfigurationMap = optionsObj["networkQualityConfiguration"] as Map<*, *>
-                    val local: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["local"] as String)
-                    val remote: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["remote"] as String)
-                    optionsBuilder.networkQualityConfiguration(NetworkQualityConfiguration(local, remote))
-                }
+            if (optionsObj["networkQualityConfiguration"] != null) {
+                val networkQualityConfigurationMap = optionsObj["networkQualityConfiguration"] as Map<*, *>
+                val local: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["local"] as String)
+                val remote: NetworkQualityVerbosity = getNetworkQualityVerbosity(networkQualityConfigurationMap["remote"] as String)
+                optionsBuilder.networkQualityConfiguration(NetworkQualityConfiguration(local, remote))
+            }
 
-                // Set the local video tracks if it has been passed.
-                if (optionsObj["videoTracks"] != null) {
-                    val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
+            // Set the local video tracks if it has been passed.
+            if (optionsObj["videoTracks"] != null) {
+                val videoTrackOptions = optionsObj["videoTracks"] as Map<*, *>
 
                 val videoTracks = ArrayList<LocalVideoTrack?>()
                 for ((videoTrack) in videoTrackOptions) {
@@ -447,18 +446,20 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             // Request audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val playbackAttributes = AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
+                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
                 audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                        .setAudioAttributes(playbackAttributes)
-                        .setAcceptsDelayedFocusGain(true)
-                        .setOnAudioFocusChangeListener { }
-                        .build()
+                    .setAudioAttributes(playbackAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener { }
+                    .build()
                 audioManager.requestAudioFocus(audioFocusRequest!!)
             } else {
-                audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
-                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                audioManager.requestAudioFocus(
+                    null, AudioManager.STREAM_VOICE_CALL,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+                )
             }
             /*
              * Use MODE_IN_COMMUNICATION as the default audio mode. It is required
@@ -500,7 +501,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         }
     }
 
-    fun sendCameraEvent(name: String, data: Any, e: TwilioException? = null) {
+    fun sendCameraEvent(name: String, data: Any, e: java.lang.Exception? = null) {
         sendEvent(name, data, e)
     }
 }

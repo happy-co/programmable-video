@@ -14,9 +14,7 @@ abstract class Track {
   /// A pseudo random string is returned if no track name was specified.
   String get name => _name;
 
-  Track(this._enabled, this._name)
-      : assert(_enabled != null),
-        assert(_name != null);
+  Track(this._enabled, this._name);
 
   /// Update properties from a [TrackModel].
   void _updateFromModel(TrackModel model) {

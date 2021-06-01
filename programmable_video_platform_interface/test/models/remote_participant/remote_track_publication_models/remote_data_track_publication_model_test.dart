@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 import '../../model_instances.dart';
@@ -36,32 +35,13 @@ void main() {
       expect(model.enabled, enabled);
       expect(model.name, name);
 
-      expect(model.remoteDataTrack.name, remoteDataTrack.name);
-      expect(model.remoteDataTrack.enabled, remoteDataTrack.enabled);
-      expect(model.remoteDataTrack.sid, remoteDataTrack.sid);
-      expect(model.remoteDataTrack.maxRetransmits, remoteDataTrack.maxRetransmits);
-      expect(model.remoteDataTrack.maxPacketLifeTime, remoteDataTrack.maxPacketLifeTime);
-      expect(model.remoteDataTrack.reliable, remoteDataTrack.reliable);
-      expect(model.remoteDataTrack.ordered, remoteDataTrack.ordered);
-    });
-
-    test('should not construct from incorrect Map', () {
-      final map = {
-        'sid': null,
-        'subscribed': subscribed,
-        'enabled': enabled,
-        'name': null,
-        'remoteDataTrack': {
-          'name': remoteDataTrack.name,
-          'enabled': remoteDataTrack.enabled,
-          'sid': remoteDataTrack.sid,
-          'maxRetransmits': remoteDataTrack.maxRetransmits,
-          'maxPacketLifeTime': remoteDataTrack.maxPacketLifeTime,
-          'reliable': remoteDataTrack.reliable,
-          'ordered': remoteDataTrack.ordered,
-        }
-      };
-      expect(() => RemoteDataTrackPublicationModel.fromEventChannelMap(map), throwsAssertionError);
+      expect(model.remoteDataTrack!.name, remoteDataTrack.name);
+      expect(model.remoteDataTrack!.enabled, remoteDataTrack.enabled);
+      expect(model.remoteDataTrack!.sid, remoteDataTrack.sid);
+      expect(model.remoteDataTrack!.maxRetransmits, remoteDataTrack.maxRetransmits);
+      expect(model.remoteDataTrack!.maxPacketLifeTime, remoteDataTrack.maxPacketLifeTime);
+      expect(model.remoteDataTrack!.reliable, remoteDataTrack.reliable);
+      expect(model.remoteDataTrack!.ordered, remoteDataTrack.ordered);
     });
   });
 

@@ -4,7 +4,7 @@ part of twilio_programmable_video;
 class RemoteParticipant implements Participant {
   final String _identity;
 
-  final String _sid;
+  final String? _sid;
 
   final List<RemoteAudioTrackPublication> _remoteAudioTrackPublications = <RemoteAudioTrackPublication>[];
 
@@ -12,11 +12,11 @@ class RemoteParticipant implements Participant {
 
   final List<RemoteVideoTrackPublication> _remoteVideoTrackPublications = <RemoteVideoTrackPublication>[];
 
-  NetworkQualityLevel _networkQualityLevel;
+  NetworkQualityLevel _networkQualityLevel = NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
 
   /// The SID of the [RemoteParticipant].
   @override
-  String get sid => _sid;
+  String? get sid => _sid;
 
   /// The identity of the [RemoteParticipant].
   @override
@@ -46,112 +46,110 @@ class RemoteParticipant implements Participant {
   final StreamController<RemoteAudioTrackEvent> _onAudioTrackDisabled = StreamController<RemoteAudioTrackEvent>.broadcast();
 
   /// Notifies the listener that an [AudioTrack] has been disabled.
-  Stream<RemoteAudioTrackEvent> onAudioTrackDisabled;
+  late Stream<RemoteAudioTrackEvent> onAudioTrackDisabled;
 
   final StreamController<RemoteAudioTrackEvent> _onAudioTrackEnabled = StreamController<RemoteAudioTrackEvent>.broadcast();
 
   /// Notifies the listener that [AudioTrack] has been enabled.
-  Stream<RemoteAudioTrackEvent> onAudioTrackEnabled;
+  late Stream<RemoteAudioTrackEvent> onAudioTrackEnabled;
 
   final StreamController<RemoteAudioTrackEvent> _onAudioTrackPublished = StreamController<RemoteAudioTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has published a [RemoteAudioTrack] to this [Room].
   /// The audio of the track is not audible until the track has been subscribed to.
-  Stream<RemoteAudioTrackEvent> onAudioTrackPublished;
+  late Stream<RemoteAudioTrackEvent> onAudioTrackPublished;
 
   final StreamController<RemoteAudioTrackSubscriptionEvent> _onAudioTrackSubscribed = StreamController<RemoteAudioTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener the [RemoteAudioTrack] of the [RemoteParticipant] has been subscribed to.
   /// The audio track is audible after this event.
-  Stream<RemoteAudioTrackSubscriptionEvent> onAudioTrackSubscribed;
+  late Stream<RemoteAudioTrackSubscriptionEvent> onAudioTrackSubscribed;
 
   final StreamController<RemoteAudioTrackSubscriptionFailedEvent> _onAudioTrackSubscriptionFailed = StreamController<RemoteAudioTrackSubscriptionFailedEvent>.broadcast();
 
   /// Notifies the listener that media negotiation for a [RemoteAudioTrack] failed.
-  Stream<RemoteAudioTrackSubscriptionFailedEvent> onAudioTrackSubscriptionFailed;
+  late Stream<RemoteAudioTrackSubscriptionFailedEvent> onAudioTrackSubscriptionFailed;
 
   final StreamController<RemoteAudioTrackEvent> _onAudioTrackUnpublished = StreamController<RemoteAudioTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has unpublished a [RemoteAudioTrack] from this [Room].
-  Stream<RemoteAudioTrackEvent> onAudioTrackUnpublished;
+  late Stream<RemoteAudioTrackEvent> onAudioTrackUnpublished;
 
   final StreamController<RemoteAudioTrackSubscriptionEvent> _onAudioTrackUnsubscribed = StreamController<RemoteAudioTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener that the [RemoteAudioTrack] of the [RemoteParticipant] has been unsubscribed from.
   /// The track is no longer audible after being unsubscribed from the audio track.
-  Stream<RemoteAudioTrackSubscriptionEvent> onAudioTrackUnsubscribed;
+  late Stream<RemoteAudioTrackSubscriptionEvent> onAudioTrackUnsubscribed;
 
   final StreamController<RemoteDataTrackEvent> _onDataTrackPublished = StreamController<RemoteDataTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has published a [RemoteDataTrack] to this [Room].
-  Stream<RemoteDataTrackEvent> onDataTrackPublished;
+  late Stream<RemoteDataTrackEvent> onDataTrackPublished;
 
   final StreamController<RemoteDataTrackSubscriptionEvent> _onDataTrackSubscribed = StreamController<RemoteDataTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener the [RemoteDataTrack] of the [RemoteParticipant] has been subscribed to.
-  Stream<RemoteDataTrackSubscriptionEvent> onDataTrackSubscribed;
+  late Stream<RemoteDataTrackSubscriptionEvent> onDataTrackSubscribed;
 
   final StreamController<RemoteDataTrackSubscriptionFailedEvent> _onDataTrackSubscriptionFailed = StreamController<RemoteDataTrackSubscriptionFailedEvent>.broadcast();
 
   /// Notifies the listener that media negotiation for a [RemoteDataTrack] failed.
-  Stream<RemoteDataTrackSubscriptionFailedEvent> onDataTrackSubscriptionFailed;
+  late Stream<RemoteDataTrackSubscriptionFailedEvent> onDataTrackSubscriptionFailed;
 
   final StreamController<RemoteDataTrackEvent> _onDataTrackUnpublished = StreamController<RemoteDataTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has remove a [RemoteDataTrack] from this [Room].
-  Stream<RemoteDataTrackEvent> onDataTrackUnpublished;
+  late Stream<RemoteDataTrackEvent> onDataTrackUnpublished;
 
   final StreamController<RemoteDataTrackSubscriptionEvent> _onDataTrackUnsubscribed = StreamController<RemoteDataTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener that the [RemoteDataTrack] of the [RemoteParticipant] has been unsubscribed from.
-  Stream<RemoteDataTrackSubscriptionEvent> onDataTrackUnsubscribed;
+  late Stream<RemoteDataTrackSubscriptionEvent> onDataTrackUnsubscribed;
 
   final StreamController<RemoteNetworkQualityLevelChangedEvent> _onNetworkQualityLevelChanged = StreamController<RemoteNetworkQualityLevelChangedEvent>.broadcast();
 
   /// Notifies the listener that the [RemoteParticipant]'s [NetworkQualityLevel] has changed.
-  Stream<RemoteNetworkQualityLevelChangedEvent> onNetworkQualityLevelChanged;
+  late Stream<RemoteNetworkQualityLevelChangedEvent> onNetworkQualityLevelChanged;
 
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackDisabled = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] video track has been disabled.
-  Stream<RemoteVideoTrackEvent> onVideoTrackDisabled;
+  late Stream<RemoteVideoTrackEvent> onVideoTrackDisabled;
 
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackEnabled = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] video track has been enabled.
-  Stream<RemoteVideoTrackEvent> onVideoTrackEnabled;
+  late Stream<RemoteVideoTrackEvent> onVideoTrackEnabled;
 
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackPublished = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has published a [RemoteVideoTrack] to this [Room].
   /// Video frames will not begin flowing until the video track has been subscribed to.
-  Stream<RemoteVideoTrackEvent> onVideoTrackPublished;
+  late Stream<RemoteVideoTrackEvent> onVideoTrackPublished;
 
   final StreamController<RemoteVideoTrackSubscriptionEvent> _onVideoTrackSubscribed = StreamController<RemoteVideoTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener the [RemoteVideoTrack] of the [RemoteParticipant] has been subscribed to.
   /// Video frames are now flowing and can be rendered.
-  Stream<RemoteVideoTrackSubscriptionEvent> onVideoTrackSubscribed;
+  late Stream<RemoteVideoTrackSubscriptionEvent> onVideoTrackSubscribed;
 
   final StreamController<RemoteVideoTrackSubscriptionFailedEvent> _onVideoTrackSubscriptionFailed = StreamController<RemoteVideoTrackSubscriptionFailedEvent>.broadcast();
 
   /// Notifies the listener that media negotiation for a [RemoteVideoTrack] failed.
-  Stream<RemoteVideoTrackSubscriptionFailedEvent> onVideoTrackSubscriptionFailed;
+  late Stream<RemoteVideoTrackSubscriptionFailedEvent> onVideoTrackSubscriptionFailed;
 
   final StreamController<RemoteVideoTrackEvent> _onVideoTrackUnpublished = StreamController<RemoteVideoTrackEvent>.broadcast();
 
   /// Notifies the listener that a [RemoteParticipant] has removed a [RemoteVideoTrack] from this [Room].
-  Stream<RemoteVideoTrackEvent> onVideoTrackUnpublished;
+  late Stream<RemoteVideoTrackEvent> onVideoTrackUnpublished;
 
   final StreamController<RemoteVideoTrackSubscriptionEvent> _onVideoTrackUnsubscribed = StreamController<RemoteVideoTrackSubscriptionEvent>.broadcast();
 
   /// Notifies the listener that the [RemoteVideoTrack] of the [RemoteParticipant] has been unsubscribed from.
-  Stream<RemoteVideoTrackSubscriptionEvent> onVideoTrackUnsubscribed;
+  late Stream<RemoteVideoTrackSubscriptionEvent> onVideoTrackUnsubscribed;
 
   /// Represents a remote user that is connected to a [Room].
-  RemoteParticipant(this._identity, this._sid)
-      : assert(_identity != null),
-        assert(_sid != null) {
+  RemoteParticipant(this._identity, this._sid) {
     onAudioTrackDisabled = _onAudioTrackDisabled.stream;
     onAudioTrackEnabled = _onAudioTrackEnabled.stream;
     onAudioTrackPublished = _onAudioTrackPublished.stream;
@@ -218,43 +216,39 @@ class RemoteParticipant implements Participant {
 
   /// Update properties from a [RemoteParticipantModel].
   void _updateFromModel(RemoteParticipantModel model) {
-    if (model.remoteAudioTrackPublications != null) {
-      for (final remoteAudioTrackPublicationModel in model.remoteAudioTrackPublications) {
-        final remoteAudioTrackPublication = _remoteAudioTrackPublications.firstWhere(
-          (p) => p.trackSid == remoteAudioTrackPublicationModel.sid,
-          orElse: () => RemoteAudioTrackPublication._fromModel(remoteAudioTrackPublicationModel),
-        );
-        if (!_remoteAudioTrackPublications.contains(remoteAudioTrackPublication)) {
-          _remoteAudioTrackPublications.add(remoteAudioTrackPublication);
-        }
-        remoteAudioTrackPublication._updateFromModel(remoteAudioTrackPublicationModel);
+    for (final remoteAudioTrackPublicationModel in model.remoteAudioTrackPublications) {
+      final remoteAudioTrackPublication = _remoteAudioTrackPublications.firstWhere(
+        (p) => p.trackSid == remoteAudioTrackPublicationModel.sid,
+        orElse: () => RemoteAudioTrackPublication._fromModel(remoteAudioTrackPublicationModel),
+      );
+      if (!_remoteAudioTrackPublications.contains(remoteAudioTrackPublication)) {
+        _remoteAudioTrackPublications.add(remoteAudioTrackPublication);
       }
+      remoteAudioTrackPublication._updateFromModel(remoteAudioTrackPublicationModel);
     }
-    if (model.remoteDataTrackPublications != null) {
-      for (final remoteDataTrackPublicationModel in model.remoteDataTrackPublications) {
-        final remoteDataTrackPublication = _remoteDataTrackPublications.firstWhere(
-          (p) => p.trackSid == remoteDataTrackPublicationModel.sid,
-          orElse: () => RemoteDataTrackPublication._fromModel(remoteDataTrackPublicationModel),
-        );
-        if (!_remoteDataTrackPublications.contains(remoteDataTrackPublication)) {
-          _remoteDataTrackPublications.add(remoteDataTrackPublication);
-        }
-        remoteDataTrackPublication._updateFromModel(remoteDataTrackPublicationModel);
+
+    for (final remoteDataTrackPublicationModel in model.remoteDataTrackPublications) {
+      final remoteDataTrackPublication = _remoteDataTrackPublications.firstWhere(
+        (p) => p.trackSid == remoteDataTrackPublicationModel.sid,
+        orElse: () => RemoteDataTrackPublication._fromModel(remoteDataTrackPublicationModel),
+      );
+      if (!_remoteDataTrackPublications.contains(remoteDataTrackPublication)) {
+        _remoteDataTrackPublications.add(remoteDataTrackPublication);
       }
+      remoteDataTrackPublication._updateFromModel(remoteDataTrackPublicationModel);
     }
-    if (model.remoteVideoTrackPublications != null) {
-      for (final remoteVideoTrackPublicationModel in model.remoteVideoTrackPublications) {
-        final remoteVideoTrackPublication = _remoteVideoTrackPublications.firstWhere(
-          (p) => p.trackSid == remoteVideoTrackPublicationModel.sid,
-          orElse: () => RemoteVideoTrackPublication._fromModel(remoteVideoTrackPublicationModel, this),
-        );
-        if (!_remoteVideoTrackPublications.contains(remoteVideoTrackPublication)) {
-          _remoteVideoTrackPublications.add(remoteVideoTrackPublication);
-        }
-        remoteVideoTrackPublication._updateFromModel(remoteVideoTrackPublicationModel);
+
+    for (final remoteVideoTrackPublicationModel in model.remoteVideoTrackPublications) {
+      final remoteVideoTrackPublication = _remoteVideoTrackPublications.firstWhere(
+        (p) => p.trackSid == remoteVideoTrackPublicationModel.sid,
+        orElse: () => RemoteVideoTrackPublication._fromModel(remoteVideoTrackPublicationModel, this),
+      );
+      if (!_remoteVideoTrackPublications.contains(remoteVideoTrackPublication)) {
+        _remoteVideoTrackPublications.add(remoteVideoTrackPublication);
       }
+      remoteVideoTrackPublication._updateFromModel(remoteVideoTrackPublicationModel);
     }
-    _networkQualityLevel = model.networkQualityLevel ?? NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN;
+    _networkQualityLevel = model.networkQualityLevel;
   }
 
   void _parseEvents(BaseRemoteParticipantEvent event) {
@@ -270,7 +264,6 @@ class RemoteParticipant implements Participant {
     }
 
     RemoteAudioTrack findOrCreateRemoteAudioTrack(RemoteAudioTrackPublication publication, RemoteAudioTrackModel model) {
-      assert(publication != null);
       var remoteAudioTrack = publication.remoteAudioTrack;
       return remoteAudioTrack ??= RemoteAudioTrack._fromModel(model);
     }
@@ -285,7 +278,6 @@ class RemoteParticipant implements Participant {
     }
 
     RemoteDataTrack findOrCreateRemoteDataTrack(RemoteDataTrackPublication publication, RemoteDataTrackModel model) {
-      assert(publication != null);
       var remoteDataTrack = publication.remoteDataTrack;
       return remoteDataTrack ??= RemoteDataTrack._fromModel(model);
     }
@@ -300,7 +292,6 @@ class RemoteParticipant implements Participant {
     }
 
     RemoteVideoTrack findOrCreateRemoteVideoTrack(RemoteVideoTrackPublication publication, RemoteVideoTrackModel model) {
-      assert(publication != null);
       var remoteVideoTrack = publication.remoteVideoTrack;
       return remoteVideoTrack ??= RemoteVideoTrack._fromModel(model, this);
     }

@@ -11,6 +11,7 @@ import com.twilio.video.CameraCapturer
 import com.twilio.video.VideoCapturer
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.lang.Exception
 
 class VideoCapturerHandler {
     companion object {
@@ -62,7 +63,7 @@ class VideoCapturerHandler {
                 override fun onError(errorCode: Int) {
                     TwilioProgrammableVideoPlugin.handler.post {
                         TwilioProgrammableVideoPlugin.debug("CameraCapturer.onError => code: $errorCode")
-                        TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), null)
+                        TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer)), Exception(errorCode.toString()))
                     }
                 }
 

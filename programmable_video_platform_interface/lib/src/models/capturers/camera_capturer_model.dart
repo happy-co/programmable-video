@@ -11,7 +11,7 @@ class CameraCapturerModel implements VideoCapturerModel {
   const CameraCapturerModel(
     this.source,
     this.type,
-  ) : assert(source != null);
+  );
 
   @override
   String toString() {

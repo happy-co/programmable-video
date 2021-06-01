@@ -13,20 +13,20 @@ class JoinRoomForm extends StatefulWidget {
   final RoomBloc roomBloc;
 
   const JoinRoomForm({
-    Key key,
-    @required this.roomBloc,
+    Key? key,
+    required this.roomBloc,
   }) : super(key: key);
 
   static Widget create(BuildContext context) {
     final backendService = Provider.of<BackendService>(context, listen: false);
     return Provider<RoomBloc>(
       create: (BuildContext context) => RoomBloc(backendService: backendService),
+      dispose: (BuildContext context, RoomBloc roomBloc) => roomBloc.dispose(),
       child: Consumer<RoomBloc>(
         builder: (BuildContext context, RoomBloc roomBloc, _) => JoinRoomForm(
           roomBloc: roomBloc,
         ),
       ),
-      dispose: (BuildContext context, RoomBloc roomBloc) => roomBloc.dispose(),
     );
   }
 
@@ -43,7 +43,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
         stream: widget.roomBloc.modelStream,
         initialData: RoomModel(),
         builder: (BuildContext context, AsyncSnapshot<RoomModel> snapshot) {
-          final roomModel = snapshot.data;
+          final roomModel = snapshot.data!;
           return Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
             child: Column(
@@ -121,16 +121,16 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
           if (states.contains(MaterialState.disabled)) {
             return Colors.grey.shade300;
           } else {
-            return Theme.of(context).appBarTheme?.color ?? Theme.of(context).primaryColor;
+            return Theme.of(context).appBarTheme.color ?? Theme.of(context).primaryColor;
           }
         })),
+        onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
         child: FittedBox(
           child: Text(
             'JOIN',
-            style: TextStyle(color: Theme.of(context).appBarTheme?.textTheme?.headline6?.color ?? Colors.white),
+            style: TextStyle(color: Theme.of(context).appBarTheme.textTheme?.headline6?.color ?? Colors.white),
           ),
         ),
-        onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
       ),
     );
   }
@@ -147,7 +147,7 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
     } catch (err) {
       Debug.log(err);
       await PlatformExceptionAlertDialog(
-        exception: err,
+        exception: err as Exception,
       ).show(context);
     }
   }
