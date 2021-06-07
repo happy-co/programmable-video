@@ -91,7 +91,7 @@ class LocalVideoTrack extends VideoTrack {
     return LocalVideoTrackModel(
       enabled: _enabled,
       name: name,
-      cameraCapturer: CameraCapturerModel(cameraCapturer.cameraSource!, 'CameraCapturer'),
+      cameraCapturer: CameraCapturerModel(cameraCapturer.cameraSource, 'CameraCapturer'),
     );
   }
 }

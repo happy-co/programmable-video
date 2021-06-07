@@ -19,14 +19,11 @@ class LocalVideoTrackModel extends TrackModel {
     final cameraSource = videoCapturerMap['cameraSource'];
     assert(cameraSource != null);
 
-    final cameraSourceEnum = EnumToString.fromString(CameraSource.values, cameraSource);
-    assert(cameraSourceEnum != null);
-
     return LocalVideoTrackModel(
       name: map['name'],
       enabled: map['enabled'],
       cameraCapturer: CameraCapturerModel(
-        cameraSourceEnum!,
+        EnumToString.fromString(CameraSource.values, cameraSource),
         videoCapturerMap['type'],
       ),
     );

@@ -35,7 +35,7 @@ class CameraCapturer implements VideoCapturer {
   /// Singleton factory.
   ///
   /// Only one instance is allowed.
-  factory CameraCapturer(CameraSource cameraSource) {
+  factory CameraCapturer(CameraSource? cameraSource) {
     _cameraCapturer ??= CameraCapturer._internal();
     _cameraCapturer!._cameraSource = cameraSource;
     _cameraCapturer!._cameraStream ??= ProgrammableVideoPlatform.instance.cameraStream()?.listen(_cameraCapturer!._parseCameraEvents);
@@ -116,8 +116,8 @@ class CameraCapturer implements VideoCapturer {
   /// Update properties from a [VideoCapturerModel].
   @override
   void _updateFromModel(VideoCapturerModel? model) {
-    if (model != null && model is CameraCapturerModel) {
-      _cameraSource = model.source;
+    if (model is CameraCapturerModel && model.source != null) {
+      _cameraSource = model.source!;
     }
   }
 

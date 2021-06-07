@@ -1,3 +1,7 @@
+## 0.8.0+1
+
+- Removed incorrect `!` from `local_video_track_model.dart`.
+
 ## 0.8.0
 
 - **BREAKING CHANGE**: Added null safety support.
