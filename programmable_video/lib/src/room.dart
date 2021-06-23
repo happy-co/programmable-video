@@ -5,28 +5,28 @@ class Room {
   final int _internalId;
 
   /// Stream for the native room events.
-  StreamSubscription<BaseRoomEvent> _roomStream;
+  late StreamSubscription<BaseRoomEvent> _roomStream;
 
   /// Stream for the native remote participant events.
-  StreamSubscription<BaseRemoteParticipantEvent> _remoteParticipantStream;
+  late StreamSubscription<BaseRemoteParticipantEvent> _remoteParticipantStream;
 
   /// Stream for the native local participant events.
-  StreamSubscription<BaseLocalParticipantEvent> _localParticipantStream;
+  late StreamSubscription<BaseLocalParticipantEvent> _localParticipantStream;
 
   /// Stream for the native remote data track events.
-  StreamSubscription<BaseRemoteDataTrackEvent> _remoteDataTrackStream;
+  late StreamSubscription<BaseRemoteDataTrackEvent> _remoteDataTrackStream;
 
-  String _sid;
+  String? _sid;
 
-  String _name;
+  String? _name;
 
-  Region _mediaRegion;
+  Region? _mediaRegion;
 
-  RoomState _state;
+  RoomState? _state;
 
-  LocalParticipant _localParticipant;
+  LocalParticipant? _localParticipant;
 
-  RemoteParticipant _dominantSpeaker;
+  RemoteParticipant? _dominantSpeaker;
 
   final List<RemoteParticipant> _remoteParticipants = [];
 
@@ -34,10 +34,10 @@ class Room {
   final Map<String, List<dynamic>> _remoteParticipantsEventBuffer = {};
 
   /// The SID of this [Room].
-  String get sid => _sid;
+  String? get sid => _sid;
 
   /// The name of this [Room].
-  String get name => _name;
+  String? get name => _name;
 
   /// The region where media is processed.
   ///
@@ -45,78 +45,78 @@ class Room {
   /// It can be `null` under the following conditions:
   /// * The [Room] has not reached the [RoomState.CONNECTED] state.
   /// * The instance represents a peer-to-peer room.
-  Region get mediaRegion => _mediaRegion;
+  Region? get mediaRegion => _mediaRegion;
 
   /// The current room state.
-  RoomState get state => _state;
+  RoomState? get state => _state;
 
   /// The current local participant.
   ///
   /// If the room has not reached [RoomState.CONNECTED] then it will be `null`.
-  LocalParticipant get localParticipant => _localParticipant;
+  LocalParticipant? get localParticipant => _localParticipant;
 
   /// All currently connected participants.
   List<RemoteParticipant> get remoteParticipants => <RemoteParticipant>[..._remoteParticipants];
 
   /// The remote participant with the loudest audio track.
-  RemoteParticipant get dominantSpeaker => _dominantSpeaker;
+  RemoteParticipant? get dominantSpeaker => _dominantSpeaker;
 
   final StreamController<DominantSpeakerChangedEvent> _onDominantSpeakerChange = StreamController<DominantSpeakerChangedEvent>.broadcast();
 
   /// Called when the participant with the loudest audio track changes.
-  Stream<DominantSpeakerChangedEvent> onDominantSpeakerChange;
+  late Stream<DominantSpeakerChangedEvent> onDominantSpeakerChange;
 
   final StreamController<RoomConnectFailureEvent> _onConnectFailure = StreamController<RoomConnectFailureEvent>.broadcast();
 
   /// Called when a connection to a room failed.
-  Stream<RoomConnectFailureEvent> onConnectFailure;
+  late Stream<RoomConnectFailureEvent> onConnectFailure;
 
   final StreamController<Room> _onConnected = StreamController<Room>.broadcast();
 
   /// Called when a room has succeeded.
-  Stream<Room> onConnected;
+  late Stream<Room> onConnected;
 
   final StreamController<RoomDisconnectedEvent> _onDisconnected = StreamController<RoomDisconnectedEvent>.broadcast();
 
   /// Called when a room has been disconnected from.
-  Stream<RoomDisconnectedEvent> onDisconnected;
+  late Stream<RoomDisconnectedEvent> onDisconnected;
 
   final StreamController<RoomParticipantConnectedEvent> _onParticipantConnected = StreamController<RoomParticipantConnectedEvent>.broadcast();
 
   /// Called when a participant has connected to a room.
-  Stream<RoomParticipantConnectedEvent> onParticipantConnected;
+  late Stream<RoomParticipantConnectedEvent> onParticipantConnected;
 
   final StreamController<RoomParticipantDisconnectedEvent> _onParticipantDisconnected = StreamController<RoomParticipantDisconnectedEvent>.broadcast();
 
   /// Called when a participant has disconnected from a room.
-  Stream<RoomParticipantDisconnectedEvent> onParticipantDisconnected;
+  late Stream<RoomParticipantDisconnectedEvent> onParticipantDisconnected;
 
   final StreamController<Room> _onReconnected = StreamController<Room>.broadcast();
 
   /// Called after the [LocalParticipant] reconnects to a room after a network disruption.
-  Stream<Room> onReconnected;
+  late Stream<Room> onReconnected;
 
   final StreamController<RoomReconnectingEvent> _onReconnecting = StreamController<RoomReconnectingEvent>.broadcast();
 
   /// Called when the [LocalParticipant] has experienced a network disruption and the client
   /// begins trying to reestablish a connection to a room.
-  Stream<RoomReconnectingEvent> onReconnecting;
+  late Stream<RoomReconnectingEvent> onReconnecting;
 
   final StreamController<Room> _onRecordingStarted = StreamController<Room>.broadcast();
 
   /// This method is only called when a Room which was not previously recording starts recording.
-  Stream<Room> onRecordingStarted;
+  late Stream<Room> onRecordingStarted;
 
   final StreamController<Room> _onRecordingStopped = StreamController<Room>.broadcast();
 
   /// This method is only called when a Room which was previously recording stops recording.
-  Stream<Room> onRecordingStopped;
+  late Stream<Room> onRecordingStopped;
 
-  Room(this._internalId) : assert(_internalId != null) {
-    _roomStream = ProgrammableVideoPlatform.instance.roomStream(_internalId).listen(_parseRoomEvents);
-    _remoteParticipantStream = ProgrammableVideoPlatform.instance.remoteParticipantStream(_internalId).listen(_parseRemoteParticipantEvents);
-    _localParticipantStream = ProgrammableVideoPlatform.instance.localParticipantStream(_internalId).listen(_parseLocalParticipantEvents);
-    _remoteDataTrackStream = ProgrammableVideoPlatform.instance.remoteDataTrackStream(_internalId).listen(_parseRemoteDataTrackEvents);
+  Room(this._internalId) {
+    _roomStream = ProgrammableVideoPlatform.instance.roomStream(_internalId)!.listen(_parseRoomEvents);
+    _remoteParticipantStream = ProgrammableVideoPlatform.instance.remoteParticipantStream(_internalId)!.listen(_parseRemoteParticipantEvents);
+    _localParticipantStream = ProgrammableVideoPlatform.instance.localParticipantStream(_internalId)!.listen(_parseLocalParticipantEvents);
+    _remoteDataTrackStream = ProgrammableVideoPlatform.instance.remoteDataTrackStream(_internalId)!.listen(_parseRemoteDataTrackEvents);
 
     onDominantSpeakerChange = _onDominantSpeakerChange.stream;
     onConnectFailure = _onConnectFailure.stream;
@@ -144,22 +144,21 @@ class Room {
   ///
   /// If there are buffered events, they will be passed to the [RemoteParticipant].
   RemoteParticipant _findOrCreateRemoteParticipant(RemoteParticipantModel model) {
-    var remoteParticipant = model != null
-        ? _remoteParticipants.firstWhere(
-            (RemoteParticipant p) => p.sid == model?.sid,
-            orElse: () => RemoteParticipant._fromModel(model),
-          )
-        : null;
+    var remoteParticipant = _remoteParticipants.firstWhere(
+      (RemoteParticipant p) => p.sid == model.sid,
+      orElse: () => RemoteParticipant._fromModel(model),
+    );
 
     // Check if there is an actual remote participants
-    if (remoteParticipant != null) {
+    final remoteParticipantSid = remoteParticipant.sid;
+    if (remoteParticipantSid != null) {
       // Check if there are events buffered for the remote participant.
-      if (_remoteParticipantsEventBuffer.containsKey(remoteParticipant.sid)) {
-        for (var event in _remoteParticipantsEventBuffer[remoteParticipant.sid]) {
+      if (_remoteParticipantsEventBuffer.containsKey(remoteParticipantSid)) {
+        for (var event in _remoteParticipantsEventBuffer[remoteParticipantSid]!) {
           remoteParticipant._parseEvents(event);
         }
         // Empty the event buffer.
-        _remoteParticipantsEventBuffer[remoteParticipant.sid] = [];
+        _remoteParticipantsEventBuffer[remoteParticipantSid] = [];
       }
     }
 
@@ -184,24 +183,23 @@ class Room {
       }
       _remoteParticipants.clear();
 
+      final exception = event.exception;
+
       _onDisconnected.add(RoomDisconnectedEvent(
         this,
-        event.exception?.let((it) => TwilioException._fromModel(it)),
+        exception != null ? TwilioException._fromModel(exception) : null,
       ));
     } else if (event is ParticipantConnected) {
-      assert(event.connectedParticipant != null);
       final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);
-      if (remoteParticipant != null && !_remoteParticipants.contains(remoteParticipant)) {
+
+      if (!_remoteParticipants.contains(remoteParticipant)) {
         _remoteParticipants.add(remoteParticipant);
       }
       _onParticipantConnected.add(RoomParticipantConnectedEvent(this, remoteParticipant));
     } else if (event is ParticipantDisconnected) {
-      assert(event.disconnectedParticipant != null);
       var remoteParticipant = _findOrCreateRemoteParticipant(event.disconnectedParticipant);
 
-      if (remoteParticipant != null) {
-        _remoteParticipants.remove(remoteParticipant);
-      }
+      _remoteParticipants.remove(remoteParticipant);
       _onParticipantDisconnected.add(RoomParticipantDisconnectedEvent(this, remoteParticipant));
       remoteParticipant._dispose();
     } else if (event is Reconnected) {
@@ -213,11 +211,13 @@ class Room {
     } else if (event is RecordingStopped) {
       _onRecordingStopped.add(this);
     } else if (event is DominantSpeakerChanged) {
-      final remoteParticipant = _findOrCreateRemoteParticipant(event.dominantSpeaker);
+      final dominantSpeaker = event.dominantSpeaker;
+      final remoteParticipant = dominantSpeaker != null ? _findOrCreateRemoteParticipant(dominantSpeaker) : null;
+      _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, remoteParticipant));
+
       if (remoteParticipant != null && !_remoteParticipants.contains(remoteParticipant)) {
         _remoteParticipants.add(remoteParticipant);
       }
-      _onDominantSpeakerChange.add(DominantSpeakerChangedEvent(this, remoteParticipant));
     }
   }
 
@@ -231,31 +231,38 @@ class Room {
     if (event is SkipAbleRemoteParticipantEvent) return;
 
     final remoteParticipantModel = event.remoteParticipantModel;
-    final remoteParticipant = _remoteParticipants.firstWhere((p) => p.sid == remoteParticipantModel.sid, orElse: () => null);
+    if (remoteParticipantModel != null) {
+      final remoteParticipant = _remoteParticipants.firstWhereOrNull((p) => p.sid == remoteParticipantModel.sid);
+      final remoteParticipantModelSid = remoteParticipantModel.sid;
 
-    // If the received sid doesn't match, just buffer the event.
-    if (remoteParticipant == null) {
-      if (!_remoteParticipantsEventBuffer.containsKey(remoteParticipantModel.sid)) {
-        _remoteParticipantsEventBuffer[remoteParticipantModel.sid] = [];
+      if (remoteParticipantModelSid != null) {
+        // If the received sid doesn't match, just buffer the event.
+        if (remoteParticipant == null) {
+          if (!_remoteParticipantsEventBuffer.containsKey(remoteParticipantModelSid)) {
+            _remoteParticipantsEventBuffer[remoteParticipantModelSid] = [];
+          }
+          TwilioProgrammableVideo._log("RemoteParticipant => Buffering event '$event' for participant '$remoteParticipantModelSid'");
+          return _remoteParticipantsEventBuffer[remoteParticipantModelSid]!.add(event);
+        }
+
+        remoteParticipant._parseEvents(event);
       }
-      TwilioProgrammableVideo._log("RemoteParticipant => Buffering event '$event' for participant '${event.remoteParticipantModel.sid}'");
-      return _remoteParticipantsEventBuffer[remoteParticipantModel.sid].add(event);
     }
-
-    remoteParticipant._parseEvents(event);
   }
 
   /// Parse native local participant events.
   void _parseLocalParticipantEvents(BaseLocalParticipantEvent event) {
     TwilioProgrammableVideo._log("LocalParticipant => Event '$event'");
 
+    final localParticipant = _localParticipant;
+
     // If no localParticipant data is received, skip the event.
-    if (event is SkipAbleLocalParticipantEvent || _localParticipant == null) {
+    if (event is SkipAbleLocalParticipantEvent || localParticipant == null) {
       return;
     }
 
-    _localParticipant._updateFromModel(event.localParticipantModel);
-    _localParticipant._parseEvents(event);
+    localParticipant._updateFromModel(event.localParticipantModel!);
+    localParticipant._parseEvents(event);
   }
 
   /// Parse native remote participant events.
@@ -273,16 +280,16 @@ class Room {
 
     _remoteParticipants.forEach((RemoteParticipant remoteParticipant) {
       remoteParticipant.remoteDataTracks.forEach((RemoteDataTrackPublication dataTrackPublication) {
-        if (dataTrackPublication.trackSid == remoteDataTrackModel.sid) {
-          dataTrackPublication.remoteDataTrack._parseEvents(event);
+        if (dataTrackPublication.trackSid == remoteDataTrackModel!.sid) {
+          dataTrackPublication.remoteDataTrack!._parseEvents(event);
         }
       });
     });
   }
 
   /// Update this instances state from RoomEvents
-  void _updateFromModel(RoomModel roomModel) {
-    if (roomModel != null && _sid == null || roomModel.sid == _sid) {
+  void _updateFromModel(RoomModel? roomModel) {
+    if (roomModel != null && _sid == null || roomModel!.sid == _sid) {
       _sid ??= roomModel.sid;
       _name = roomModel.name;
       _state = roomModel.state;
@@ -291,22 +298,21 @@ class Room {
       }
 
       if (roomModel.localParticipant != null) {
-        _localParticipant ??= LocalParticipant._fromModel(roomModel.localParticipant);
-        _localParticipant._updateFromModel(roomModel.localParticipant);
+        _localParticipant ??= LocalParticipant._fromModel(roomModel.localParticipant!);
+        _localParticipant!._updateFromModel(roomModel.localParticipant!);
       }
-      if (roomModel.remoteParticipants != null) {
-        for (final remoteParticipantModel in roomModel.remoteParticipants) {
-          final remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantModel);
-          if (!_remoteParticipants.contains(remoteParticipant)) {
-            _remoteParticipants.add(remoteParticipant);
-          }
-          remoteParticipant._updateFromModel(remoteParticipantModel);
+
+      for (final remoteParticipantModel in roomModel.remoteParticipants) {
+        final remoteParticipant = _findOrCreateRemoteParticipant(remoteParticipantModel);
+        if (!_remoteParticipants.contains(remoteParticipant)) {
+          _remoteParticipants.add(remoteParticipant);
         }
-        var removeParticipants = _remoteParticipants.where((p) => !roomModel.remoteParticipants.any((model) => p.sid == model.sid)).toList();
-        for (var participant in removeParticipants) {
-          _remoteParticipants.remove(participant);
-          participant._dispose();
-        }
+        remoteParticipant._updateFromModel(remoteParticipantModel);
+      }
+      var removeParticipants = _remoteParticipants.where((p) => !roomModel.remoteParticipants.any((model) => p.sid == model.sid)).toList();
+      for (var participant in removeParticipants) {
+        _remoteParticipants.remove(participant);
+        participant._dispose();
       }
     }
   }

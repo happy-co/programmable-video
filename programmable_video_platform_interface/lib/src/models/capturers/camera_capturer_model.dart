@@ -3,7 +3,7 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 
 /// Model that a plugin implementation can use to construct a CameraCapturer.
 class CameraCapturerModel implements VideoCapturerModel {
-  final CameraSource source;
+  final CameraSource? source;
   final String type;
   @override
   final bool isScreencast = false;
@@ -11,7 +11,7 @@ class CameraCapturerModel implements VideoCapturerModel {
   const CameraCapturerModel(
     this.source,
     this.type,
-  ) : assert(source != null);
+  );
 
   @override
   String toString() {

@@ -7,10 +7,9 @@ typedef ResponsiveBuilder = Widget Function(
 
 class ResponsiveSafeArea extends StatelessWidget {
   const ResponsiveSafeArea({
-    @required ResponsiveBuilder builder,
-    Key key,
+    required ResponsiveBuilder builder,
+    Key? key,
   })  : responsiveBuilder = builder,
-        assert(builder != null),
         super(key: key);
 
   final ResponsiveBuilder responsiveBuilder;

@@ -70,7 +70,7 @@ class TwilioException implements Exception {
   final int code;
 
   /// Message containing a short explanation.
-  final String message;
+  final String? message;
 
   const TwilioException(this.code, this.message);
 

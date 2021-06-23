@@ -4,7 +4,7 @@ part of twilio_programmable_video;
 class RemoteDataTrackPublication implements DataTrackPublication {
   final String _sid;
   final String _name;
-  RemoteDataTrack _remoteDataTrack;
+  RemoteDataTrack? _remoteDataTrack;
   bool _subscribed;
   bool _enabled;
 
@@ -26,17 +26,15 @@ class RemoteDataTrackPublication implements DataTrackPublication {
   /// Returns the published remote data track.
   ///
   /// Will return `null` if the track is not subscribed to.
-  RemoteDataTrack get remoteDataTrack => _remoteDataTrack;
+  RemoteDataTrack? get remoteDataTrack => _remoteDataTrack;
 
   /// The base data track object of the published remote data track.
   ///
   /// Will return `null` if the track is not subscribed to.
   @override
-  DataTrack get dataTrack => _remoteDataTrack;
+  DataTrack? get dataTrack => _remoteDataTrack;
 
-  RemoteDataTrackPublication(this._subscribed, this._enabled, this._sid, this._name)
-      : assert(_sid != null),
-        assert(_name != null);
+  RemoteDataTrackPublication(this._subscribed, this._enabled, this._sid, this._name);
 
   /// Construct from a [RemoteDataTrackPublicationModel].
   factory RemoteDataTrackPublication._fromModel(RemoteDataTrackPublicationModel model) {
@@ -50,9 +48,10 @@ class RemoteDataTrackPublication implements DataTrackPublication {
     _subscribed = model.subscribed;
     _enabled = model.enabled;
 
-    if (model.remoteDataTrack != null) {
-      _remoteDataTrack ??= RemoteDataTrack._fromModel(model.remoteDataTrack);
-      _remoteDataTrack._updateFromModel(model.remoteDataTrack);
+    final remoteDataTrack = model.remoteDataTrack;
+    if (remoteDataTrack != null) {
+      _remoteDataTrack ??= RemoteDataTrack._fromModel(remoteDataTrack);
+      _remoteDataTrack!._updateFromModel(model.remoteDataTrack);
     } else {
       _remoteDataTrack = null;
     }

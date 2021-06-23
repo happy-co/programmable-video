@@ -1,12 +1,9 @@
-## 0.3.3
-
-- Added `createLocalVideoTrackWidget()` and `createRemoteVideoTrackWidget()` methods.
-
 ## 0.3.2
 
 - Added method for fetching stats.
 
 ## 0.3.1
+
 - Added method for checking if device has a builtin earpiece.
 
 ## 0.3.0

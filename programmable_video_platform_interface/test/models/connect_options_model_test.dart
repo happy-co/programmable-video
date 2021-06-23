@@ -71,9 +71,9 @@ void main() {
             'region': EnumToString.convertToString(region),
             'preferredAudioCodecs': Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)),
             'preferredVideoCodecs': Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)),
-            'audioTracks': Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((TrackModel a) => a.toMap())),
+            'audioTracks': Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object?>>((TrackModel a) => a.toMap())),
             'dataTracks': Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrackModel d) => d.toMap())),
-            'videoTracks': Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrackModel v) => v.toMap())),
+            'videoTracks': Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object?>>((LocalVideoTrackModel v) => v.toMap())),
             'enableDominantSpeaker': enableDominantSpeaker,
             'enableAutomaticSubscription': enableAutomaticSubscription,
             'enableNetworkQuality': enableNetworkQuality,
@@ -86,22 +86,6 @@ void main() {
 
   group('ConnectOptionsModel()', () {
     test('should not construct without accessToken', () {
-      expect(
-          () => ConnectOptionsModel(
-                null,
-                audioTracks: audioTracks,
-                dataTracks: dataTracks,
-                videoTracks: videoTracks,
-                enableAutomaticSubscription: enableAutomaticSubscription,
-                enableDominantSpeaker: enableDominantSpeaker,
-                preferredAudioCodecs: preferredAudioCodecs,
-                preferredVideoCodecs: preferredVideoCodecs,
-                region: region,
-                roomName: roomName,
-                enableNetworkQuality: enableNetworkQuality,
-                networkQualityConfiguration: networkQualityConfiguration,
-              ),
-          throwsAssertionError);
       expect(
           () => ConnectOptionsModel(
                 '',

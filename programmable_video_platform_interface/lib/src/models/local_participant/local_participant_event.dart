@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// The base LocalParticipantEvent that all other LocalParticipantEvent types must extend.
 abstract class BaseLocalParticipantEvent {
-  final LocalParticipantModel localParticipantModel;
+  final LocalParticipantModel? localParticipantModel;
 
   const BaseLocalParticipantEvent(
     this.localParticipantModel,
@@ -33,13 +32,10 @@ class LocalAudioTrackPublicationFailed extends BaseLocalParticipantEvent {
   final TwilioExceptionModel exception;
 
   const LocalAudioTrackPublicationFailed({
-    @required this.localAudioTrack,
-    @required this.exception,
-    @required LocalParticipantModel localParticipantModel,
-  })  : assert(localAudioTrack != null),
-        assert(exception != null),
-        assert(localParticipantModel != null),
-        super(localParticipantModel);
+    required this.localAudioTrack,
+    required this.exception,
+    required LocalParticipantModel localParticipantModel,
+  }) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalAudioTrackPublicationFailed: { localParticipantModel: $localParticipantModel, localAudioTrack: $localAudioTrack, exception: $exception }';
@@ -64,13 +60,10 @@ class LocalDataTrackPublicationFailed extends BaseLocalParticipantEvent {
   final TwilioExceptionModel exception;
 
   const LocalDataTrackPublicationFailed({
-    @required this.localDataTrack,
-    @required this.exception,
-    @required LocalParticipantModel localParticipantModel,
-  })  : assert(localDataTrack != null),
-        assert(exception != null),
-        assert(localParticipantModel != null),
-        super(localParticipantModel);
+    required this.localDataTrack,
+    required this.exception,
+    required LocalParticipantModel localParticipantModel,
+  }) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalDataTrackPublicationFailed: { localParticipantModel: $localParticipantModel, localDataTrack: $localDataTrack, exception: $exception }';
@@ -95,13 +88,10 @@ class LocalVideoTrackPublicationFailed extends BaseLocalParticipantEvent {
   final TwilioExceptionModel exception;
 
   const LocalVideoTrackPublicationFailed({
-    @required this.localVideoTrack,
-    @required this.exception,
-    @required LocalParticipantModel localParticipantModel,
-  })  : assert(localVideoTrack != null),
-        assert(exception != null),
-        assert(localParticipantModel != null),
-        super(localParticipantModel);
+    required this.localVideoTrack,
+    required this.exception,
+    required LocalParticipantModel localParticipantModel,
+  }) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalVideoTrackPublicationFailed: { localParticipantModel: $localParticipantModel, localVideoTrack: $localVideoTrack, exception: $exception }';
@@ -111,7 +101,10 @@ class LocalVideoTrackPublicationFailed extends BaseLocalParticipantEvent {
 class LocalNetworkQualityLevelChanged extends BaseLocalParticipantEvent {
   final NetworkQualityLevel networkQualityLevel;
 
-  const LocalNetworkQualityLevelChanged(LocalParticipantModel localParticipantModel, this.networkQualityLevel) : super(localParticipantModel);
+  const LocalNetworkQualityLevelChanged(
+    LocalParticipantModel localParticipantModel,
+    this.networkQualityLevel,
+  ) : super(localParticipantModel);
 
   @override
   String toString() => 'LocalNetworkQualityLevelChanged: { localParticipantModel: $localParticipantModel, networkQualityLevel: $networkQualityLevel}';

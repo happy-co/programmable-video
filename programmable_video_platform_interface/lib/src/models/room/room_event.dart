@@ -2,7 +2,7 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 
 /// The base RoomEvent that all other RoomEvent types must extend.
 abstract class BaseRoomEvent {
-  final RoomModel roomModel;
+  final RoomModel? roomModel;
 
   const BaseRoomEvent(this.roomModel);
 
@@ -33,7 +33,7 @@ class Connected extends BaseRoomEvent {
 
 /// Use this event when the LocalParticipant disconnects from the Room.
 class Disconnected extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const Disconnected(
     RoomModel roomModel,
@@ -109,7 +109,7 @@ class RecordingStopped extends BaseRoomEvent {
 
 /// Use this event when a new RemoteParticipant becomes the dominant speaker.
 class DominantSpeakerChanged extends BaseRoomEvent {
-  final RemoteParticipantModel dominantSpeaker;
+  final RemoteParticipantModel? dominantSpeaker;
 
   const DominantSpeakerChanged(
     RoomModel roomModel,

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 import '../../model_instances.dart';
@@ -7,22 +6,6 @@ import '../../model_instances.dart';
 void main() {
   final sid = 'sid';
   final localDataTrack = ModelInstances.localDataTrackModel;
-
-  group('LocalDataTrackPublicationModel()', () {
-    test('should not construct without sid', () {
-      expect(
-        () => LocalDataTrackPublicationModel(sid: null, localDataTrack: localDataTrack),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without localDataTrack', () {
-      expect(
-        () => LocalDataTrackPublicationModel(sid: sid, localDataTrack: null),
-        throwsAssertionError,
-      );
-    });
-  });
 
   group('.fromEventChannelMap()', () {
     test('should correctly construct from Map', () {

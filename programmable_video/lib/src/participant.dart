@@ -3,7 +3,7 @@ part of twilio_programmable_video;
 /// Interface that represents user in a [Room].
 abstract class Participant {
   /// The unique identifier of a participant.
-  String get sid;
+  String? get sid;
 
   /// The identity of a participant.
   String get identity;
@@ -18,7 +18,7 @@ abstract class Participant {
   ///
   /// This is part of the Network Quality API and must be enabled by enabling the
   /// [ConnectOptions.enableNetworkQuality] option.
-  NetworkQualityLevel get networkQualityLevel;
+  NetworkQualityLevel? get networkQualityLevel;
 
   /// The audio track publications of a participant.
   List<AudioTrackPublication> get audioTracks;

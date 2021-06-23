@@ -1,23 +1,25 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
 import './platform_widget.dart';
 
 class PlatformAlertDialog extends PlatformWidget {
-  PlatformAlertDialog({@required this.title, @required this.content, @required this.defaultActionText, this.cancelActionText})
-      : assert(title != null),
-        assert(content != null),
-        assert(defaultActionText != null);
+  PlatformAlertDialog({
+    required this.title,
+    required this.content,
+    required this.defaultActionText,
+    this.cancelActionText,
+  });
 
   final String title;
   final String content;
   final String defaultActionText;
-  final String cancelActionText;
+  final String? cancelActionText;
 
-  Future<bool> show(BuildContext context) async {
+  Future<bool?> show(BuildContext context) async {
     return !kIsWeb && Platform.isIOS
         ? await showCupertinoDialog<bool>(
             context: context,
@@ -53,19 +55,19 @@ class PlatformAlertDialog extends PlatformWidget {
     if (cancelActionText != null) {
       actions.add(
         PlatformAlertDialogAction(
-          child: Text(cancelActionText),
           onPressed: () {
             Navigator.of(context).pop(false);
           },
+          child: Text(cancelActionText!),
         ),
       );
     }
     actions.add(
       PlatformAlertDialogAction(
-        child: Text(defaultActionText),
         onPressed: () {
           Navigator.of(context).pop(true);
         },
+        child: Text(defaultActionText),
       ),
     );
     return actions;
@@ -74,8 +76,8 @@ class PlatformAlertDialog extends PlatformWidget {
 
 class PlatformAlertDialogAction extends PlatformWidget {
   PlatformAlertDialogAction({
-    this.child,
-    this.onPressed,
+    required this.child,
+    required this.onPressed,
   });
 
   final Widget child;
@@ -84,16 +86,16 @@ class PlatformAlertDialogAction extends PlatformWidget {
   @override
   Widget buildCupertinoWidget(BuildContext context) {
     return CupertinoDialogAction(
-      child: child,
       onPressed: onPressed,
+      child: child,
     );
   }
 
   @override
   Widget buildMaterialWidget(BuildContext context) {
     return TextButton(
-      child: child,
       onPressed: onPressed,
+      child: child,
     );
   }
 }

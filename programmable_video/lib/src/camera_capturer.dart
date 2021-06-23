@@ -3,30 +3,30 @@ part of twilio_programmable_video;
 /// The [CameraCapturer] is used to provide video frames for a [LocalVideoTrack] from a given [CameraSource].
 class CameraCapturer implements VideoCapturer {
   /// Instance for the singleton behaviour.
-  static CameraCapturer _cameraCapturer;
+  static CameraCapturer? _cameraCapturer;
 
   /// Stream for native camera events
-  StreamSubscription<BaseCameraEvent> _cameraStream;
+  StreamSubscription<BaseCameraEvent>? _cameraStream;
 
   final StreamController<CameraSwitchedEvent> _onCameraSwitched = StreamController<CameraSwitchedEvent>.broadcast();
 
   /// Called when the camera has switched
-  Stream<CameraSwitchedEvent> onCameraSwitched;
+  Stream<CameraSwitchedEvent>? onCameraSwitched;
 
   final StreamController<FirstFrameAvailableEvent> _onFirstFrameAvailable = StreamController<FirstFrameAvailableEvent>.broadcast();
 
   /// Called when the first frame is available from the camera
-  Stream<FirstFrameAvailableEvent> onFirstFrameAvailable;
+  Stream<FirstFrameAvailableEvent>? onFirstFrameAvailable;
 
   final StreamController<CameraErrorEvent> _onCameraError = StreamController<CameraErrorEvent>.broadcast();
 
   /// Called when the camera has thrown an error
-  Stream<CameraErrorEvent> onCameraError;
+  Stream<CameraErrorEvent>? onCameraError;
 
-  CameraSource _cameraSource;
+  CameraSource? _cameraSource;
 
   /// The current specified camera source.
-  CameraSource get cameraSource => _cameraSource;
+  CameraSource? get cameraSource => _cameraSource;
 
   /// Indicates that the camera capturer is not a screen cast.
   @override
@@ -35,15 +35,14 @@ class CameraCapturer implements VideoCapturer {
   /// Singleton factory.
   ///
   /// Only one instance is allowed.
-  factory CameraCapturer(CameraSource cameraSource) {
-    assert(cameraSource != null);
+  factory CameraCapturer(CameraSource? cameraSource) {
     _cameraCapturer ??= CameraCapturer._internal();
-    _cameraCapturer._cameraSource = cameraSource;
-    _cameraCapturer._cameraStream ??= ProgrammableVideoPlatform.instance.cameraStream().listen(_cameraCapturer._parseCameraEvents);
-    _cameraCapturer.onCameraSwitched ??= _cameraCapturer._onCameraSwitched.stream;
-    _cameraCapturer.onFirstFrameAvailable ??= _cameraCapturer._onFirstFrameAvailable.stream;
-    _cameraCapturer.onCameraError ??= _cameraCapturer._onCameraError.stream;
-    return _cameraCapturer;
+    _cameraCapturer!._cameraSource = cameraSource;
+    _cameraCapturer!._cameraStream ??= ProgrammableVideoPlatform.instance.cameraStream()?.listen(_cameraCapturer!._parseCameraEvents);
+    _cameraCapturer!.onCameraSwitched ??= _cameraCapturer!._onCameraSwitched.stream;
+    _cameraCapturer!.onFirstFrameAvailable ??= _cameraCapturer!._onFirstFrameAvailable.stream;
+    _cameraCapturer!.onCameraError ??= _cameraCapturer!._onCameraError.stream;
+    return _cameraCapturer!;
   }
 
   /// Construct from a [CameraCapturerModel].
@@ -66,11 +65,11 @@ class CameraCapturer implements VideoCapturer {
   Future<void> _closeStreams() async {
     await _cameraStream?.cancel();
     _cameraStream = null;
-    await _onFirstFrameAvailable?.close();
+    await _onFirstFrameAvailable.close();
     onFirstFrameAvailable = null;
-    await _onCameraSwitched?.close();
+    await _onCameraSwitched.close();
     onCameraSwitched = null;
-    await _onCameraError?.close();
+    await _onCameraError.close();
     onCameraError = null;
   }
 
@@ -116,9 +115,9 @@ class CameraCapturer implements VideoCapturer {
 
   /// Update properties from a [VideoCapturerModel].
   @override
-  void _updateFromModel(VideoCapturerModel model) {
-    if (model is CameraCapturerModel) {
-      _cameraSource = model.source;
+  void _updateFromModel(VideoCapturerModel? model) {
+    if (model is CameraCapturerModel && model.source != null) {
+      _cameraSource = model.source!;
     }
   }
 

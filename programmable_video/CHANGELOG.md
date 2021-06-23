@@ -1,3 +1,15 @@
+## 0.8.0+1
+
+- Removed incorrect `!` from `local_video_track_model.dart`.
+
+## 0.8.0
+
+- **BREAKING CHANGE**: Added null safety support.
+
+## 0.7.2+1
+
+- **Android** Fixed type mismatch in `hasTorch` implementations that prevent building on gradle `4.x.x`.
+
 ## 0.7.2
 
 - Added method for fetching stats.

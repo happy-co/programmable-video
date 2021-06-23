@@ -6,14 +6,13 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
 import 'enums/enum_exports.dart';
+import 'method_channel_programmable_video.dart';
 import 'models/model_exports.dart';
 
+export 'audio_codecs/audio_codec.dart';
 export 'enums/enum_exports.dart';
 export 'models/model_exports.dart';
-export 'audio_codecs/audio_codec.dart';
 export 'video_codecs/video_codec.dart';
-
-import 'method_channel_programmable_video.dart';
 
 /// The interface that implementations of programmable_video must implement.
 ///
@@ -44,16 +43,16 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
 
   //#region Functions
   /// Calls native code to create a widget displaying the LocalVideoTrack's video.
-  Widget createLocalVideoTrackWidget({bool mirror = true, Key key}) {
+  Widget createLocalVideoTrackWidget({bool mirror = true, Key? key}) {
     throw UnimplementedError('createLocalVideoTrackWidget() has not been implemented.');
   }
 
   /// Calls native code to create a widget displaying a RemoteVideoTrack's video.
   Widget createRemoteVideoTrackWidget({
-    String remoteParticipantSid,
-    String remoteVideoTrackSid,
+    required String remoteParticipantSid,
+    required String remoteVideoTrackSid,
     bool mirror = true,
-    Key key,
+    Key? key,
   }) {
     throw UnimplementedError('createRemoteVideoTrackWidget() has not been implemented.');
   }
@@ -71,17 +70,17 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   /// Calls native code to set the speaker mode on or off.
   ///
   /// Returns the new state of the speaker mode.
-  Future<bool> setSpeakerphoneOn(bool on) {
+  Future<bool?> setSpeakerphoneOn(bool on) {
     throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
   }
 
   /// Calls native code to check if speaker mode is enabled.
-  Future<bool> getSpeakerphoneOn() {
+  Future<bool?> getSpeakerphoneOn() {
     throw UnimplementedError('getSpeakerphoneOn() has not been implemented.');
   }
 
   /// Calls native code to get stats
-  Future<Map<dynamic, dynamic>> getStats() {
+  Future<Map<dynamic, dynamic>?> getStats() {
     throw UnimplementedError('getStats() has not been implemented.');
   }
 
@@ -90,7 +89,7 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   }
 
   /// Calls native code to connect to a room.
-  Future<int> connectToRoom(ConnectOptionsModel connectOptions) {
+  Future<int?> connectToRoom(ConnectOptionsModel connectOptions) {
     throw UnimplementedError('connectToRoom() has not been implemented.');
   }
 
@@ -98,32 +97,32 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   ///
   /// The results of this operation are signaled to other Participants in the same Room.
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.
-  Future<bool> enableVideoTrack({bool enabled, String name}) {
+  Future<bool?> enableVideoTrack(bool enabled, String name) {
     throw UnimplementedError('enableVideoTrack() has not been implemented.');
   }
 
   /// Calls native code to send a String message.
-  Future<void> sendMessage({String message, String name}) {
+  Future<void> sendMessage(String message, String name) {
     throw UnimplementedError('sendMessage() has not been implemented.');
   }
 
   /// Calls native code to send a ByteBuffer message.
-  Future<void> sendBuffer({ByteBuffer message, String name}) {
+  Future<void> sendBuffer(ByteBuffer message, String name) {
     throw UnimplementedError('sendBuffer() has not been implemented.');
   }
 
   /// Calls native code to enable the LocalAudioTrack.
-  Future<bool> enableAudioTrack({bool enable, String name}) {
+  Future<bool?> enableAudioTrack(bool enable, String name) {
     throw UnimplementedError('enableAudioTrack() has not been implemented.');
   }
 
   /// Calls native code to enable playback of the RemoteAudioTrack.
-  Future<void> enableRemoteAudioTrack({bool enable, String sid}) {
+  Future<void> enableRemoteAudioTrack(bool enable, String sid) {
     throw UnimplementedError('enableRemoteAudioTrack() has not been implemented.');
   }
 
   /// Calls native code to check if playback is enabled for the RemoteAudioTrack.
-  Future<bool> isRemoteAudioTrackPlaybackEnabled(String sid) {
+  Future<bool?> isRemoteAudioTrackPlaybackEnabled(String sid) {
     throw UnimplementedError('isRemoteAudioTrackPlaybackEnabled() has not been implemented.');
   }
 
@@ -148,35 +147,35 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   /// Stream of the CameraEvent model.
   ///
   /// This stream is used to listen for async events after interactions with the camera.
-  Stream<BaseCameraEvent> cameraStream() {
+  Stream<BaseCameraEvent>? cameraStream() {
     throw UnimplementedError('cameraStream() has not been implemented');
   }
 
   /// Stream of the BaseRoomEvent model.
   ///
   /// This stream is used to update the Room in a plugin implementation.
-  Stream<BaseRoomEvent> roomStream(int internalId) {
+  Stream<BaseRoomEvent>? roomStream(int internalId) {
     throw UnimplementedError('roomStream() has not been implemented');
   }
 
   /// Stream of the BaseRemoteParticipantEvent model.
   ///
   /// This stream is used to update the RemoteParticipants in a plugin implementation.
-  Stream<BaseRemoteParticipantEvent> remoteParticipantStream(int internalId) {
+  Stream<BaseRemoteParticipantEvent>? remoteParticipantStream(int internalId) {
     throw UnimplementedError('remoteParticipantStream() has not been implemented');
   }
 
   /// Stream of the BaseLocalParticipantEvent model.
   ///
   /// This stream is used to update the LocalParticipant in a plugin implementation.
-  Stream<BaseLocalParticipantEvent> localParticipantStream(int internalId) {
+  Stream<BaseLocalParticipantEvent>? localParticipantStream(int internalId) {
     throw UnimplementedError('localParticipantStream() has not been implemented');
   }
 
   /// Stream of the BaseRemoteDataTrackEvent model.
   ///
   /// This stream is used to update the RemoteDataTrack in a plugin implementation.
-  Stream<BaseRemoteDataTrackEvent> remoteDataTrackStream(int internalId) {
+  Stream<BaseRemoteDataTrackEvent>? remoteDataTrackStream(int internalId) {
     throw UnimplementedError('remoteDataTrackStream() has not been implemented');
   }
 

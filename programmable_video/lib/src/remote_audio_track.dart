@@ -7,22 +7,21 @@ class RemoteAudioTrack extends AudioTrack {
   /// Returns the server identifier. This value uniquely identifies the remote audio track within the scope of a [Room].
   String get sid => _sid;
 
-  RemoteAudioTrack(this._sid, _enabled, _name)
-      : assert(_sid != null),
-        super(_enabled, _name);
+  RemoteAudioTrack(this._sid, _enabled, _name) : super(_enabled, _name);
 
   /// Construct from a [RemoteAudioTrackModel].
   factory RemoteAudioTrack._fromModel(RemoteAudioTrackModel model) {
-    return model != null ? RemoteAudioTrack(model.sid, model.enabled, model.name) : null;
+    return RemoteAudioTrack(model.sid, model.enabled, model.name);
   }
 
   /// Enable or disable local playback of remote audio track
   Future<void> enablePlayback(bool enable) async {
-    await ProgrammableVideoPlatform.instance.enableRemoteAudioTrack(enable: enable, sid: _sid);
+    await ProgrammableVideoPlatform.instance.enableRemoteAudioTrack(enable, _sid);
   }
 
   /// Check if playback is enabled for this remote audio track
-  Future<bool> isPlaybackEnabled() async {
+  /// Returns null if the track is not subscribed
+  Future<bool?> isPlaybackEnabled() async {
     return ProgrammableVideoPlatform.instance.isRemoteAudioTrackPlaybackEnabled(_sid);
   }
 }

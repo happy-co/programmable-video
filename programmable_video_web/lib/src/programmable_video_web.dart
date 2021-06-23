@@ -23,10 +23,11 @@ import 'package:programmable_video_web/src/interop/network_quality_level.dart';
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
 class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
-  static Room _room;
+  static Room? _room;
 
   static final _roomStreamController = StreamController<BaseRoomEvent>();
-  static final _localParticipantController = StreamController<BaseLocalParticipantEvent>();
+  static final _localParticipantController =
+      StreamController<BaseLocalParticipantEvent>();
 
   static void registerWith(Registrar registrar) {
     ProgrammableVideoPlatform.instance = ProgrammableVideoPlugin();
@@ -34,33 +35,43 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
 
   //#region Functions
   @override
-  Widget createLocalVideoTrackWidget({bool mirror = true, Key key}) {
-    if (_room == null) {
-      return null;
+  Widget createLocalVideoTrackWidget({bool mirror = true, Key? key}) {
+    final room = _room;
+
+    if (room != null) {
+      final localVideoTrackElement = room.localParticipant.videoTracks
+          .values()
+          .next()
+          .value
+          .track
+          .attach()
+            ..style.objectFit = 'cover';
+
+      ui.platformViewRegistry.registerViewFactory(
+        'local-video-track-html',
+        (int viewId) => localVideoTrackElement,
+      );
+
+      return HtmlElementView(viewType: 'local-video-track-html');
+    } else {
+      throw Exception(
+          'NotConnected. LocalVideoTrack is not fully initialized until connection.');
     }
-
-    final localVideoTrackElement = _room.localParticipant.videoTracks.values().next().value.track.attach()..style.objectFit = 'cover';
-
-    ui.platformViewRegistry.registerViewFactory(
-      'local-video-track-html',
-      (int viewId) => localVideoTrackElement,
-    );
-
-    return HtmlElementView(viewType: 'local-video-track-html');
   }
 
   @override
   Future<int> connectToRoom(ConnectOptionsModel connectOptions) async {
     unawaited(
       connectWithModel(connectOptions).then((room) {
+        print('ProgrammableVideoWeb::connectToRoom => room: $room');
         _room = room;
 
         _roomStreamController.add(
-          Connected(_room.toModel()),
+          Connected(_room!.toModel()),
         );
 
         _addRoomEventListeners();
-        _addLocalParticipantEventListeners(_room.localParticipant);
+        _addLocalParticipantEventListeners(_room!.localParticipant);
       }),
     );
 
@@ -69,12 +80,17 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
 
   @override
   Future<void> disconnect() async {
-    _room?.disconnect();
+    try {
+      _room?.disconnect();
+    } catch (err) {
+      print('Exception on Disconnect => $err');
+    }
   }
 
   @override
-  Future<bool> enableAudioTrack({bool enable, String name}) {
-    final localAudioTrack = _room?.localParticipant?.audioTracks?.values()?.next()?.value?.track;
+  Future<bool> enableAudioTrack(bool enable, String name) {
+    final localAudioTrack =
+        _room?.localParticipant?.audioTracks?.values()?.next()?.value?.track;
 
     enable ? localAudioTrack?.enable() : localAudioTrack?.disable();
 
@@ -82,8 +98,9 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<bool> enableVideoTrack({bool enabled, String name}) {
-    final localVideoTrack = _room?.localParticipant?.videoTracks?.values()?.next()?.value?.track;
+  Future<bool> enableVideoTrack(bool enabled, String name) {
+    final localVideoTrack =
+        _room?.localParticipant?.videoTracks?.values()?.next()?.value?.track;
 
     enabled ? localVideoTrack?.enable() : localVideoTrack?.disable();
 
@@ -151,49 +168,69 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
 
   void _addRoomEventListeners() {
     //#region room event callbacks
-    void on(String eventName, Function eventHandler) => _room.on(
-          eventName,
-          allowInterop(eventHandler),
-        );
+    final room = _room;
+    if (room != null) {
+      void on(String eventName, Function eventHandler) => room.on(
+            eventName,
+            allowInterop(eventHandler),
+          );
 
-    on(
-      'disconnected',
-      (Room room, TwilioError error) => _roomStreamController.add(Disconnected(
-        room.toModel(),
-        error.let((it) => it.toModel()),
-      )),
-    );
-    //TODO: register event callBacks on the remoteParticipant from this event
-    on('participantConnected', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('participantDisconnected', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('participantReconnected', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('participantReconnecting', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('reconnected', () => _roomStreamController.add(Reconnected(_room.toModel())));
-    on(
-      'reconnecting',
-      (TwilioError error) => _roomStreamController.add(
-        Reconnecting(_room.toModel(), error.toModel()),
-      ),
-    );
-    on('recordingStarted', () => _roomStreamController.add(RecordingStarted(_room.toModel())));
-    on('recordingStopped', () => _roomStreamController.add(RecordingStopped(_room.toModel())));
-    on('trackDimensionsChanged', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackDisabled', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackEnabled', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackMessage', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackPublished', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackPublishPriorityChanged', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackStarted', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackSubscribed', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackSwitchedOff', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackSwitchedOn', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackUnpublished', () => _roomStreamController.add(SkipAbleRoomEvent()));
-    on('trackUnsubscribed', () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on(
+        'disconnected',
+        (Room room, TwilioError? error) =>
+            _roomStreamController.add(Disconnected(
+          room.toModel(),
+          error?.let((it) => it.toModel()),
+        )),
+      );
+      //TODO: register event callBacks on the remoteParticipant from this event
+      on('participantConnected',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('participantDisconnected',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('participantReconnected',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('participantReconnecting',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('reconnected',
+          () => _roomStreamController.add(Reconnected(_room!.toModel())));
+      on(
+        'reconnecting',
+        (TwilioError error) => _roomStreamController.add(
+          Reconnecting(_room!.toModel(), error.toModel()),
+        ),
+      );
+      on('recordingStarted',
+          () => _roomStreamController.add(RecordingStarted(_room!.toModel())));
+      on('recordingStopped',
+          () => _roomStreamController.add(RecordingStopped(_room!.toModel())));
+      on('trackDimensionsChanged',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackDisabled', () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackEnabled', () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackMessage', () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackPublished',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackPublishPriorityChanged',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackStarted', () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackSubscribed',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackSwitchedOff',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackSwitchedOn',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackUnpublished',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+      on('trackUnsubscribed',
+          () => _roomStreamController.add(SkipAbleRoomEvent()));
+    }
     //#endregion
   }
 
   void _addLocalParticipantEventListeners(LocalParticipant localParticipant) {
-    localParticipant.on('trackPublished', allowInterop((LocalTrackPublication publication) {
+    localParticipant.on('trackPublished',
+        allowInterop((LocalTrackPublication publication) {
       when(publication.kind, {
         'audio': () {
           _localParticipantController.add(LocalAudioTrackPublished(
@@ -216,7 +253,8 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
       });
     }));
 
-    localParticipant.on('trackPublicationFailed', allowInterop((TwilioError error, dynamic localTrack) {
+    localParticipant.on('trackPublicationFailed',
+        allowInterop((TwilioError error, dynamic localTrack) {
       when(localTrack.kind, {
         'audio': () {
           _localParticipantController.add(LocalAudioTrackPublicationFailed(

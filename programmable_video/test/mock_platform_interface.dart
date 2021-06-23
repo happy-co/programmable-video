@@ -10,7 +10,7 @@ class MockInterface extends ProgrammableVideoPlatform {
   var setNativeDebugWasCalled = false;
   var nativeDebug;
   var setSpeakerPhoneOnWasCalled = false;
-  var speakerPhoneOn;
+  var speakerPhoneOn = false;
   var getSpeakerPhoneOnWasCalled = false;
   var deviceHasReceiverWasCalled = false;
   var getStatsWasCalled = false;
@@ -25,17 +25,17 @@ class MockInterface extends ProgrammableVideoPlatform {
   var disconnectWasCalled = false;
 
   @override
-  Widget createLocalVideoTrackWidget({bool mirror = true, Key key}) {
+  Widget createLocalVideoTrackWidget({bool mirror = true, Key? key}) {
     key ??= ValueKey('Twilio_LocalParticipant');
     return Container(key: key);
   }
 
   @override
   Widget createRemoteVideoTrackWidget({
-    String remoteParticipantSid,
-    String remoteVideoTrackSid,
+    required String remoteParticipantSid,
+    required String remoteVideoTrackSid,
     bool mirror = true,
-    Key key,
+    Key? key,
   }) {
     key ??= ValueKey(remoteParticipantSid);
     return Container(key: key);
@@ -55,8 +55,8 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Stream<BaseCameraEvent> cameraStream() {
-    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1));
+  Stream<BaseCameraEvent>? cameraStream() {
+    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1), (x) => SkipableCameraEvent());
   }
 
   @override
@@ -96,25 +96,25 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<bool> enableVideoTrack({bool enabled, String name}) {
+  Future<bool> enableVideoTrack([bool enabled = false, String name = '']) {
     enableVideoTrackWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => enabled);
   }
 
   @override
-  Future<bool> enableAudioTrack({bool enable, String name}) {
+  Future<bool> enableAudioTrack([bool enable = false, String sid = '']) {
     enableAudioTrackWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => enable);
   }
 
   @override
-  Future<void> sendMessage({String message, String name}) {
+  Future<void> sendMessage([String message = '', String name = '']) {
     sendMessageWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1));
   }
 
   @override
-  Future<void> sendBuffer({ByteBuffer message, String name}) {
+  Future<void> sendBuffer([ByteBuffer? message, String name = '']) {
     sendBufferWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1));
   }

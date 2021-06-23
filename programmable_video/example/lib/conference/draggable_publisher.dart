@@ -13,19 +13,15 @@ class DraggablePublisher extends StatefulWidget {
   final Stream<double> onButtonBarHeight;
 
   const DraggablePublisher({
-    Key key,
-    @required this.availableScreenSize,
-    this.child,
-    @required this.onButtonBarVisible,
-    @required this.onButtonBarHeight,
+    Key? key,
+    required this.availableScreenSize,
+    required this.child,
+    required this.onButtonBarVisible,
+    required this.onButtonBarHeight,
 
     /// The portion of the screen the DraggableWidget should use.
     this.scaleFactor = .25,
-  })  : assert(scaleFactor != null && scaleFactor > 0 && scaleFactor <= .4),
-        assert(availableScreenSize != null),
-        assert(onButtonBarVisible != null),
-        assert(onButtonBarHeight != null),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   _DraggablePublisherState createState() => _DraggablePublisherState();
@@ -34,18 +30,18 @@ class DraggablePublisher extends StatefulWidget {
 class _DraggablePublisherState extends State<DraggablePublisher> {
   bool _isButtonBarVisible = true;
   double _buttonBarHeight = 0;
-  double _width;
-  double _height;
-  double _top;
-  double _left;
-  double _viewPaddingTop;
-  double _viewPaddingBottom;
+  late double _width;
+  late double _height;
+  late double _top;
+  late double _left;
+  late double _viewPaddingTop;
+  late double _viewPaddingBottom;
   final double _padding = 8.0;
   final Duration _duration300ms = const Duration(milliseconds: 300);
   final Duration _duration0ms = const Duration(milliseconds: 0);
-  Duration _duration;
-  StreamSubscription _streamSubscription;
-  StreamSubscription _streamHeightSubscription;
+  late Duration _duration;
+  late StreamSubscription _streamSubscription;
+  late StreamSubscription _streamHeightSubscription;
 
   @override
   void initState() {

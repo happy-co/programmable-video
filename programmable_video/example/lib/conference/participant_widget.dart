@@ -6,60 +6,51 @@ import 'package:twilio_programmable_video_example/conference/network_quality_ind
 
 class ParticipantBuffer {
   final bool audioEnabled;
-  final String id;
+  final String? id;
 
   ParticipantBuffer({
-    @required this.audioEnabled,
-    @required this.id,
-  })  : assert(audioEnabled != null),
-        assert(id != null);
+    required this.audioEnabled,
+    required this.id,
+  });
 }
 
 class ParticipantWidget extends StatelessWidget {
   final Widget child;
-  final String id;
+  final String? id;
   final bool audioEnabled;
   final bool videoEnabled;
   final bool isRemote;
   final bool isDummy;
   final bool isDominant;
   final bool audioEnabledLocally;
-  final VoidCallback toggleMute;
+  final VoidCallback? toggleMute;
   final NetworkQualityLevel networkQualityLevel;
-  final Stream<NetworkQualityLevelChangedEvent> onNetworkQualityChanged;
+  final Stream<NetworkQualityLevelChangedEvent>? onNetworkQualityChanged;
 
   const ParticipantWidget({
-    Key key,
-    @required this.child,
-    @required this.audioEnabled,
-    @required this.videoEnabled,
-    @required this.id,
-    @required this.isRemote,
+    Key? key,
+    required this.child,
+    required this.audioEnabled,
+    required this.videoEnabled,
+    required this.id,
+    required this.isRemote,
     this.networkQualityLevel = NetworkQualityLevel.NETWORK_QUALITY_LEVEL_UNKNOWN,
     this.onNetworkQualityChanged,
     this.toggleMute,
     this.audioEnabledLocally = true,
     this.isDominant = false,
     this.isDummy = false,
-  })  : assert(child != null),
-        assert(audioEnabled != null),
-        assert(videoEnabled != null),
-        assert(isRemote != null),
-        assert(isDominant != null),
-        assert(isDummy != null),
-        assert(networkQualityLevel != null),
-        super(key: key);
+  }) : super(key: key);
 
   ParticipantWidget copyWith({
-    Widget child,
-    bool audioEnabled,
-    bool videoEnabled,
-    bool isDominant,
-    bool audioEnabledLocally,
+    Widget? child,
+    bool? audioEnabled,
+    bool? videoEnabled,
+    bool? isDominant,
+    bool? audioEnabledLocally,
   }) {
     return ParticipantWidget(
       id: id,
-      child: child ?? this.child,
       audioEnabled: audioEnabled ?? this.audioEnabled,
       videoEnabled: videoEnabled ?? this.videoEnabled,
       isDominant: isDominant ?? this.isDominant,
@@ -68,6 +59,7 @@ class ParticipantWidget extends StatelessWidget {
       toggleMute: toggleMute,
       networkQualityLevel: networkQualityLevel,
       onNetworkQualityChanged: onNetworkQualityChanged,
+      child: child ?? this.child,
     );
   }
 
@@ -147,10 +139,10 @@ class ParticipantWidget extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
+      onLongPress: isRemote && toggleMute != null ? toggleMute : null,
       child: Stack(
         children: children,
       ),
-      onLongPress: isRemote && toggleMute != null ? toggleMute : null,
     );
   }
 
@@ -198,6 +190,7 @@ class ParticipantWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: CircleAvatar(
         maxRadius: 15,
+        backgroundColor: Colors.white24,
         child: FittedBox(
           child: Icon(
             Icons.mic_off,
@@ -205,7 +198,6 @@ class ParticipantWidget extends StatelessWidget {
             key: Key('microphone-off-icon'),
           ),
         ),
-        backgroundColor: Colors.white24,
       ),
     );
   }
@@ -215,6 +207,7 @@ class ParticipantWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: CircleAvatar(
         maxRadius: 15,
+        backgroundColor: Colors.white24,
         child: FittedBox(
           child: Icon(
             Icons.volume_off,
@@ -222,7 +215,6 @@ class ParticipantWidget extends StatelessWidget {
             key: Key('microphone-off-icon'),
           ),
         ),
-        backgroundColor: Colors.white24,
       ),
     );
   }
@@ -232,6 +224,7 @@ class ParticipantWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: CircleAvatar(
         maxRadius: 15,
+        backgroundColor: Colors.white24,
         child: FittedBox(
           child: Icon(
             Icons.videocam_off,
@@ -239,7 +232,6 @@ class ParticipantWidget extends StatelessWidget {
             key: Key('videocam-off-icon'),
           ),
         ),
-        backgroundColor: Colors.white24,
       ),
     );
   }

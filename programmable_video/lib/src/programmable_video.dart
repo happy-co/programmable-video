@@ -2,7 +2,8 @@ part of twilio_programmable_video;
 
 /// Entry point for the Twilio Programmable Video.
 class TwilioProgrammableVideo {
-  static StreamSubscription _loggingStream;
+  // ignore: cancel_subscriptions
+  static StreamSubscription? _loggingStream;
 
   static var _dartDebug = false;
 
@@ -50,8 +51,6 @@ class TwilioProgrammableVideo {
   ///
   /// For native logging set [native] to `true` and for dart set [dart] to `true`.
   static Future<void> debug({bool dart = false, bool native = false}) async {
-    assert(dart != null);
-    assert(native != null);
     _dartDebug = dart;
     await ProgrammableVideoPlatform.instance.setNativeDebug(native);
     if (native && _loggingStream == null) {
@@ -61,7 +60,7 @@ class TwilioProgrammableVideo {
         }
       });
     } else if (!native && _loggingStream != null) {
-      await _loggingStream.cancel();
+      await _loggingStream!.cancel();
       _loggingStream = null;
     }
   }
@@ -69,13 +68,12 @@ class TwilioProgrammableVideo {
   /// Set the speaker mode on or off.
   ///
   /// Note: Call this method after the [Room.onConnected] event on iOS. Calling it before will not result in a audio routing change.
-  static Future<bool> setSpeakerphoneOn(bool on) async {
-    assert(on != null);
+  static Future<bool?> setSpeakerphoneOn(bool on) async {
     return await ProgrammableVideoPlatform.instance.setSpeakerphoneOn(on);
   }
 
   /// Check if speaker mode is enabled.
-  static Future<bool> getSpeakerphoneOn() async {
+  static Future<bool?> getSpeakerphoneOn() async {
     return await ProgrammableVideoPlatform.instance.getSpeakerphoneOn();
   }
 
@@ -134,10 +132,13 @@ class TwilioProgrammableVideo {
   /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource]
   /// Throws [InitializationException] if an error is caught when attempting to connect.
   static Future<Room> connect(ConnectOptions connectOptions) async {
-    assert(connectOptions != null);
     if (await requestPermissionForCameraAndMicrophone()) {
       try {
-        final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions._toModel());
+        final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions.toModel());
+        if (roomId == null) {
+          throw Exception('RoomId is null');
+        }
+
         return Room(roomId);
       } on PlatformException catch (err) {
         throw TwilioProgrammableVideo._convertException(err);
@@ -146,8 +147,11 @@ class TwilioProgrammableVideo {
     throw Exception('Permissions not granted');
   }
 
-  static Future<List<StatsReport>> getStats() async {
+  static Future<List<StatsReport>?> getStats() async {
     final statsMap = await ProgrammableVideoPlatform.instance.getStats();
+    if (statsMap == null) {
+      return null;
+    }
 
     return statsMap.entries.map((entry) {
       final statReport = StatsReport(entry.key);

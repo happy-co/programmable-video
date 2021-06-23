@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:twilio_programmable_video/src/parts.dart';
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
+
 import 'mock_platform_interface.dart';
 
 void main() {
@@ -172,6 +173,11 @@ void main() {
   });
 }
 
-class MockConnectOptions extends Mock implements ConnectOptions {}
+class MockConnectOptions extends Mock implements ConnectOptions {
+  @override
+  ConnectOptionsModel toModel() {
+    return ConnectOptionsModel('accessToken');
+  }
+}
 
 class MockConnectOptionsModel extends Mock implements ConnectOptionsModel {}

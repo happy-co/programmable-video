@@ -10,12 +10,10 @@ import 'package:twilio_programmable_video_platform_interface/src/programmable_vi
 
 import 'event_channel_maps.dart';
 
-class MockEventChannel extends Mock implements EventChannel {}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelProgrammableVideo instance;
+  late MethodChannelProgrammableVideo instance;
   final methodCalls = <MethodCall>[];
 
   var nativeDebugIsCalled = false;
@@ -35,10 +33,10 @@ void main() {
   var cameraSource = 'BACK_CAMERA';
 
   StreamController cameraController;
-  StreamController roomController;
-  StreamController remoteParticipantController;
-  StreamController localParticipantController;
-  StreamController remoteDataTrackController;
+  late StreamController roomController;
+  late StreamController remoteParticipantController;
+  late StreamController localParticipantController;
+  late StreamController remoteDataTrackController;
 
   setUpAll(() {
     cameraController = StreamController<dynamic>.broadcast(sync: true);
@@ -112,7 +110,6 @@ void main() {
           return {'type': 'CameraCapturer', 'cameraSource': cameraSource};
         default:
           throw Exception('Methodcall: ${methodCall.method} was not found');
-          break;
       }
       return null;
     });
@@ -147,7 +144,7 @@ void main() {
       final testMessage = 'testMessage';
       final testName = 'testName';
 
-      await instance.sendMessage(name: testName, message: testMessage);
+      await instance.sendMessage(testMessage, testName);
       expect(nativeSendStringIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
@@ -163,7 +160,7 @@ void main() {
       final testEnable = true;
       final testName = 'testName';
 
-      await instance.enableAudioTrack(name: testName, enable: testEnable);
+      await instance.enableAudioTrack(testEnable, testName);
       expect(nativeEnableAudioTrackIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
@@ -179,7 +176,7 @@ void main() {
       final testEnabled = true;
       final testName = 'testName';
 
-      await instance.enableVideoTrack(name: testName, enabled: testEnabled);
+      await instance.enableVideoTrack(testEnabled, testName);
       expect(nativeEnableVideoTrackIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
@@ -197,7 +194,7 @@ void main() {
       final testMessage = bytes.buffer;
       final testName = 'testName';
 
-      await instance.sendBuffer(name: testName, message: testMessage);
+      await instance.sendBuffer(testMessage, testName);
       expect(nativeSendByteBufferIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
@@ -213,7 +210,7 @@ void main() {
       final testEnable = true;
       final testSid = 'testSid';
 
-      await instance.enableRemoteAudioTrack(sid: testSid, enable: testEnable);
+      await instance.enableRemoteAudioTrack(testEnable, testSid);
       expect(nativeEnableRemoteAudioTrackIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
@@ -345,8 +342,8 @@ void main() {
       expect(instance.roomStream(0), isA<Stream<BaseRoomEvent>>());
     });
 
-    BaseRoomEvent lastEvent;
-    StreamSubscription subscription;
+    BaseRoomEvent? lastEvent;
+    late StreamSubscription subscription;
     setUp(() {
       subscription = instance.roomStream(0).listen((data) {
         lastEvent = data;
@@ -466,8 +463,8 @@ void main() {
       expect(instance.remoteParticipantStream(0), isA<Stream<BaseRemoteParticipantEvent>>());
     });
 
-    BaseRemoteParticipantEvent lastEvent;
-    StreamSubscription subscription;
+    BaseRemoteParticipantEvent? lastEvent;
+    late StreamSubscription subscription;
     setUp(() {
       subscription = instance.remoteParticipantStream(0).listen((data) => lastEvent = data);
     });
@@ -658,8 +655,8 @@ void main() {
       expect(instance.localParticipantStream(0), isA<Stream<BaseLocalParticipantEvent>>());
     });
 
-    BaseLocalParticipantEvent lastEvent;
-    StreamSubscription subscription;
+    BaseLocalParticipantEvent? lastEvent;
+    late StreamSubscription subscription;
     setUp(() {
       subscription = instance.localParticipantStream(0).listen((data) => lastEvent = data);
     });
@@ -732,8 +729,8 @@ void main() {
       expect(instance.remoteDataTrackStream(0), isA<Stream<BaseRemoteDataTrackEvent>>());
     });
 
-    BaseRemoteDataTrackEvent lastEvent;
-    StreamSubscription subscription;
+    BaseRemoteDataTrackEvent? lastEvent;
+    late StreamSubscription subscription;
     setUp(() {
       subscription = instance.remoteDataTrackStream(0).listen((data) => lastEvent = data);
     });
@@ -780,4 +777,12 @@ void main() {
       expect(instance.loggingStream(), isA<Stream<dynamic>>());
     });
   });
+}
+
+class MockEventChannel extends Mock implements EventChannel {
+  @override
+  Stream<dynamic> receiveBroadcastStream([dynamic arguments]) => super.noSuchMethod(
+        Invocation.method(#receiveBroadcastStream, [arguments]),
+        returnValue: StreamController<dynamic>().stream,
+      );
 }

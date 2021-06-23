@@ -4,15 +4,15 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:dartlin/dartlin.dart';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
-export 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 export 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
+export 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 export 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
 
 part 'audio_track.dart';

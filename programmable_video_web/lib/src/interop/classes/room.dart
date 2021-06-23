@@ -33,9 +33,10 @@ extension Interop on Room {
       sid: sid,
       name: name,
       state: EnumToString.fromString<RoomState>(
-        RoomState.values,
-        state.toUpperCase(),
-      ),
+            RoomState.values,
+            state.toUpperCase(),
+          ) ??
+          RoomState.DISCONNECTED,
       mediaRegion: EnumToString.fromString<Region>(
         Region.values,
         mediaRegion,

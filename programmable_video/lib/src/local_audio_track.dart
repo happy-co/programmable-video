@@ -11,11 +11,11 @@ class LocalAudioTrack extends AudioTrack {
   @override
   bool get isEnabled => _enabled;
 
-  LocalAudioTrack(this._enabled, {String name = ''}) : super(_enabled, name);
+  LocalAudioTrack(this._enabled, String name) : super(_enabled, name);
 
   /// Construct from a [LocalAudioTrackModel].
   factory LocalAudioTrack._fromModel(LocalAudioTrackModel model) {
-    var localAudioTrack = LocalAudioTrack(model.enabled, name: model.name);
+    var localAudioTrack = LocalAudioTrack(model.enabled, model.name);
     localAudioTrack._updateFromModel(model);
     return localAudioTrack;
   }
@@ -27,7 +27,7 @@ class LocalAudioTrack extends AudioTrack {
   /// Throws [NotFoundException] if no track is found by the name provided (probably means you haven't connected).
   Future<void> enable(bool enabled) async {
     try {
-      await ProgrammableVideoPlatform.instance.enableAudioTrack(name: name, enable: enabled);
+      await ProgrammableVideoPlatform.instance.enableAudioTrack(enabled, name);
       _enabled = enabled;
     } on PlatformException catch (err) {
       throw TwilioProgrammableVideo._convertException(err);
@@ -38,7 +38,7 @@ class LocalAudioTrack extends AudioTrack {
   TrackModel _toModel() {
     return LocalAudioTrackModel(
       enabled: _enabled,
-      name: _name,
+      name: name,
     );
   }
 }

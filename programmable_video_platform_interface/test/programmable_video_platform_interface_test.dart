@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:twilio_programmable_video_platform_interface/src/method_channel_programmable_video.dart';
@@ -6,12 +8,14 @@ import 'package:twilio_programmable_video_platform_interface/src/programmable_vi
 void main() {
   group('ProgrammableVideoPlatform', () {
     test('MethodChannelProgrammableVideo is the default instance', () {
-      expect(ProgrammableVideoPlatform.instance, isA<MethodChannelProgrammableVideo>());
+      expect(ProgrammableVideoPlatform.instance,
+          isA<MethodChannelProgrammableVideo>());
     });
 
     test('Cannot be implemented', () {
       expect(() {
-        ProgrammableVideoPlatform.instance = ImplementsProgrammableVideoPlatform();
+        ProgrammableVideoPlatform.instance =
+            ImplementsProgrammableVideoPlatform();
       }, throwsAssertionError);
     });
 
@@ -22,31 +26,70 @@ void main() {
     test('Unimplemented methods should throw UnimplementedError', () {
       ProgrammableVideoPlatform.instance = ExtendsProgrammableVideoPlatform();
 
-      expect(() => ProgrammableVideoPlatform.instance.createLocalVideoTrackWidget(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.createRemoteVideoTrackWidget(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.disconnect(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.setNativeDebug(true), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.setSpeakerphoneOn(true), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.getSpeakerphoneOn(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.connectToRoom(MockConnectOptionsModel()), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.enableVideoTrack(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.sendMessage(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.sendBuffer(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.enableAudioTrack(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.switchCamera(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.roomStream(0), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.remoteParticipantStream(0), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.localParticipantStream(0), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.remoteDataTrackStream(0), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.loggingStream(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.enableRemoteAudioTrack(enable: true, sid: 'sid'), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.isRemoteAudioTrackPlaybackEnabled('sid'), throwsUnimplementedError);
+      expect(
+          () =>
+              ProgrammableVideoPlatform.instance.createLocalVideoTrackWidget(),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance.createRemoteVideoTrackWidget(
+                remoteParticipantSid: 'remoteParticipantSid',
+                remoteVideoTrackSid: 'remoteVideoTrackSid',
+              ),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.disconnect(),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.setNativeDebug(true),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.setSpeakerphoneOn(true),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.getSpeakerphoneOn(),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance
+              .connectToRoom(MockConnectOptionsModel()),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance.enableVideoTrack(true, ''),
+          throwsUnimplementedError);
+      expect(
+          () =>
+              ProgrammableVideoPlatform.instance.sendMessage('message', 'name'),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance
+              .sendBuffer(Uint8List(0).buffer, 'name'),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance.enableAudioTrack(true, ''),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.switchCamera(),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.roomStream(0),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance.remoteParticipantStream(0),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.localParticipantStream(0),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.remoteDataTrackStream(0),
+          throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.loggingStream(),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance
+              .enableRemoteAudioTrack(true, 'sid'),
+          throwsUnimplementedError);
+      expect(
+          () => ProgrammableVideoPlatform.instance
+              .isRemoteAudioTrackPlaybackEnabled('sid'),
+          throwsUnimplementedError);
     });
   });
 }
 
 class MockConnectOptionsModel extends Mock implements ConnectOptionsModel {}
 
-class ImplementsProgrammableVideoPlatform extends Mock implements ProgrammableVideoPlatform {}
+class ImplementsProgrammableVideoPlatform extends Mock
+    implements ProgrammableVideoPlatform {}
 
 class ExtendsProgrammableVideoPlatform extends ProgrammableVideoPlatform {}

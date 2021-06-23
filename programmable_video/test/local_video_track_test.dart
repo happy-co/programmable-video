@@ -1,23 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video/src/parts.dart';
-
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
+
 import 'mock_platform_interface.dart';
 
 void main() {
-  MockInterface mockInterface;
+  MockInterface? mockInterface;
   setUpAll(() {
     mockInterface = MockInterface();
-    ProgrammableVideoPlatform.instance = mockInterface;
+    ProgrammableVideoPlatform.instance = mockInterface!;
   });
 
   group('LocalVideoTrack()', () {
     test('should not construct without enabled', () async {
       expect(() => LocalVideoTrack(null, CameraCapturer(CameraSource.BACK_CAMERA)), throwsAssertionError);
-    });
-
-    test('should not construct without CameraCapturer', () async {
-      expect(() => LocalVideoTrack(true, null), throwsAssertionError);
     });
   });
 
@@ -26,7 +22,7 @@ void main() {
       final localVideoTrack = LocalVideoTrack(true, CameraCapturer(CameraSource.BACK_CAMERA));
       await localVideoTrack.enable(false);
 
-      expect(mockInterface.enableVideoTrackWasCalled, true);
+      expect(mockInterface!.enableVideoTrackWasCalled, true);
     });
   });
 

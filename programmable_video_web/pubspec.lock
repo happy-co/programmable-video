@@ -28,14 +28,14 @@ packages:
       name: enum_to_string
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.14"
+    version: "2.0.1"
   equatable:
     dependency: transitive
     description:
       name: equatable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.6"
+    version: "2.0.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -85,7 +85,7 @@ packages:
       path: "../programmable_video_platform_interface"
       relative: true
     source: path
-    version: "0.3.1"
+    version: "0.4.0+1"
   typed_data:
     dependency: transitive
     description:
