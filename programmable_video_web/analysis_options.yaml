@@ -1,5 +1,10 @@
 include: package:pedantic/analysis_options.yaml
 
+linter:
+  rules:
+    - unnecessary_brace_in_string_interps
+    - cancel_subscriptions
+    - prefer_final_locals
 analyzer:
   errors:
     undefined_prefixed_name: ignore

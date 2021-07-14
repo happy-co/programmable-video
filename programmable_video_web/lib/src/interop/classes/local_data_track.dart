@@ -9,16 +9,16 @@ import 'package:twilio_programmable_video_platform_interface/twilio_programmable
 @anonymous
 class LocalDataTrackOptions {
   external factory LocalDataTrackOptions({
-    int maxPacketLifeTime,
-    int maxRetransmits,
+    int? maxPacketLifeTime,
+    int? maxRetransmits,
     bool ordered,
   });
 }
 
 @JS('Twilio.Video.LocalDataTrack')
 class LocalDataTrack extends Track {
-  external int get maxPacketLifeTime;
-  external int get maxRetransmits;
+  external int? get maxPacketLifeTime;
+  external int? get maxRetransmits;
   external bool get ordered;
   external bool get reliable;
 
@@ -31,8 +31,8 @@ extension Interop on LocalDataTrack {
   LocalDataTrackModel toModel(bool enabled) {
     return LocalDataTrackModel(
       name: name,
-      maxPacketLifeTime: maxPacketLifeTime,
-      maxRetransmits: maxRetransmits,
+      maxPacketLifeTime: maxPacketLifeTime ?? -1,
+      maxRetransmits: maxRetransmits ?? -1,
       ordered: ordered,
       reliable: reliable,
       enabled: enabled,

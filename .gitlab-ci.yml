@@ -182,7 +182,8 @@ dry-run_programmable_video:
     - sudo add-apt-repository ppa:rmescandon/yq -y
     - sudo apt update
     - sudo apt install yq -y
-    - yq w -i pubspec.yaml dependencies.twilio_programmable_video_platform_interface ^$(yq r ../programmable_video_platform_interface/pubspec.yaml version | sed 's/\+.*$//')
+    - platformInterfaceVersion=$(yq eval '.version' ../programmable_video_platform_interface/pubspec.yaml | sed 's/\+.*$//')
+    - yq eval -i ".dependencies.twilio_programmable_video_platform_interface=\"^${platformInterfaceVersion}\"" pubspec.yaml
     - flutter pub publish --dry-run
   only:
     refs:
@@ -318,7 +319,8 @@ pub-dev_programmable_video:
     - sudo add-apt-repository ppa:rmescandon/yq -y
     - sudo apt update
     - sudo apt install yq -y
-    - yq w -i pubspec.yaml dependencies.twilio_programmable_video_platform_interface ^$(yq r ../programmable_video_platform_interface/pubspec.yaml version | sed 's/\+.*$//')
+    - platformInterfaceVersion=$(yq eval '.version' ../programmable_video_platform_interface/pubspec.yaml | sed 's/\+.*$//')
+    - yq eval -i ".dependencies.twilio_programmable_video_platform_interface=\"^${platformInterfaceVersion}\"" pubspec.yaml
     - flutter pub get
     - flutter pub publish -f
   only:

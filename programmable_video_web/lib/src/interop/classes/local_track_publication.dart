@@ -2,12 +2,15 @@
 library local_track_publication;
 
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/event_emitter.dart';
+import 'package:programmable_video_web/src/interop/classes/track_publication.dart';
 
 @JS()
-class LocalTrackPublication extends EventEmitter {
+class LocalTrackPublication extends TrackPublication {
   external String get kind;
-  external String get trackSid;
+  external dynamic get priority;
+
+  /// Track will return either [null] or an instance of: [LocalAudioTrack], [LocalDataTrack] or [LocalVideoTrack].
+  external dynamic get track;
 
   external factory LocalTrackPublication(
     dynamic options,

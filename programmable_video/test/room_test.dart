@@ -59,8 +59,8 @@ void main() {
       mockInterface!.addRoomEvent(Disconnected(ModelInstances.roomModel, exceptionModel));
       final event = await room!.onDisconnected.first;
       expect(event.room, room);
-      expect(event.exception.code, exceptionModel.code);
-      expect(event.exception.message, exceptionModel.message);
+      expect(event.exception?.code, exceptionModel.code);
+      expect(event.exception?.message, exceptionModel.message);
     });
   });
 

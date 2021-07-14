@@ -35,7 +35,7 @@ class ConferenceRoom with ChangeNotifier {
 
   late CameraCapturer _cameraCapturer;
   late Room _room;
-  late Timer _timer;
+  Timer? _timer;
 
   bool flashEnabled = false;
   var trackId;
@@ -102,7 +102,7 @@ class ConferenceRoom with ChangeNotifier {
 
   Future<void> disconnect() async {
     Debug.log('ConferenceRoom.disconnect()');
-    _timer.cancel();
+    _timer?.cancel();
     await _room.disconnect();
   }
 
@@ -254,12 +254,12 @@ class ConferenceRoom with ChangeNotifier {
 
   void _onDisconnected(RoomDisconnectedEvent event) {
     Debug.log('ConferenceRoom._onDisconnected');
-    _timer.cancel();
+    _timer?.cancel();
   }
 
   void _onReconnecting(RoomReconnectingEvent room) {
     Debug.log('ConferenceRoom._onReconnecting');
-    _timer.cancel();
+    _timer?.cancel();
   }
 
   void _onConnected(Room room) {
@@ -557,8 +557,8 @@ class ConferenceRoom with ChangeNotifier {
     );
     if (participant != null) {
       Debug.log('Participant found: ${participant.id}, updating A/V enabled values');
-      _setRemoteVideoEnabled(event as RemoteVideoTrackEvent);
-      _setRemoteAudioEnabled(event as RemoteAudioTrackEvent);
+      if (event is RemoteVideoTrackEvent) _setRemoteVideoEnabled(event);
+      if (event is RemoteAudioTrackEvent) _setRemoteAudioEnabled(event);
     } else {
       final bufferedParticipant = _participantBuffer.firstWhereOrNull(
         (ParticipantBuffer participant) => participant.id == event.remoteParticipant.sid,

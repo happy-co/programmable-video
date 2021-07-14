@@ -8,6 +8,7 @@ import 'package:twilio_programmable_video_platform_interface/twilio_programmable
 
 @JS('Twilio.Video.LocalDataTrackPublication')
 class LocalDataTrackPublication extends LocalTrackPublication {
+  @override
   external LocalDataTrack get track;
   external bool get isTrackEnabled;
 

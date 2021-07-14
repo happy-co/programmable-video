@@ -2,7 +2,6 @@ library twilio_programmable_video;
 
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:dartlin/dartlin.dart';
 
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';

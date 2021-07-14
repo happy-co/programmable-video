@@ -4,19 +4,19 @@ version: 1.0.0
 publish_to: 'none'
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   cloud_functions: ^1.0.5
-  rxdart: ^0.26.0
+  rxdart: ^0.27.1
   provider: ^5.0.0
   native_device_orientation: ^1.0.0
   enum_to_string: ^2.0.1
   recase: ^4.0.0
   intl: ^0.17.0
-  device_info: ^2.0.0
+  device_info: ^2.0.2
   wakelock: ^0.5.1
   after_layout: ^1.1.0
   firebase_core: ^1.1.0

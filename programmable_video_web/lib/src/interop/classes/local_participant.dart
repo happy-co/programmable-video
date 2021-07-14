@@ -2,7 +2,7 @@
 library local_participant;
 
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/event_emitter.dart';
+import 'package:programmable_video_web/src/interop/classes/js_map.dart';
 import 'package:programmable_video_web/src/interop/classes/local_audio_track.dart';
 import 'package:programmable_video_web/src/interop/classes/local_audio_track_publication.dart';
 import 'package:programmable_video_web/src/interop/classes/local_data_track.dart';
@@ -10,7 +10,7 @@ import 'package:programmable_video_web/src/interop/classes/local_data_track_publ
 import 'package:programmable_video_web/src/interop/classes/local_track_publication.dart';
 import 'package:programmable_video_web/src/interop/classes/local_video_track.dart';
 import 'package:programmable_video_web/src/interop/classes/local_video_track_publication.dart';
-import 'package:programmable_video_web/src/interop/classes/map.dart';
+import 'package:programmable_video_web/src/interop/classes/participant.dart';
 import 'package:programmable_video_web/src/interop/classes/participant_signaling.dart';
 import 'package:programmable_video_web/src/interop/network_quality_level.dart';
 
@@ -33,17 +33,16 @@ class LocalParticipantOptions {
 }
 
 @JS('Twilio.Video.LocalParticipant')
-class LocalParticipant extends EventEmitter {
+class LocalParticipant extends Participant {
   // Tracks are stored in a javascript Map with the sid as key and the trackPublication as the value.
-  external Map<String, LocalAudioTrackPublication> get audioTracks;
-  external Map<String, LocalDataTrackPublication> get dataTracks;
-  external String get identity;
-  external int get networkQualityLevel;
-  external int get networkQualityStats;
-  external String get sid;
-  external String get state;
-  external Map<String, LocalTrackPublication> get tracks;
-  external Map<String, LocalVideoTrackPublication> get videoTracks;
+  @override
+  external JSMap<String, LocalAudioTrackPublication> get audioTracks;
+  @override
+  external JSMap<String, LocalDataTrackPublication> get dataTracks;
+  @override
+  external JSMap<String, LocalTrackPublication> get tracks;
+  @override
+  external JSMap<String, LocalVideoTrackPublication> get videoTracks;
   external String get signalingRegion;
 
   external factory LocalParticipant(
@@ -54,6 +53,8 @@ class LocalParticipant extends EventEmitter {
 
   /// [localTrack] must be an instance of either: [LocalAudioTrack], [LocalDataTrack] or [LocalVideoTrack]
   external Future<LocalTrackPublication> publishTrack(dynamic localTrack);
+
+  external List<LocalTrackPublication> unpublishTrack(dynamic track);
 }
 
 extension Interop on LocalParticipant {

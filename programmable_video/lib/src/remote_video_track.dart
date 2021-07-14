@@ -17,10 +17,8 @@ class RemoteVideoTrack extends VideoTrack {
   ) : super(_enabled, _name);
 
   /// Construct from a [RemoteVideoTrackModel].
-  factory RemoteVideoTrack._fromModel(
-      RemoteVideoTrackModel model, RemoteParticipant remoteParticipant) {
-    return RemoteVideoTrack(
-        model.sid, model.enabled, model.name, remoteParticipant);
+  factory RemoteVideoTrack._fromModel(RemoteVideoTrackModel model, RemoteParticipant remoteParticipant) {
+    return RemoteVideoTrack(model.sid, model.enabled, model.name, remoteParticipant);
   }
 
   /// Returns a native widget.
