@@ -449,7 +449,7 @@ packages:
       path: "../programmable_video_platform_interface"
       relative: true
     source: path
-    version: "0.4.0+2"
+    version: "0.4.1"
   typed_data:
     dependency: transitive
     description:

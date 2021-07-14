@@ -1,4 +1,4 @@
-## 0.8.0+2
+## 0.8.1
 
 - **BREAKING** Made `exception` property of ConnectFailure, Reconnecting and Disconnected events nullable.
 

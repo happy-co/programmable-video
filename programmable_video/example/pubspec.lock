@@ -534,14 +534,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.8.0+1"
+    version: "0.8.1"
   twilio_programmable_video_platform_interface:
     dependency: transitive
     description:
       path: "../../programmable_video_platform_interface"
       relative: true
     source: path
-    version: "0.4.0+1"
+    version: "0.4.1"
   typed_data:
     dependency: transitive
     description:
