@@ -322,7 +322,7 @@ class ConferenceRoom with ChangeNotifier {
 
   void _onConnectFailure(RoomConnectFailureEvent event) {
     Debug.log('ConferenceRoom._onConnectFailure: ${event.exception}');
-    _completer.completeError(event.exception);
+    _completer.completeError(event.exception ?? TwilioException(TwilioException.unknownException, 'An unknown connection failure occurred.'));
   }
 
   void _onDominantSpeakerChanged(DominantSpeakerChangedEvent event) {

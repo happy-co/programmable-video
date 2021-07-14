@@ -181,8 +181,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       CameraSource.values,
       methodData['cameraSource'],
     );
-    if (cameraSource == null)
+    if (cameraSource == null) {
       throw FormatException('Failed to parse cameraSource');
+    }
     return cameraSource;
   }
 
@@ -646,8 +647,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   BaseLocalParticipantEvent _parseLocalParticipantEvent(dynamic event) {
     final data = Map<String, dynamic>.from(event['data']);
     // If no localParticipant data is received, skip the event.
-    if (data['localParticipant'] == null)
+    if (data['localParticipant'] == null) {
       return SkipAbleLocalParticipantEvent();
+    }
 
     final localParticipantModel = LocalParticipantModel.fromEventChannelMap(
         Map<String, dynamic>.from(data['localParticipant']));
