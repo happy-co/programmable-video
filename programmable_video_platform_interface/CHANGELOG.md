@@ -1,3 +1,15 @@
+## 0.4.0+1
+
+- Removed incorrect `!` from `local_video_track_model.dart`.
+
+## 0.4.0
+
+- **BREAKING CHANGE**: Added null safety support.
+
+## 0.3.2
+
+- Added method for fetching stats.
+
 ## 0.3.1
 
 - Added method for checking if device has a builtin earpiece.

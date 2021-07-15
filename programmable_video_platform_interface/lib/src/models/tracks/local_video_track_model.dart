@@ -1,6 +1,4 @@
 import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/foundation.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
@@ -9,22 +7,23 @@ class LocalVideoTrackModel extends TrackModel {
   final CameraCapturerModel cameraCapturer;
 
   const LocalVideoTrackModel({
-    @required String name,
-    @required bool enabled,
-    @required this.cameraCapturer,
-  })  : assert(name != null),
-        assert(enabled != null),
-        assert(cameraCapturer != null),
-        super(name: name, enabled: enabled);
+    required String name,
+    required bool enabled,
+    required this.cameraCapturer,
+  }) : super(name: name, enabled: enabled);
 
   factory LocalVideoTrackModel.fromEventChannelMap(Map<String, dynamic> map) {
     assert(map['videoCapturer'] != null);
     var videoCapturerMap = Map<String, dynamic>.from(map['videoCapturer'] as Map<dynamic, dynamic>);
+
+    final cameraSource = videoCapturerMap['cameraSource'];
+    assert(cameraSource != null);
+
     return LocalVideoTrackModel(
       name: map['name'],
       enabled: map['enabled'],
       cameraCapturer: CameraCapturerModel(
-        EnumToString.fromString(CameraSource.values, videoCapturerMap['cameraSource']),
+        EnumToString.fromString(CameraSource.values, cameraSource),
         videoCapturerMap['type'],
       ),
     );
@@ -38,8 +37,8 @@ class LocalVideoTrackModel extends TrackModel {
   @override
 
   /// Create map from properties.
-  Map<String, Object> toMap() {
-    return <String, Object>{
+  Map<String, Object?> toMap() {
+    return <String, Object?>{
       'enable': enabled,
       'name': name,
       'videoCapturer': {

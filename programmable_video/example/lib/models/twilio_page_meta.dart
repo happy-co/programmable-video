@@ -8,19 +8,16 @@ class TwilioPageMeta {
   final String key;
 
   TwilioPageMeta({
-    this.page,
-    this.pageSize,
-    this.firstPageUrl,
-    this.previousPageUrl,
-    this.url,
-    this.nextPageUrl,
-    this.key,
+    required this.page,
+    required this.pageSize,
+    required this.firstPageUrl,
+    required this.previousPageUrl,
+    required this.url,
+    required this.nextPageUrl,
+    required this.key,
   });
 
   factory TwilioPageMeta.fromMap(Map<String, dynamic> data) {
-    if (data == null) {
-      return null;
-    }
     return TwilioPageMeta(
       page: data['page'],
       pageSize: data['pageSize'],

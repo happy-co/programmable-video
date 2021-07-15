@@ -4,7 +4,7 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 
 /// The base RemoteDataTrackEvent that all other RemoteDataTrackEvent types must extend.
 abstract class BaseRemoteDataTrackEvent {
-  final RemoteDataTrackModel remoteDataTrackModel;
+  final RemoteDataTrackModel? remoteDataTrackModel;
 
   const BaseRemoteDataTrackEvent(this.remoteDataTrackModel);
 
@@ -14,7 +14,7 @@ abstract class BaseRemoteDataTrackEvent {
 
 /// Use this event when a string message was sent.
 class StringMessage extends BaseRemoteDataTrackEvent {
-  final String message;
+  final String? message;
 
   const StringMessage(
     RemoteDataTrackModel remoteDataTrackModel,
@@ -27,7 +27,7 @@ class StringMessage extends BaseRemoteDataTrackEvent {
 
 /// Use this event when a buffer message was sent.
 class BufferMessage extends BaseRemoteDataTrackEvent {
-  final ByteBuffer message;
+  final ByteBuffer? message;
 
   const BufferMessage(
     RemoteDataTrackModel remoteDataTrackModel,
@@ -40,7 +40,7 @@ class BufferMessage extends BaseRemoteDataTrackEvent {
 
 /// Use this event when the event received from native code was unknown.
 class UnknownEvent extends BaseRemoteDataTrackEvent {
-  final String eventName;
+  final String? eventName;
 
   const UnknownEvent(
     RemoteDataTrackModel remoteDataTrackModel,

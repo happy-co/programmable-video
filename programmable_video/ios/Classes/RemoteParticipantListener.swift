@@ -283,6 +283,7 @@ class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
             "sid": remoteDataTrackPublication.trackSid,
             "name": remoteDataTrackPublication.trackName,
             "enabled": remoteDataTrackPublication.isTrackEnabled,
+            "subscribed": remoteDataTrackPublication.isTrackSubscribed,
             "remoteDataTrack": RemoteDataTrackListener.remoteDataTrackToDict(remoteDataTrackPublication.remoteTrack) as Any
         ]
     }

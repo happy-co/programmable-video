@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_programmable_video_example/conference/conference_button_bar.dart';
@@ -15,7 +16,10 @@ import 'package:wakelock/wakelock.dart';
 class ConferencePage extends StatefulWidget {
   final RoomModel roomModel;
 
-  const ConferencePage({Key key, this.roomModel}) : super(key: key);
+  const ConferencePage({
+    Key? key,
+    required this.roomModel,
+  }) : super(key: key);
 
   @override
   _ConferencePageState createState() => _ConferencePageState();
@@ -24,8 +28,8 @@ class ConferencePage extends StatefulWidget {
 class _ConferencePageState extends State<ConferencePage> {
   final StreamController<bool> _onButtonBarVisibleStreamController = StreamController<bool>.broadcast();
   final StreamController<double> _onButtonBarHeightStreamController = StreamController<double>.broadcast();
-  ConferenceRoom _conferenceRoom;
-  StreamSubscription _onConferenceRoomException;
+  ConferenceRoom? _conferenceRoom;
+  late StreamSubscription _onConferenceRoomException;
 
   @override
   void initState() {
@@ -38,32 +42,31 @@ class _ConferencePageState extends State<ConferencePage> {
   void _connectToRoom() async {
     try {
       final conferenceRoom = ConferenceRoom(
-        name: widget.roomModel.name,
-        token: widget.roomModel.token,
-        identity: widget.roomModel.identity,
+        name: widget.roomModel.name!,
+        token: widget.roomModel.token!,
+        identity: widget.roomModel.identity!,
       );
       await conferenceRoom.connect();
       setState(() {
         _conferenceRoom = conferenceRoom;
-        _onConferenceRoomException = _conferenceRoom.onException.listen((err) async {
-          await PlatformAlertDialog(
-            title: err is PlatformException ? err.message : 'An error occured',
-            content: err is PlatformException ? err.details : err.toString(),
-            defaultActionText: 'OK',
-          ).show(context);
+        _onConferenceRoomException = conferenceRoom.onException.listen((err) async {
+          await _showPlatformAlertDialog(err);
         });
-        _conferenceRoom.addListener(_conferenceRoomUpdated);
+        conferenceRoom.addListener(_conferenceRoomUpdated);
       });
     } catch (err) {
       Debug.log(err);
-      await PlatformAlertDialog(
-        title: err is PlatformException ? err.message : 'An error occured',
-        content: err is PlatformException ? err.details : err.toString(),
-        defaultActionText: 'OK',
-      ).show(context);
-
+      await _showPlatformAlertDialog(err);
       Navigator.of(context).pop();
     }
+  }
+
+  Future _showPlatformAlertDialog(err) async {
+    await PlatformAlertDialog(
+      title: err is PlatformException ? err.message ?? 'An error occurred' : 'An error occurred',
+      content: err is PlatformException ? (err.details ?? err.toString()) : err.toString(),
+      defaultActionText: 'OK',
+    ).show(context);
   }
 
   Future<void> _lockInPortrait() async {
@@ -78,7 +81,7 @@ class _ConferencePageState extends State<ConferencePage> {
     _freePortraitLock();
     _wakeLock(false);
     _disposeStreamsAndSubscriptions();
-    if (_conferenceRoom != null) _conferenceRoom.removeListener(_conferenceRoomUpdated);
+    _conferenceRoom?.removeListener(_conferenceRoomUpdated);
     super.dispose();
   }
 
@@ -92,9 +95,9 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   Future<void> _disposeStreamsAndSubscriptions() async {
-    if (_onButtonBarVisibleStreamController != null) await _onButtonBarVisibleStreamController.close();
-    if (_onButtonBarHeightStreamController != null) await _onButtonBarHeightStreamController.close();
-    if (_onConferenceRoomException != null) await _onConferenceRoomException.cancel();
+    await _onButtonBarVisibleStreamController.close();
+    await _onButtonBarHeightStreamController.close();
+    await _onConferenceRoomException.cancel();
   }
 
   @override
@@ -103,36 +106,40 @@ class _ConferencePageState extends State<ConferencePage> {
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: _conferenceRoom == null ? showProgress() : buildLayout(),
+        body: buildLayout(),
       ),
     );
   }
 
-  LayoutBuilder buildLayout() {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Stack(
-          children: <Widget>[
-            _buildParticipants(context, constraints.biggest, _conferenceRoom),
-            ConferenceButtonBar(
-              audioEnabled: _conferenceRoom.onAudioEnabled,
-              videoEnabled: _conferenceRoom.onVideoEnabled,
-              flashState: _conferenceRoom.flashStateStream,
-              onAudioEnabled: _conferenceRoom.toggleAudioEnabled,
-              onVideoEnabled: _conferenceRoom.toggleVideoEnabled,
-              onHangup: _onHangup,
-              onSwitchCamera: _conferenceRoom.switchCamera,
-              toggleFlashlight: _conferenceRoom.toggleFlashlight,
-              onPersonAdd: _onPersonAdd,
-              onPersonRemove: _onPersonRemove,
-              onHeight: _onHeightBar,
-              onShow: _onShowBar,
-              onHide: _onHideBar,
-            ),
-          ],
-        );
-      },
-    );
+  Widget buildLayout() {
+    final conferenceRoom = _conferenceRoom;
+
+    return conferenceRoom == null
+        ? showProgress()
+        : LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Stack(
+                children: <Widget>[
+                  _buildParticipants(context, constraints.biggest, conferenceRoom),
+                  ConferenceButtonBar(
+                    audioEnabled: conferenceRoom.onAudioEnabled,
+                    videoEnabled: conferenceRoom.onVideoEnabled,
+                    flashState: conferenceRoom.flashStateStream,
+                    onAudioEnabled: conferenceRoom.toggleAudioEnabled,
+                    onVideoEnabled: conferenceRoom.toggleVideoEnabled,
+                    onHangup: _onHangup,
+                    onSwitchCamera: conferenceRoom.switchCamera,
+                    toggleFlashlight: conferenceRoom.toggleFlashlight,
+                    onPersonAdd: _onPersonAdd,
+                    onPersonRemove: _onPersonRemove,
+                    onHeight: _onHeightBar,
+                    onShow: _onShowBar,
+                    onHide: _onHideBar,
+                  ),
+                ],
+              );
+            },
+          );
   }
 
   Widget showProgress() {
@@ -154,20 +161,23 @@ class _ConferencePageState extends State<ConferencePage> {
 
   Future<void> _onHangup() async {
     Debug.log('onHangup');
-    await _conferenceRoom.disconnect();
+    await _conferenceRoom?.disconnect();
     Navigator.of(context).pop();
   }
 
   void _onPersonAdd() {
+    final conferenceRoom = _conferenceRoom;
+    if (conferenceRoom == null) return;
+
     Debug.log('onPersonAdd');
     try {
-      _conferenceRoom.addDummy(
+      conferenceRoom.addDummy(
         child: Stack(
           children: <Widget>[
             const Placeholder(),
             Center(
               child: Text(
-                (_conferenceRoom.participants.length + 1).toString(),
+                (conferenceRoom.participants.length + 1).toString(),
                 style: const TextStyle(
                   shadows: <Shadow>[
                     Shadow(
@@ -187,17 +197,13 @@ class _ConferencePageState extends State<ConferencePage> {
         ),
       );
     } on PlatformException catch (err) {
-      PlatformAlertDialog(
-        title: err.message,
-        content: err.details,
-        defaultActionText: 'OK',
-      ).show(context);
+      _showPlatformAlertDialog(err);
     }
   }
 
   void _onPersonRemove() {
     Debug.log('onPersonRemove');
-    _conferenceRoom.removeDummy();
+    _conferenceRoom?.removeDummy();
   }
 
   Widget _buildParticipants(BuildContext context, Size size, ConferenceRoom conferenceRoom) {
@@ -242,24 +248,27 @@ class _ConferencePageState extends State<ConferencePage> {
   }
 
   void _buildOverlayLayout(BuildContext context, Size size, List<Widget> children) {
-    final participants = _conferenceRoom.participants;
+    final conferenceRoom = _conferenceRoom;
+    if (conferenceRoom == null) return;
+
+    final participants = conferenceRoom.participants;
     if (participants.length == 1) {
       children.add(_buildNoiseBox());
     } else {
-      final remoteParticipant = participants.firstWhere((ParticipantWidget participant) => participant.isRemote, orElse: () => null);
+      final remoteParticipant = participants.firstWhereOrNull((ParticipantWidget participant) => participant.isRemote);
       if (remoteParticipant != null) {
         children.add(remoteParticipant);
       }
     }
 
-    final localParticipant = participants.firstWhere((ParticipantWidget participant) => !participant.isRemote, orElse: () => null);
+    final localParticipant = participants.firstWhereOrNull((ParticipantWidget participant) => !participant.isRemote);
     if (localParticipant != null) {
       children.add(DraggablePublisher(
         key: Key('publisher'),
-        child: localParticipant,
         availableScreenSize: size,
         onButtonBarVisible: _onButtonBarVisibleStreamController.stream,
         onButtonBarHeight: _onButtonBarHeightStreamController.stream,
+        child: localParticipant,
       ));
     }
   }
@@ -272,10 +281,13 @@ class _ConferencePageState extends State<ConferencePage> {
     bool moveLastOfEachRowToNextRow = false,
     int columns = 2,
   }) {
-    final participants = _conferenceRoom.participants;
-    ParticipantWidget localParticipant;
+    final conferenceRoom = _conferenceRoom;
+    if (conferenceRoom == null) return;
+
+    final participants = conferenceRoom.participants;
+    ParticipantWidget? localParticipant;
     if (removeLocalBeforeChunking) {
-      localParticipant = participants.firstWhere((ParticipantWidget participant) => !participant.isRemote, orElse: () => null);
+      localParticipant = participants.firstWhereOrNull((ParticipantWidget participant) => !participant.isRemote);
       if (localParticipant != null) {
         participants.remove(localParticipant);
       }
@@ -338,7 +350,7 @@ class _ConferencePageState extends State<ConferencePage> {
     );
   }
 
-  List<List<T>> chunk<T>({@required List<T> array, @required int size}) {
+  List<List<T>> chunk<T>({required List<T> array, required int size}) {
     final result = <List<T>>[];
     if (array.isEmpty || size <= 0) {
       return result;

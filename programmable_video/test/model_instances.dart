@@ -45,7 +45,7 @@ class ModelInstances {
     name: 'name',
     enabled: true,
     maxRetransmits: 1,
-    maxPacketLifeTime: 0,
+    maxPacketLifeTime: -1,
     reliable: true,
     ordered: true,
   );

@@ -6,10 +6,10 @@ class ClippedVideo extends StatefulWidget {
   final Widget child;
 
   const ClippedVideo({
-    Key key,
-    @required this.width,
-    @required this.height,
-    @required this.child,
+    Key? key,
+    required this.width,
+    required this.height,
+    required this.child,
   }) : super(key: key);
 
   @override
@@ -29,8 +29,8 @@ class _ClippedVideoState extends State<ClippedVideo> {
         ),
       ),
       child: ClipRRect(
-        child: widget.child,
         borderRadius: const BorderRadius.all(Radius.circular(20)),
+        child: widget.child,
       ),
     );
   }

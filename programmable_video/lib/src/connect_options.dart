@@ -7,28 +7,28 @@ class ConnectOptions {
   final String accessToken;
 
   /// The name of the room.
-  final String roomName;
+  final String? roomName;
 
   /// The region of the signaling Server the Client will use.
-  final Region region;
+  final Region? region;
 
   /// Enable detection of the loudest audio track
-  final bool enableDominantSpeaker;
+  final bool? enableDominantSpeaker;
 
   /// Set preferred audio codecs.
-  final List<AudioCodec> preferredAudioCodecs;
+  final List<AudioCodec>? preferredAudioCodecs;
 
   /// Set preferred video codecs.
-  final List<VideoCodec> preferredVideoCodecs;
+  final List<VideoCodec>? preferredVideoCodecs;
 
   /// Audio tracks that will be published upon connection.
-  final List<LocalAudioTrack> audioTracks;
+  final List<LocalAudioTrack>? audioTracks;
 
   /// Data tracks that will be published upon connection.
-  final List<LocalDataTrack> dataTracks;
+  final List<LocalDataTrack>? dataTracks;
 
   /// Video tracks that will be published upon connection.
-  final List<LocalVideoTrack> videoTracks;
+  final List<LocalVideoTrack>? videoTracks;
 
   /// Enable or disable the Network Quality API.
   /// Set this to true to enable the Network Quality API when using Group Rooms.
@@ -42,10 +42,10 @@ class ConnectOptions {
   /// configuration is used: [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_MINIMAL]
   /// for the [LocalParticipant] and [NetworkQualityVerbosity.NETWORK_QUALITY_VERBOSITY_NONE]
   /// for the [RemoteParticipant]s.
-  final NetworkQualityConfiguration networkQualityConfiguration;
+  final NetworkQualityConfiguration? networkQualityConfiguration;
 
   /// Choosing between `subscribe-to-all` or `subscribe-to-none` subscription rule
-  final bool enableAutomaticSubscription;
+  final bool? enableAutomaticSubscription;
 
   ConnectOptions(
     this.accessToken, {
@@ -60,25 +60,20 @@ class ConnectOptions {
     this.networkQualityConfiguration,
     this.enableDominantSpeaker,
     this.enableAutomaticSubscription,
-  })  : assert(accessToken != null),
-        assert(accessToken.isNotEmpty),
-        assert((audioTracks != null && audioTracks.isNotEmpty) || audioTracks == null),
-        assert((dataTracks != null && dataTracks.isNotEmpty) || dataTracks == null),
-        assert((preferredAudioCodecs != null && preferredAudioCodecs.isNotEmpty) || preferredAudioCodecs == null),
-        assert((preferredVideoCodecs != null && preferredVideoCodecs.isNotEmpty) || preferredVideoCodecs == null),
-        assert((videoTracks != null && videoTracks.isNotEmpty) || videoTracks == null),
-        assert(enableNetworkQuality != null);
+  }) : assert(accessToken.isNotEmpty);
 
   /// Create a [ConnectOptionsModel] from properties.
-  ConnectOptionsModel _toModel() {
+  ConnectOptionsModel toModel() {
+    final audioTracks = this.audioTracks;
     final audioTrackModels = audioTracks == null
         ? null
         : List<LocalAudioTrackModel>.from(
             audioTracks.map<LocalAudioTrackModel>(
-              (e) => e._toModel(),
+              (e) => e._toModel() as LocalAudioTrackModel,
             ),
           );
 
+    final dataTracks = this.dataTracks;
     final dataTrackModels = dataTracks == null
         ? null
         : List<LocalDataTrackModel>.from(
@@ -87,11 +82,12 @@ class ConnectOptions {
             ),
           );
 
+    final videoTracks = this.videoTracks;
     final videoTrackModels = videoTracks == null
         ? null
         : List<LocalVideoTrackModel>.from(
             videoTracks.map<LocalVideoTrackModel>(
-              (e) => e._toModel(),
+              (e) => e._toModel() as LocalVideoTrackModel,
             ),
           );
 

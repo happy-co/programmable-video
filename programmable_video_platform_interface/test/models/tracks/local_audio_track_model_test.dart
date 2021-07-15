@@ -1,30 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 void main() {
   final modelName = 'name';
   final modelBool = true;
-
-  group('LocalAudioTrackModel()', () {
-    test('should not construct without name', () {
-      expect(
-          () => LocalAudioTrackModel(
-                name: null,
-                enabled: modelBool,
-              ),
-          throwsAssertionError);
-    });
-
-    test('should not construct without enabled', () {
-      expect(
-          () => LocalAudioTrackModel(
-                name: modelName,
-                enabled: null,
-              ),
-          throwsAssertionError);
-    });
-  });
 
   group('.toMap()', () {
     test('should return correct Map', () {

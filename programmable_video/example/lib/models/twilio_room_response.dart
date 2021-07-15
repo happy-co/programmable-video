@@ -4,45 +4,42 @@ import 'package:twilio_programmable_video/twilio_programmable_video.dart';
 import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 
 class TwilioRoomLinks {
-  final String participants;
-  final String recordings;
+  final String? participants;
+  final String? recordings;
 
   TwilioRoomLinks({this.participants, this.recordings});
 
   factory TwilioRoomLinks.fromMap(Map<String, String> data) {
-    if (data == null) {
-      return null;
-    }
     return TwilioRoomLinks(
       participants: data['participants'],
       recordings: data['recordings'],
     );
   }
 
-  Map<String, String> toMap() {
+  Map<String, String?> toMap() {
     return {'participants': participants, 'recordings': recordings};
   }
 }
 
 class TwilioRoomResponse {
-  final String accountSid;
-  final DateTime dateCreated;
-  final DateTime dateUpdated;
-  final TwilioRoomStatus status;
-  final TwilioRoomType type;
-  final String sid;
-  final bool enableTurn;
-  final String uniqueName;
-  final int maxParticipants;
-  final int duration;
-  final TwilioStatusCallbackMethod statusCallbackMethod;
-  final String statusCallback;
-  final bool recordParticipantsOnConnect;
-  final List<TwilioVideoCodec> videoCodecs;
-  final Region mediaRegion;
-  final DateTime endTime;
-  final String url;
-  final TwilioRoomLinks links;
+  final String? accountSid;
+  final DateTime? dateCreated;
+  final DateTime? dateUpdated;
+  final TwilioRoomStatus? status;
+  final TwilioRoomType? type;
+  final String? sid;
+  final bool? enableTurn;
+  final String? uniqueName;
+  final int? maxParticipants;
+  final int? duration;
+  final TwilioStatusCallbackMethod? statusCallbackMethod;
+  final String? statusCallback;
+  final bool? recordParticipantsOnConnect;
+  final List<TwilioVideoCodec?>? videoCodecs;
+  final Region? mediaRegion;
+  final DateTime? endTime;
+  final String? url;
+  final TwilioRoomLinks? links;
 
   TwilioRoomResponse({
     this.accountSid,
@@ -66,9 +63,6 @@ class TwilioRoomResponse {
   });
 
   factory TwilioRoomResponse.fromMap(Map<String, dynamic> data) {
-    if (data == null) {
-      return null;
-    }
     return TwilioRoomResponse(
       accountSid: data['accountSid'],
       duration: data['duration'],

@@ -2,7 +2,8 @@ part of twilio_programmable_video;
 
 /// Entry point for the Twilio Programmable Video.
 class TwilioProgrammableVideo {
-  static StreamSubscription _loggingStream;
+  // ignore: cancel_subscriptions
+  static StreamSubscription? _loggingStream;
 
   static var _dartDebug = false;
 
@@ -50,8 +51,6 @@ class TwilioProgrammableVideo {
   ///
   /// For native logging set [native] to `true` and for dart set [dart] to `true`.
   static Future<void> debug({bool dart = false, bool native = false}) async {
-    assert(dart != null);
-    assert(native != null);
     _dartDebug = dart;
     await ProgrammableVideoPlatform.instance.setNativeDebug(native);
     if (native && _loggingStream == null) {
@@ -61,7 +60,7 @@ class TwilioProgrammableVideo {
         }
       });
     } else if (!native && _loggingStream != null) {
-      await _loggingStream.cancel();
+      await _loggingStream!.cancel();
       _loggingStream = null;
     }
   }
@@ -70,8 +69,7 @@ class TwilioProgrammableVideo {
   ///
   /// Note: Call this method after the [Room.onConnected] event on iOS. Calling it before will not result in a audio routing change.
   @Deprecated('Use setAudioSettings for more reliable audio output management.')
-  static Future<bool> setSpeakerphoneOn(bool on) async {
-    assert(on != null);
+  static Future<bool?> setSpeakerphoneOn(bool on) async {
     return await ProgrammableVideoPlatform.instance.setSpeakerphoneOn(on);
   }
 
@@ -89,7 +87,7 @@ class TwilioProgrammableVideo {
   }
 
   /// Check if speaker mode is enabled.
-  static Future<bool> getSpeakerphoneOn() async {
+  static Future<bool?> getSpeakerphoneOn() async {
     return await ProgrammableVideoPlatform.instance.getSpeakerphoneOn();
   }
 
@@ -144,15 +142,100 @@ class TwilioProgrammableVideo {
   /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource]
   /// Throws [InitializationException] if an error is caught when attempting to connect.
   static Future<Room> connect(ConnectOptions connectOptions) async {
-    assert(connectOptions != null);
     if (await requestPermissionForCameraAndMicrophone()) {
       try {
-        final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions._toModel());
+        final roomId = await ProgrammableVideoPlatform.instance.connectToRoom(connectOptions.toModel());
+        if (roomId == null) {
+          throw Exception('RoomId is null');
+        }
+
         return Room(roomId);
       } on PlatformException catch (err) {
         throw TwilioProgrammableVideo._convertException(err);
       }
     }
     throw Exception('Permissions not granted');
+  }
+
+  static Future<List<StatsReport>?> getStats() async {
+    final statsMap = await ProgrammableVideoPlatform.instance.getStats();
+    if (statsMap == null) {
+      return null;
+    }
+
+    return statsMap.entries.map((entry) {
+      final statReport = StatsReport(entry.key);
+      final values = entry.value;
+      values['localAudioTrackStats'].forEach((localAudioTrackStat) {
+        statReport.addLocalAudioTrackStats(LocalAudioTrackStats(
+          localAudioTrackStat['trackSide'],
+          localAudioTrackStat['packetsLost'],
+          localAudioTrackStat['codec'],
+          localAudioTrackStat['ssrc'],
+          localAudioTrackStat['timestamp'],
+          localAudioTrackStat['bytesSent'],
+          localAudioTrackStat['packetsSent'],
+          localAudioTrackStat['roundTripTime'],
+          localAudioTrackStat['audioLevel'],
+          localAudioTrackStat['jitter'],
+        ));
+      });
+
+      values['remoteAudioTrackStats'].forEach((remoteAudioTrackStat) {
+        statReport.addAudioTrackStats(RemoteAudioTrackStats(
+          remoteAudioTrackStat['trackSide'],
+          remoteAudioTrackStat['packetsLost'],
+          remoteAudioTrackStat['codec'],
+          remoteAudioTrackStat['ssrc'],
+          remoteAudioTrackStat['timestamp'],
+          remoteAudioTrackStat['bytesReceived'],
+          remoteAudioTrackStat['packetsReceived'],
+          remoteAudioTrackStat['audioLevel'],
+          remoteAudioTrackStat['jitter'],
+        ));
+      });
+
+      values['remoteAudioTrackStats'].forEach((remoteVideoTrackStat) {
+        statReport.addVideoTrackStats(RemoteVideoTrackStats(
+          remoteVideoTrackStat['trackSide'],
+          remoteVideoTrackStat['packetsLost'],
+          remoteVideoTrackStat['codec'],
+          remoteVideoTrackStat['ssrc'],
+          remoteVideoTrackStat['timestamp'],
+          remoteVideoTrackStat['bytesReceived'],
+          remoteVideoTrackStat['packetsReceived'],
+          VideoDimensions(
+            remoteVideoTrackStat['dimensionsHeight'],
+            remoteVideoTrackStat['dimensionsWidth'],
+          ),
+          remoteVideoTrackStat['frameRate'],
+        ));
+      });
+
+      values['localVideoTrackStats'].forEach((localVideoTrackStat) {
+        statReport.addLocalVideoTrackStats(LocalVideoTrackStats(
+          localVideoTrackStat['trackSide'],
+          localVideoTrackStat['packetsLost'],
+          localVideoTrackStat['codec'],
+          localVideoTrackStat['ssrc'],
+          localVideoTrackStat['timestamp'],
+          localVideoTrackStat['bytesSent'],
+          localVideoTrackStat['packetsSent'],
+          localVideoTrackStat['roundTripTime'],
+          VideoDimensions(
+            localVideoTrackStat['captureDimensionsHeight'],
+            localVideoTrackStat['captureDimensionsWidth'],
+          ),
+          VideoDimensions(
+            localVideoTrackStat['dimensionsHeight'],
+            localVideoTrackStat['dimensionsWidth'],
+          ),
+          localVideoTrackStat['capturedFrameRate'],
+          localVideoTrackStat['frameRate'],
+        ));
+      });
+
+      return statReport;
+    }).toList();
   }
 }
