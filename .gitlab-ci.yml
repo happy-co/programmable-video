@@ -368,7 +368,7 @@ tag_programmable_video:
       fi
 
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
-      curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+      curl --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video_v${TAG_NAME}" \
         --data-urlencode "ref=master" \
         --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video/CHANGELOG.md)" \
@@ -398,7 +398,7 @@ tag_platform_interface:
       fi
 
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
-      curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+      curl --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video-platform-interface_v${TAG_NAME}" \
         --data-urlencode "ref=master" \
         --data-urlencode "release_description=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video_platform_interface/CHANGELOG.md)" \
