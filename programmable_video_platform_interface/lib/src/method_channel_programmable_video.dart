@@ -209,7 +209,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       CameraSource.values,
       methodData['cameraSource'],
     );
-    if (cameraSource == null) throw FormatException('Failed to parse cameraSource');
+    if (cameraSource == null) {
+      throw FormatException('Failed to parse cameraSource');
+    }
     return cameraSource;
   }
 
@@ -325,7 +327,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       remoteParticipant = RemoteParticipantModel.fromEventChannelMap(remoteParticipantMap);
     }
 
-    late TwilioExceptionModel twilioException;
+    TwilioExceptionModel? twilioException;
     if (event['error'] != null) {
       final errorMap = Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
       twilioException = TwilioExceptionModel(errorMap['code'] as int, errorMap['message']);
@@ -610,7 +612,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   BaseLocalParticipantEvent _parseLocalParticipantEvent(dynamic event) {
     final data = Map<String, dynamic>.from(event['data']);
     // If no localParticipant data is received, skip the event.
-    if (data['localParticipant'] == null) return SkipAbleLocalParticipantEvent();
+    if (data['localParticipant'] == null) {
+      return SkipAbleLocalParticipantEvent();
+    }
 
     final localParticipantModel = LocalParticipantModel.fromEventChannelMap(Map<String, dynamic>.from(data['localParticipant']));
 

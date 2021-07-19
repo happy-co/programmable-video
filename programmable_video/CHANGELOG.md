@@ -1,3 +1,7 @@
+## 0.9.0
+
+- **BREAKING** Made `exception` property of ConnectFailure, Reconnecting and Disconnected events nullable.
+
 ## 0.8.0+1
 
 - Removed incorrect `!` from `local_video_track_model.dart`.

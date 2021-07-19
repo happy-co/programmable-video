@@ -5,7 +5,7 @@ class RoomConnectFailureEvent {
   final Room room;
 
   /// An exception describing why connect failed.
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomConnectFailureEvent(
     this.room,
@@ -20,7 +20,7 @@ class RoomReconnectingEvent {
   /// An error explaining why the [LocalParticipant] is reconnecting to a room.
   /// Errors are limited to [TwilioException.signalingConnectionDisconnectedException]
   /// and [TwilioException.mediaConnectionErrorException].
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomReconnectingEvent(
     this.room,
@@ -34,7 +34,7 @@ class RoomDisconnectedEvent {
 
   /// An exception if there was a problem that caused the room to be disconnected from.
   /// This value will be null is there were no problems disconnecting from the room.
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomDisconnectedEvent(
     this.room,
