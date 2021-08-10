@@ -56,6 +56,13 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     let audioPlayerNodeManager: AVAudioPlayerNodeManager = AVAudioPlayerNodeManager()
     
+    // Reference to PluginHandler's applyAudioSettings
+    var applyAudioSettings: (() throws -> Void)?
+
+    public func setApplyAudioSettings(_ applyAudioSettings: @escaping () throws -> Void) {
+        self.applyAudioSettings = applyAudioSettings
+    }
+    
     static var instance: AVAudioEngineDevice = AVAudioEngineDevice()
 
     public static func getInstance() -> AVAudioEngineDevice {
@@ -79,8 +86,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         if !self.setupAudioEngine() {
             debug("AVAudioEngineDevice::init => Failed to setup AVAudioEngine")
         }
-//        // TODO: cleanup if not needed
-//        self.setupAVAudioSession()
 
         debug("AVAudioEngineDevice::init => END")
     }
@@ -155,6 +160,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         return "AVAudioEngine Audio Mixing"
     }
 
+    // TODO: update or delete this comment
     /*
      * Determine at runtime the maximum slice size used by VoiceProcessingIO. Setting the stream format and sample rate
      * doesn't appear to impact the maximum size so we prefer to read this value once at initialization time.
@@ -172,8 +178,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       &framesPerSlice, &propertySize)
         debug("This device uses a maximum slice size of \(framesPerSlice) frames.\n\taudioUnit: \(audioUnit)")
         AVAudioEngineDevice.kMaximumFramesPerBuffer = framesPerSlice
-        // TODO: consider if this is the right spot for setting renderingContext.maxFramesPerBuffer
-//        self.renderingContext.maxFramesPerBuffer = framesPerSlice
     }
 
     // MARK: Private (AVAudioEngine)
@@ -379,6 +383,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     
     public func onConnected() {
         // TODO: Add in conditional to handle scenario where engine is running prior to connection
+        // May not be necessary due to now using PluginHandler.applyAudioSettings()
         self.isConnected = true
         self.setupAVAudioSession()
     }
@@ -386,14 +391,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     public func onDisconnected() {
         self.isConnected = false
         self.teardownAVAudioSession()
-        // TODO: Add in conditional to handle scenario where engine should remain running after disconnection
-//        do {
-//            NotificationCenter.default.removeObserver(self)
-//            let session = AVAudioSession.sharedInstance()
-//            try session.setActive(false, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
-//        } catch let error {
-//            debug("Error deactivating AVAudioSession: \(error)")
-//        }
     }
     
     // MARK: Audio File Playback API
@@ -402,8 +399,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("AVAudioEngineDevice::playMusic => QUEUE - DispatchQueue.main.async")
             DispatchQueue.main.async {
                 debug("AVAudioEngineDevice::playMusic => START - DispatchQueue.main.async id: \(id)")
-                // TODO: don't just leave this here, figure out the right thing to do with it
-//                self.setupAVAudioSession()
                 self.audioPlayerNodeManager.playNode(id)
                 debug("AVAudioEngineDevice::playMusic => END - DispatchQueue.main.async: \(id)")
             }
@@ -412,7 +407,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func safelyPlayMusic(_ playCallback: @escaping () -> Void) {
-        // TODO: cleanup if not needed
         self.setupAVAudioSession()
         
         myPropertyQueue.async {
@@ -452,8 +446,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         // TODO: review case where playMusic/is starting rendering/waiting to start rendering before starting music
         if !self.audioPlayerNodeManager.isActive(),
-//           !self.audioPlayerNodeManager.anyPaused(),
-//           self.renderingContext.deviceContext == nil,
            !self.isConnected,
             !self.isStartingRenderer,
             !self.isStoppingRenderer {
@@ -568,15 +560,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     // MARK: TVIAudioDeviceRenderer
     public func renderFormat() -> AudioFormat? {
         debug("AVAudioEngineDevice::renderFormat => format: \(self.renderingFormat)")
-//        if renderingFormat == nil, let activeFormat = activeFormat() {
-//            /*
-//             * Assume that the AVAudioSession has already been configured and started and that the values
-//             * for sampleRate and IOBufferDuration are final.
-//             */
-//            renderingFormat = activeFormat
-//            self.renderingContext.maxFramesPerBuffer = activeFormat.framesPerBuffer
-//        }
-//
         return renderingFormat
     }
 
@@ -645,13 +628,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         }
         
         self.setupAudioUnit()
-
-//        if !self.setupAudioUnitWithRenderContext(renderContext: &self.renderingContext, captureContext: &self.capturingContext) {
-//            result = false
-//            self.isStartingRenderer = false
-//            self.isRendering = false
-//            return false
-//        }
 
         debug("AVAudioEngineDevice::startRenderingInternal => QUEUE - DispatchQueue.main.async")
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
@@ -754,33 +730,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     // MARK: AudioDeviceCapturer
     public func captureFormat() -> AudioFormat? {
         debug("AVAudioEngineDevice::captureFormat => format: \(self.capturingFormat)")
-//        if capturingFormat == nil {
-//            /*
-//             * Assume that the AVAudioSession has already been configured and started and that the values
-//             * for sampleRate and IOBufferDuration are final.
-//             */
-//            capturingFormat = activeFormat()
-//        }
-//
         return capturingFormat
     }
 
     public func initializeCapturer() -> Bool {
         debug("AVAudioEngineDevice::initializeCapturer")
-        
-//        if self.capturingContext.mixedAudioBufferList?.pointee == nil {
-//            // TODO: Decide if this is necessary, and if it is, maybe allocate mixedAudioBufferList
-//            var pMixedAudioBufferListData = UnsafeMutablePointer<Int8>.allocate(capacity: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer * AVAudioEngineDevice.kPreferredNumberOfChannels * AVAudioEngineDevice.kAudioSampleSize))
-//            self.capturingContext.mixedAudioBufferList?.pointee = AudioBufferList(
-//                                                   mNumberBuffers: 1,
-//                                                   mBuffers: AudioBuffer(
-//                                                    mNumberChannels: AVAudioEngineDevice.kPreferredNumberOfChannels,
-//                                                    mDataByteSize: UInt32(0),
-//                                                    mData: pMixedAudioBufferListData
-//                                                   ))
-//            debug("AVAudioEngineDevice::initializeCapturer => initialized mixAudioBufferList")
-//        }
-
         return true
     }
 
@@ -826,21 +780,14 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                         self.setupRecordAudioEngine()
                     }
                     debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
-    //                result = self.startAudioUnit()
                 }
 
                 self.capturingContext.deviceContext = context
 
-    //            if !self.setupAudioUnitWithRenderContext(renderContext: &self.renderingContext, captureContext: &self.capturingContext) {
-    //                result = false
-    //                return
-    //            }
-
-            debug("AVAudioEngineDevice::startCapturing => startAudioUnit")
-            result = self.startAudioUnit()
-            debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
-            return
-        }
+                result = self.startAudioUnit()
+                debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
+                return
+            }
 
             debug("AVAudioEngineDevice::startCapturing - END - result: \(result)")
             return result
@@ -862,7 +809,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                 self.teardownAudioUnit()
             }
             self.capturingContext.deviceContext = nil
-//            self.capturingContext.audioUnit = nil
 
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
             debug("AVAudioEngineDevice::stopCapturing => QUEUE - DispatchQueue.main.async")
@@ -916,9 +862,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
              * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
              */
             try session.setPreferredIOBufferDuration(AVAudioEngineDevice.kPreferredIOBufferDuration)
-            try session.setCategory(AVAudioSession.Category.playAndRecord)
-            // TODO: ensure AVAudioSession configuration that should be handled by PluginHandler us bit overwritten here
-//            try session.setMode(AVAudioSession.Mode.videoChat)
+
+            // Callout to PluginHandler to applyAudioSettings to ensure that those applied are those set by user
+            if let applyAudioSettings = applyAudioSettings {
+                try applyAudioSettings()
+            }
         } catch let error {
             debug("Error setting up AudioSession: \(error)")
         }
@@ -941,7 +889,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
     
     func teardownAVAudioSession() {
-        // TODO: Add in conditional to handle scenario where engine should remain running after disconnection
         if !self.audioPlayerNodeManager.isActive() && !self.isConnected {
             do {
                 NotificationCenter.default.removeObserver(self)
@@ -995,7 +942,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Could not enable out bus!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
-//            return false
             return
         }
 
@@ -1004,7 +950,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       &streamDescription, streamDescriptionSize)
         if status != 0 {
             debug("Could not set stream format on input bus!")
-//            return false
             return
         }
 
@@ -1014,7 +959,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       &streamDescription, streamDescriptionSize)
         if status != 0 {
             debug("Could not set stream format on output bus!")
-//            return false
             return
         }
 
@@ -1027,7 +971,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Could not enable input bus!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
-//            return false
             return
         }
 
@@ -1042,7 +985,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Could not set rendering callback!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
-//            return false
             return
         }
 
@@ -1057,7 +999,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Could not set capturing callback!")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
-//            return false
             return
         }
 
@@ -1078,7 +1019,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("Could not initialize the audio unit! => OSStatus: \(status)")
             AudioComponentInstanceDispose(audioUnit)
             self.audioUnit = nil
-//            return false
             return
         }
 
@@ -1279,10 +1219,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         if !activeFormat.isEqual(renderingFormat) || !activeFormat.isEqual(capturingFormat) {
             debug("Format changed, restarting with \(activeFormat)")
 
-            // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
-//            renderingFormat = nil
-//            capturingFormat = nil
-
             self.myPropertyQueue.async {
                 if let context = self.deviceContext() {
                     // Video SDK is connected
@@ -1300,8 +1236,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                     if self.audioPlayerNodeManager.anyPaused() {
                         debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN startRenderingInternal to resume audio nodes")
                         self.startRenderingInternal(context: nil)
-//                        self.setupAVAudioSession()
-//                        AVAudioSession.sharedInstance().setActive(true, , options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
                     }
                     debug("AVAudioEngineDevice::handleValidRouteChange => END handleFormatChange")
                 }
@@ -1556,6 +1490,6 @@ class AudioCapturerContext {
 }
 
 // Can swap internal usage to NSLog if you need to guarantee logging at app startup
-func debug(_ msg: String) {
+internal func debug(_ msg: String) {
     SwiftTwilioProgrammableVideoPlugin.debug(msg)
 }

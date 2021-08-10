@@ -37,11 +37,14 @@ internal class AudioNotificationListener: BaseListener {
             // Each device change might cause the actual sample rate or channel configuration of the session to change.
             case AVAudioSession.RouteChangeReason.newDeviceAvailable:
                 let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey]
-                SwiftTwilioProgrammableVideoPlugin.debug("newDeviceAvailable: \(previousRoute), bluetoothConnected: \(bluetoothConnected)")
+                SwiftTwilioProgrammableVideoPlugin.debug("newDeviceAvailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(previousRoute),\n\tbluetoothConnected: \(bluetoothConnected)")
+                SwiftTwilioProgrammableVideoPlugin.debug("\tavailableInputs: \(AVAudioSession.sharedInstance().availableInputs)")
+                // TODO: review sending same data with event as Android does
                 sendEvent("newDeviceAvailable", data: nil, error: nil)
             case AVAudioSession.RouteChangeReason.oldDeviceUnavailable:
                 let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey]
-                SwiftTwilioProgrammableVideoPlugin.debug("oldDeviceUnavailable: \(previousRoute), bluetoothConnected: \(bluetoothConnected)")
+                SwiftTwilioProgrammableVideoPlugin.debug("oldDeviceUnavailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(previousRoute),\n\tbluetoothConnected: \(bluetoothConnected)")
+                // TODO: review sending same data with event as Android does
                 sendEvent("oldDeviceUnavailable", data: nil, error: nil)
             default:
                 SwiftTwilioProgrammableVideoPlugin.debug("default")

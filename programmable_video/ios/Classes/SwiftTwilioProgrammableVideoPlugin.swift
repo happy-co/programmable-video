@@ -46,6 +46,9 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         audioDevice = device
         audioDeviceOnConnected = onConnected
         audioDeviceOnDisconnected = onDisconnected
+        if let audioDevice = audioDevice as? AVAudioEngineDevice {
+            audioDevice.setApplyAudioSettings(pluginHandler.applyAudioSettings)
+        }
     }
     
     public static func clearCustomAudioDevice() {

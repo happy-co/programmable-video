@@ -61,9 +61,10 @@ internal class AVAudioPlayerNodeManager {
             return
         }
 
+        debug("AVAudioPlayerNodeManager::play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)")
+        
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
-            debug("AVAudioPlayerNodeManager::play => file: \(fileName(node.file)), from: \(position), for: \(frameCount), loop: \(node.loop)")
 
             node.player.scheduleSegment(node.file, startingFrame: position, frameCount: frameCount, at: nil) {
                 debug("AVAudioPlayerNodeManager::segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop), paused: \(self.isPaused(node.id))")
@@ -277,7 +278,7 @@ internal class AVAudioPlayerNodeManager {
 
     public func anyPlaying() -> Bool {
         var result = false
-        for nodeBundle in nodes.values where nodeBundle.player.isPlaying {
+        for nodeBundle in nodes.values where nodeBundle.playing {
             debug("AVAudioPlayerNodeManager::anyPlaying => node \(nodeBundle.id) is playing")
             result = true
             break
@@ -287,7 +288,9 @@ internal class AVAudioPlayerNodeManager {
     }
 
     public func anyPaused() -> Bool {
-        return !pausedNodes.values.isEmpty
+        let anyPaused = !pausedNodes.values.isEmpty
+        debug("AVAudioPlayerNodeManager::anyPaused => \(anyPaused)")
+        return anyPaused
     }
 
     func isPaused(_ id: Int) -> Bool {
@@ -296,13 +299,16 @@ internal class AVAudioPlayerNodeManager {
 
     public func pauseAll(_ resumeAfterRendererStarted: Bool = false) {
         self.nodes.values.forEach { (node: AVAudioPlayerNodeBundle) in
-            if node.player.isPlaying {
+            let nodeIsPlaying = node.player.isPlaying
+            debug("AVAudioPlayerNodeManager::pauseAll => node \(node.id) isPlaying: \(nodeIsPlaying)")
+            if nodeIsPlaying {
                 self.pauseNode(node.id, resumeAfterRendererStarted)
             }
         }
     }
 
     public func resumeAll() {
+        debug("AVAudioPlayerNodeManager::resumeAll => pausedNodes: \(self.pausedNodes.capacity)")
         self.pausedNodes.values.forEach { (node: AVAudioPlayerNodeBundle) in
             if node.resumeAfterRendererStarted {
                 self.resumeNode(node.id)

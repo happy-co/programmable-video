@@ -6,7 +6,7 @@ import TwilioVideo
 
 public class PluginHandler: BaseListener {
     let audioSettings = AudioSettings()
-    
+
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.remoteParticipants.first(where: {$0.sid == sid})
     }
@@ -309,14 +309,19 @@ public class PluginHandler: BaseListener {
             audioSettings.speakerEnabled = speakerPhoneEnabled
             audioSettings.bluetoothPreferred = bluetoothPreferred
             
-            let audioSession = AVAudioSession.sharedInstance()
-            let mode: AVAudioSession.Mode = getAudioMode()
-            let options: AVAudioSession.CategoryOptions = getAudioOptions()
-            try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
+            try applyAudioSettings()
+
             return result(nil)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
+    }
+    
+    func applyAudioSettings() throws {
+        let audioSession = AVAudioSession.sharedInstance()
+        let mode: AVAudioSession.Mode = getAudioMode()
+        let options: AVAudioSession.CategoryOptions = getAudioOptions()
+        try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
     }
 
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -519,7 +524,8 @@ public class PluginHandler: BaseListener {
                             CameraSource.captureDevice(position: .front)
 
                         guard let cameraDevice = cameraDeviceRequested else {
-                            return result(FlutterError(code: "MISSING_CAMERA", message: "No camera found for \(videoCapturer?["cameraSource"] ?? "FRONT_CAMERA")", details: nil))
+                            let cameraSourceMessage = videoCapturer?["cameraSource"] ?? "FRONT_CAMERA"
+                            return result(FlutterError(code: "MISSING_CAMERA", message: "No camera found for \(cameraSourceMessage)", details: nil))
                         }
 
                         let videoSource = CameraSource()!
@@ -555,6 +561,12 @@ public class PluginHandler: BaseListener {
 
             builder.isDominantSpeakerEnabled = optionsObj["enableDominantSpeaker"] as? Bool ?? false
             builder.isAutomaticSubscriptionEnabled = optionsObj["enableAutomaticSubscription"] as? Bool ?? true
+        }
+        
+        do {
+            try applyAudioSettings()
+        } catch let error as NSError {
+            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => Error applying audio settings.\n\tCode: \(error.code)\n\tMessage: \(error.description)")
         }
         
         if let onConnected = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnConnected {
