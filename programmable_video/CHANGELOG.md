@@ -1,6 +1,6 @@
 ## 0.9.0+1
 
-- Fixed typo in stats (trackSide -> treckSid).
+- Fixed typo in stats (trackSide -> trackSid).
 
 ## 0.9.0
 
