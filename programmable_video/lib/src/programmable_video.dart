@@ -154,7 +154,7 @@ class TwilioProgrammableVideo {
       final values = entry.value;
       values['localAudioTrackStats'].forEach((localAudioTrackStat) {
         statReport.addLocalAudioTrackStats(LocalAudioTrackStats(
-          localAudioTrackStat['trackSide'],
+          localAudioTrackStat['trackSid'],
           localAudioTrackStat['packetsLost'],
           localAudioTrackStat['codec'],
           localAudioTrackStat['ssrc'],
@@ -169,7 +169,7 @@ class TwilioProgrammableVideo {
 
       values['remoteAudioTrackStats'].forEach((remoteAudioTrackStat) {
         statReport.addAudioTrackStats(RemoteAudioTrackStats(
-          remoteAudioTrackStat['trackSide'],
+          remoteAudioTrackStat['trackSid'],
           remoteAudioTrackStat['packetsLost'],
           remoteAudioTrackStat['codec'],
           remoteAudioTrackStat['ssrc'],
@@ -183,7 +183,7 @@ class TwilioProgrammableVideo {
 
       values['remoteAudioTrackStats'].forEach((remoteVideoTrackStat) {
         statReport.addVideoTrackStats(RemoteVideoTrackStats(
-          remoteVideoTrackStat['trackSide'],
+          remoteVideoTrackStat['trackSid'],
           remoteVideoTrackStat['packetsLost'],
           remoteVideoTrackStat['codec'],
           remoteVideoTrackStat['ssrc'],
@@ -200,7 +200,7 @@ class TwilioProgrammableVideo {
 
       values['localVideoTrackStats'].forEach((localVideoTrackStat) {
         statReport.addLocalVideoTrackStats(LocalVideoTrackStats(
-          localVideoTrackStat['trackSide'],
+          localVideoTrackStat['trackSid'],
           localVideoTrackStat['packetsLost'],
           localVideoTrackStat['codec'],
           localVideoTrackStat['ssrc'],
