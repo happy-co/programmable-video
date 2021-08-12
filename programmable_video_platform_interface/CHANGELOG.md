@@ -1,7 +1,3 @@
-## 0.5.0+1
-
-- fixed typo in stats (trackSide -> treckSid)
-
 ## 0.5.0
 
 - **BREAKING** Made `exception` property of ConnectFailure, Reconnecting and Disconnected events nullable.
