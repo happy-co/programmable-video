@@ -1,3 +1,7 @@
+## 0.9.0+2
+
+- Fixed remote video stats (replaced an incorrect map key).
+
 ## 0.9.0+1
 
 - Fixed typo in stats (trackSide -> trackSid).

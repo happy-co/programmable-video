@@ -181,7 +181,7 @@ class TwilioProgrammableVideo {
         ));
       });
 
-      values['remoteAudioTrackStats'].forEach((remoteVideoTrackStat) {
+      values['remoteVideoTrackStats'].forEach((remoteVideoTrackStat) {
         statReport.addVideoTrackStats(RemoteVideoTrackStats(
           remoteVideoTrackStat['trackSid'],
           remoteVideoTrackStat['packetsLost'],
