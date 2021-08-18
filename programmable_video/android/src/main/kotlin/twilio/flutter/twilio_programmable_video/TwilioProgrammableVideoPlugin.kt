@@ -99,6 +99,16 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 }
             }
         }
+
+        @JvmStatic
+        public fun getAudioPlayerEventListener(): ((url: String, isPlaying: Boolean) -> Unit) {
+            return audioNotificationListener::audioPlayerEventListener
+        }
+
+        @JvmStatic
+        internal fun isConnected(): Boolean {
+            return ::roomListener.isInitialized && roomListener.room != null
+        }
     }
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
