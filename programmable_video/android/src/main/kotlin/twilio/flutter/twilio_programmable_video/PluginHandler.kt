@@ -41,7 +41,7 @@ import java.nio.ByteBuffer
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
 class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
-    private var previousAudioMode: Int = 0
+    private var previousAudioMode: Int? = null
 
     private var previousMicrophoneMute: Boolean = false
 
@@ -294,9 +294,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     private fun setSpeakerPhoneOnInternal() {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::setSpeakerPhoneOnInternal => on: ${audioSettings.speakerEnabled}\n bluetoothEnable: ${audioSettings.bluetoothPreferred}\n bluetoothScoOn: ${audioManager.isBluetoothScoOn}")
+        val bluetoothProfileConnectionState = BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET)
+        TwilioProgrammableVideoPlugin.debug("PluginHandler::setSpeakerPhoneOnInternal => on: ${audioSettings.speakerEnabled}\n bluetoothEnable: ${audioSettings.bluetoothPreferred}\n bluetoothScoOn: ${audioManager.isBluetoothScoOn}\n bluetoothProfileConnectionState: $bluetoothProfileConnectionState")
         if (!audioSettings.bluetoothPreferred ||
-            BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET) != BluetoothProfile.STATE_CONNECTED) {
+                bluetoothProfileConnectionState != BluetoothProfile.STATE_CONNECTED) {
             applySpeakerPhoneSettings()
         }
     }
@@ -340,6 +341,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         TwilioProgrammableVideoPlugin.debug("PluginHandler::disconnect => audioPlayers active: ${TwilioProgrammableVideoPlugin.audioNotificationListener.anyAudioPlayersActive()}")
         if (!TwilioProgrammableVideoPlugin.audioNotificationListener.anyAudioPlayersActive()) {
             // TODO: setBluetoothSco(false)?
+            setBluetoothSco(false)
             setAudioFocus(false)
         }
         result.success(true)
@@ -516,7 +518,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     internal fun setAudioFocus(focus: Boolean) {
         if (focus) {
-            previousAudioMode = audioManager.mode
+            if (previousAudioMode == null) {
+                previousAudioMode = audioManager.mode
+            }
             val volumeControlStream = this.activity?.volumeControlStream
             if (volumeControlStream != null) {
                 previousVolumeControlStream = volumeControlStream
@@ -534,7 +538,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     .setAcceptsDelayedFocusGain(true)
                     .setOnAudioFocusChangeListener { }
                     .build()
-                TwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioFocus => focus: $focus, audioFocusRequest: $audioFocusRequest")
+                TwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioFocus =>" +
+                    "\n\tfocus: $focus," +
+                    "\n\taudioFocusRequest: $audioFocusRequest" +
+                    "\n\tpreviousAudioMode: $previousAudioMode")
                 audioManager.requestAudioFocus(audioFocusRequest!!)
             } else {
                 audioManager.requestAudioFocus(
@@ -557,14 +564,20 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             audioManager.isMicrophoneMute = false
             this.activity?.volumeControlStream = AudioManager.STREAM_VOICE_CALL
         } else {
-            TwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioFocus => focus: $focus, audioFocusRequest: $audioFocusRequest")
+            TwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioFocus =>" +
+                    "\tfocus: $focus," +
+                    "\taudioFocusRequest: $audioFocusRequest" +
+                    "\tpreviousAudioMode: $previousAudioMode")
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 audioManager.abandonAudioFocus(null)
             } else if (audioFocusRequest != null) {
                 audioManager.abandonAudioFocusRequest(audioFocusRequest!!)
             }
             audioManager.isSpeakerphoneOn = false
-            audioManager.mode = previousAudioMode
+            if (previousAudioMode != null) {
+                audioManager.mode = previousAudioMode!!
+                previousAudioMode = null
+            }
             audioManager.isMicrophoneMute = previousMicrophoneMute
             this.activity?.volumeControlStream = previousVolumeControlStream
         }
