@@ -125,7 +125,7 @@ class TwilioProgrammableVideo {
   ///
   /// Will request camera and microphone permissions.
   /// Throws [MissingParameterException] if [ConnectOptions] are not provided.
-  /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource]
+  /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource].
   /// Throws [InitializationException] if an error is caught when attempting to connect.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     if (await requestPermissionForCameraAndMicrophone()) {

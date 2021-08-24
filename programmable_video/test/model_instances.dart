@@ -58,7 +58,7 @@ class ModelInstances {
   static const localVideoTrackModel = LocalVideoTrackModel(
     name: 'name',
     enabled: true,
-    cameraCapturer: CameraCapturerModel(CameraSource.FRONT_CAMERA, 'CameraCapturer'),
+    cameraCapturer: CameraCapturerModel(CameraSource('FRONT_CAMERA', false, false, false), 'CameraCapturer'),
   );
 
   static const localVideoTrackPublicationModel = LocalVideoTrackPublicationModel(

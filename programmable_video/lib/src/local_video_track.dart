@@ -8,7 +8,7 @@ class LocalVideoTrack extends VideoTrack {
 
   /// Check if it is enabled.
   ///
-  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraSource] are provided.
+  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraCapturer] are provided.
   @override
   bool get isEnabled => super._enabled;
 
@@ -91,7 +91,7 @@ class LocalVideoTrack extends VideoTrack {
     return LocalVideoTrackModel(
       enabled: _enabled,
       name: name,
-      cameraCapturer: CameraCapturerModel(cameraCapturer.cameraSource, 'CameraCapturer'),
+      cameraCapturer: CameraCapturerModel(cameraCapturer.source, 'CameraCapturer'),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// Model that a plugin implementation can use to construct a CameraCapturer.

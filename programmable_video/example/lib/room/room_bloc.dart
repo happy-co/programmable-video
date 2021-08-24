@@ -35,8 +35,13 @@ class RoomBloc {
       await _createRoom();
       await _createToken();
       return model;
-    } catch (err) {
-      rethrow;
+    } catch (e) {
+      try {
+        await _createToken();
+        return model;
+      } catch (err) {
+        rethrow;
+      }
     } finally {
       updateWith(isLoading: false);
     }
