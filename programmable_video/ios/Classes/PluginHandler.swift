@@ -283,9 +283,10 @@ public class PluginHandler: BaseListener {
     }
     
     private func getAudioOptions() -> AVAudioSession.CategoryOptions {
-        let options: AVAudioSession.CategoryOptions = audioSettings.bluetoothPreferred
+        let options: AVAudioSession.CategoryOptions = audioSettings.bluetoothPreferred && audioSettings.speakerEnabled
             ? [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
-            : []
+            : audioSettings.bluetoothPreferred ?
+        [.allowAirPlay, .allowBluetooth, .allowBluetoothA2DP] : []
         return options
     }
     
