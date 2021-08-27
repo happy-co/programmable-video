@@ -176,7 +176,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         var status = AudioUnitGetProperty(audioUnit, kAudioUnitProperty_MaximumFramesPerSlice,
                                       kAudioUnitScope_Global, AVAudioEngineDevice.kOutputBus,
                                       &framesPerSlice, &propertySize)
-        debug("This device uses a maximum slice size of \(framesPerSlice) frames.\n\taudioUnit: \(audioUnit)")
+        debug("AVAudioEngineDevice::getMaximumSliceSize =>/n/tmaximum slice size: \(framesPerSlice) frames.\n\taudioUnit: \(audioUnit)")
         AVAudioEngineDevice.kMaximumFramesPerBuffer = framesPerSlice
     }
 
@@ -384,32 +384,34 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     public func onConnected() {
         // TODO: Add in conditional to handle scenario where engine is running prior to connection
         // May not be necessary due to now using PluginHandler.applyAudioSettings()
-        self.isConnected = true
+        debug("AVAudioEngineDevice::onConnected => START")
         self.setupAVAudioSession()
+        self.isConnected = true
+        debug("AVAudioEngineDevice::onConnected => END")
     }
 
     public func onDisconnected() {
+        debug("AVAudioEngineDevice::onDisconnected => START")
         self.isConnected = false
-        self.teardownAVAudioSession()
+        self.safelyTeardownAVAudioSession()
+        debug("AVAudioEngineDevice::onDisconnected => END")
     }
     
     // MARK: Audio File Playback API
     public func playMusic(_ id: Int) {
+        self.audioPlayerNodeManager.queueNode(id)
         safelyPlayMusic {
-            debug("AVAudioEngineDevice::playMusic => QUEUE - DispatchQueue.main.async")
-            DispatchQueue.main.async {
-                debug("AVAudioEngineDevice::playMusic => START - DispatchQueue.main.async id: \(id)")
-                self.audioPlayerNodeManager.playNode(id)
-                debug("AVAudioEngineDevice::playMusic => END - DispatchQueue.main.async: \(id)")
-            }
+            debug("AVAudioEngineDevice::playMusic => START")
+            self.audioPlayerNodeManager.playNode(id)
             debug("AVAudioEngineDevice::playMusic => END")
         }
     }
 
     func safelyPlayMusic(_ playCallback: @escaping () -> Void) {
+        debug("AVAudioEngineDevice::safelyPlayMusic => START")
         self.setupAVAudioSession()
         
-        myPropertyQueue.async {
+        self.myPropertyQueue.async {
             debug("AVAudioEngineDevice::safelyPlayMusic => START - myPropertyQueue.async" +
                 "\n\tstartingRenderer: \(self.isStartingRenderer)" +
                 "\n\tisRendering: \(self.isRendering)" +
@@ -429,9 +431,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                 debug("AVAudioEngineDevice::safelyPlayMusic => startRendering")
                 if self.startRenderingInternal(context: nil) {
                     debug("AVAudioEngineDevice::safelyPlayMusic => startRendering => scheduleMusicOnPlayoutEngine")
-                    self.myPropertyQueue.async {
-                        playCallback()
-                    }
+                    playCallback()
                 } else {
                     debug("AVAudioEngineDevice::safelyPlayMusic => startRendering failed")
                 }
@@ -449,12 +449,18 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
            !self.isConnected,
             !self.isStartingRenderer,
             !self.isStoppingRenderer {
-            debug("AVAudioEngineDevice::stopMusic => node: \(id) => stopRendering")
             self.stopRendering()
-            
-            // TODO: review
-            // Ensure AVAudioSession is deactivated after audioUnit is stopped
-            self.myPropertyQueue.async {
+        }
+        self.safelyTeardownAVAudioSession()
+    }
+    
+    func safelyTeardownAVAudioSession() {
+        self.myPropertyQueue.async {
+            debug("AVAudioEngineDevice::safelyTeardownAVAudioSession - START")
+            if !self.audioPlayerNodeManager.isActive(),
+               !self.isConnected,
+                !self.isStartingRenderer,
+                !self.isStoppingRenderer {
                 self.teardownAVAudioSession()
             }
         }
@@ -476,13 +482,9 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
     public func seekPosition(_ id: Int, _ positionInMillis: Int) {
         safelyPlayMusic {
-            debug("AVAudioEngineDevice::seekPosition => QUEUE - DispatchQueue.main.async")
-            DispatchQueue.main.async {
-                debug("AVAudioEngineDevice::seekPosition => START - DispatchQueue.main.async")
-                debug("AVAudioEngineDevice::seekPosition => id: \(id), positionInMillis: \(positionInMillis)")
-                self.audioPlayerNodeManager.seekPosition(id, Int64(positionInMillis))
-                debug("AVAudioEngineDevice::seekPosition => END - DispatchQueue.main.async")
-            }
+            debug("AVAudioEngineDevice::seekPosition => START\n\tid: \(id), positionInMillis: \(positionInMillis)")
+            self.audioPlayerNodeManager.seekPosition(id, Int64(positionInMillis))
+            debug("AVAudioEngineDevice::seekPosition => END")
         }
     }
 
@@ -573,35 +575,37 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func startRendering(context: AudioDeviceContext?) -> Bool {
-        if !self.didFormatChangeWhileDisconnected {
-            var result: Bool = false
-            self.isStartingRenderer = true
-            self.isRendering = false
-            
-            debug("AVAudioEngineDevice::startRendering => START - deviceContext: \(context), onMain: \(Thread.current.isMainThread), isRendering: \(self.isRendering)")
-            myPropertyQueue.sync {
-                debug("AVAudioEngineDevice::startRendering => START - myPropertyQueue.sync")
-                result = self.startRenderingInternal(context: context)
-                debug("AVAudioEngineDevice::startRendering => END - myPropertyQueue.sync")
-            }
-
-            debug("AVAudioEngineDevice::startRendering => END - result: \(result)")
-            return result
-        } else {
-            self.notifyVideoSdkOfFormatChange(context: context)
-            return false
+        var result: Bool = false
+        self.isStartingRenderer = true
+        self.isRendering = false
+        
+        debug("AVAudioEngineDevice::startRendering => START")
+        self.myPropertyQueue.sync {
+            result = self.startRenderingInternal(context: context)
         }
+
+        debug("AVAudioEngineDevice::startRendering => END - result: \(result)")
+        return result
     }
 
     // swiftlint:disable:next function_body_length
     internal func startRenderingInternal(context: AudioDeviceContext?) -> Bool {
-        debug("AVAudioEngineDevice::startRenderingInternal => START - current thread main: \(Thread.current.isMainThread)")
+        debug("AVAudioEngineDevice::startRenderingInternal => START")
 
+        if self.didFormatChangeWhileDisconnected {
+            debug("AVAudioEngineDevice::startRenderingInternal => notifyVideoSdkOfFormatChange")
+            self.handleFormatChange("startRenderingInternal")
+            self.notifyVideoSdkOfFormatChange(context: context)
+        }
+        
         var result = false
 
         self.isStartingRenderer = true
         self.isRendering = false
-        self.renderingContext.deviceContext = context
+        // Do not overwrite valid deviceContext with null
+        if let context = context {
+            self.renderingContext.deviceContext = context
+        }
 
         // Pause active audio player nodes while engine is restarted
         if self.audioPlayerNodeManager.anyPlaying() {
@@ -629,50 +633,44 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         
         self.setupAudioUnit()
 
-        debug("AVAudioEngineDevice::startRenderingInternal => QUEUE - DispatchQueue.main.async")
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-        DispatchQueue.main.async {
-            debug("AVAudioEngineDevice::startRenderingInternal => START - DispatchQueue.main.async")
+        if let engine = self.playoutEngine,
+           let engineFormat = AudioFormat(
+            channels: Int(engine.manualRenderingFormat.channelCount),
+            sampleRate: UInt32(engine.manualRenderingFormat.sampleRate),
+            framesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer)),
+           let activeFormat = self.activeFormat(),
+           engineFormat.isEqual(activeFormat) {
+            if engine.isRunning {
+                debug("AVAudioEngineDevice::startRenderingInternal => stopping engine.\n\tengineFormat: \(engineFormat)\n\tactiveFormat: \(activeFormat)")
+                engine.stop()
+            }
 
-            if let engine = self.playoutEngine,
-               let engineFormat = AudioFormat(
-                channels: Int(engine.manualRenderingFormat.channelCount),
-                sampleRate: UInt32(engine.manualRenderingFormat.sampleRate),
-                framesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer)),
-               let activeFormat = self.activeFormat(),
-               engineFormat.isEqual(activeFormat) {
-                if engine.isRunning {
-                    debug("AVAudioEngineDevice::startRenderingInternal => stopping engine.\n\tengineFormat: \(engineFormat)\n\tactiveFormat: \(activeFormat)")
-                    engine.stop()
-                }
+            do {
+                debug("AVAudioEngineDevice::startRenderingInternal => starting engine")
+                try engine.start()
+            } catch let error {
+                debug("Failed to start AVAudioEngine, error = \(error)")
+            }
+        } else {
+        /*
+         * If the engine is not configured properly we will tear it down,
+         * restart it, reattach audio nodes as needed.
+         */
+            debug("AVAudioEngineDevice::startRenderingInternal => teardown and setup audio engine\n\tengineFormat: \(self.renderingFormat)\n\tactiveFormat: \(self.activeFormat)")
+            self.teardownPlayoutAudioEngine()
+            self.setupPlayoutAudioEngine()
+        }
 
-                do {
-                    debug("AVAudioEngineDevice::startRenderingInternal => starting engine")
-                    try engine.start()
-                } catch let error {
-                    debug("Failed to start AVAudioEngine, error = \(error)")
-                }
-            } else {
+        // Resume playback on audio player nodes that were active prior to engine restart
+        if self.audioPlayerNodeManager.anyPaused() {
             /*
-             * If the engine is not configured properly we will tear it down,
-             * restart it, reattach audio nodes as needed.
+             * ensure fadeIn/resume is happening on the same queue as other
+             * requests to change player state
              */
-                debug("AVAudioEngineDevice::startRenderingInternal => teardown and setup audio engine\n\tengineFormat: \(self.renderingFormat)\n\tactiveFormat: \(self.activeFormat)")
-                self.teardownPlayoutAudioEngine()
-                self.setupPlayoutAudioEngine()
+            self.myPropertyQueue.async {
+                self.audioPlayerNodeManager.resumeAll()
             }
-
-            // Resume playback on audio player nodes that were active prior to engine restart
-            if self.audioPlayerNodeManager.anyPaused() {
-                /*
-                 * ensure fadeIn/resume is happening on the same queue as other
-                 * requests to change player state
-                 */
-                self.myPropertyQueue.async {
-                    self.audioPlayerNodeManager.resumeAll()
-                }
-            }
-            debug("AVAudioEngineDevice::startRenderingInternal => END - DispatchQueue.main.async")
         }
 
         result = self.startAudioUnit()
@@ -680,7 +678,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.isStartingRenderer = false
         self.isRendering = true
 
-        debug("AVAudioEngineDevice::startRenderingInternal => END")
+        debug("AVAudioEngineDevice::startRenderingInternal => END - result: \(result)")
 
         return result
     }
@@ -693,8 +691,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             debug("AVAudioEngineDevice::stopRendering => START - myPropertyQueue.async")
             // If the capturer is running, we will not stop the audio unit.
             if self.capturingContext.deviceContext == nil,
-               !self.audioPlayerNodeManager.anyPlaying(),
-               !self.audioPlayerNodeManager.anyPaused() {
+               !self.audioPlayerNodeManager.isActive() {
                 debug("AVAudioEngineDevice::stopRendering => stopAudioUnit")
                 self.stopAudioUnit()
                 self.teardownAudioUnit()
@@ -703,21 +700,18 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             self.renderingContext.deviceContext = nil
             if let engine = self.playoutEngine,
                engine.isRunning,
-               !self.audioPlayerNodeManager.anyPlaying(),
-               !self.audioPlayerNodeManager.anyPaused() {
+               !self.audioPlayerNodeManager.isActive() {
                 debug("AVAudioEngineDevice::stopRendering => QUEUE - DispatchQueue.main.async")
                 // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-                DispatchQueue.main.async {
-                    debug("AVAudioEngineDevice::stopRendering => START - DispatchQueue.main.async")
+                debug("AVAudioEngineDevice::stopRendering => START - DispatchQueue.main.async")
 
-                    // If audio player nodes are in use, we will not stop the engine
-                    if let engine = self.playoutEngine {
-                        debug("AVAudioEngineDevice::stopRendering => stop playoutEngine")
-                        engine.stop()
-                    }
-                    debug("AVAudioEngineDevice::stopRendering => END - DispatchQueue.main.async")
-                    self.isStoppingRenderer = false
+                // If audio player nodes are in use, we will not stop the engine
+                if let engine = self.playoutEngine {
+                    debug("AVAudioEngineDevice::stopRendering => stop playoutEngine")
+                    engine.stop()
                 }
+                debug("AVAudioEngineDevice::stopRendering => END - DispatchQueue.main.async")
+                self.isStoppingRenderer = false
             } else {
                 self.isStoppingRenderer = false
             }
@@ -739,86 +733,99 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func startCapturing(context: AudioDeviceContext) -> Bool {
-        if !self.didFormatChangeWhileDisconnected {
-            debug("AVAudioEngineDevice::startCapturing")
-            var result: Bool = true
-            myPropertyQueue.sync {
-                debug("AVAudioEngineDevice::startCapturing - START - myPropertyQueue.async")
-                // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
-                if self.audioUnit != nil {
-                    debug("AVAudioEngineDevice::startCapturing => reset audioUnit")
-                    self.stopAudioUnit()
-                    self.teardownAudioUnit()
-                }
-                
-                self.setupAudioUnit()
-
-                debug("AVAudioEngineDevice::startCapturing => QUEUE - DispatchQueue.main.async")
-                // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-                DispatchQueue.main.async {
-                    debug("AVAudioEngineDevice::startCapturing => START - DispatchQueue.main.async")
-                    if let engine = self.recordEngine,
-                       let engineFormat = AudioFormat(
-                        channels: Int(engine.manualRenderingFormat.channelCount),
-                        sampleRate: UInt32(engine.manualRenderingFormat.sampleRate),
-                        framesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer)),
-                       let activeFormat = self.activeFormat(),
-                       engineFormat.isEqual(activeFormat) {
-                        if engine.isRunning {
-                            debug("AVAudioEngineDevice::startCapturing => stopping engine")
-                            engine.stop()
-                        }
-
-                        do {
-                            debug("AVAudioEngineDevice::startCapturing => starting engine")
-                            try engine.start()
-                        } catch let error {
-                            debug("Failed to start AVAudioEngine, error = \(error)")
-                        }
-                    } else {
-                        self.teardownRecordAudioEngine()
-                        self.setupRecordAudioEngine()
-                    }
-                    debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
-                }
-
-                self.capturingContext.deviceContext = context
-
-                result = self.startAudioUnit()
-                debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
-                return
+        debug("AVAudioEngineDevice::startCapturing")
+        var result: Bool = true
+        self.myPropertyQueue.sync {
+            debug("AVAudioEngineDevice::startCapturing - START - myPropertyQueue.async")
+            if self.didFormatChangeWhileDisconnected {
+                debug("AVAudioEngineDevice::startCapturing => notifyVideoSdkOfFormatChange")
+                self.handleFormatChange("startCapturing")
+                self.notifyVideoSdkOfFormatChange(context: context)
             }
+            
+            if self.audioPlayerNodeManager.anyPlaying() {
+                debug("AVAudioEngineDevice::startCapturing => pause active audio nodes")
+                /*
+                * Since startRenderingInternal should always be run on the local DispatchQueue
+                * we do not need to dispatch this call here. Further, we want to ensure this
+                * completes execution prior to stopping the audio unit.
+                */
+                self.audioPlayerNodeManager.pauseAll(true)
+            }
+            
+            // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
+            if self.audioUnit != nil {
+                debug("AVAudioEngineDevice::startCapturing => reset audioUnit")
+                self.stopAudioUnit()
+                self.teardownAudioUnit()
+            }
+            
+            self.setupAudioUnit()
 
-            debug("AVAudioEngineDevice::startCapturing - END - result: \(result)")
-            return result
-        } else {
-            self.notifyVideoSdkOfFormatChange(context: context)
-            return false
+            debug("AVAudioEngineDevice::startCapturing => QUEUE - DispatchQueue.main.async")
+            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+            debug("AVAudioEngineDevice::startCapturing => START - DispatchQueue.main.async")
+            if let engine = self.recordEngine,
+               let engineFormat = AudioFormat(
+                channels: Int(engine.manualRenderingFormat.channelCount),
+                sampleRate: UInt32(engine.manualRenderingFormat.sampleRate),
+                framesPerBuffer: Int(AVAudioEngineDevice.kMaximumFramesPerBuffer)),
+               let activeFormat = self.activeFormat(),
+               engineFormat.isEqual(activeFormat) {
+                if engine.isRunning {
+                    debug("AVAudioEngineDevice::startCapturing => stopping engine")
+                    engine.stop()
+                }
+
+                do {
+                    debug("AVAudioEngineDevice::startCapturing => starting engine")
+                    try engine.start()
+                } catch let error {
+                    debug("Failed to start AVAudioEngine, error = \(error)")
+                }
+            } else {
+                self.teardownRecordAudioEngine()
+                self.setupRecordAudioEngine()
+            }
+            debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
+
+            self.capturingContext.deviceContext = context
+
+            result = self.startAudioUnit()
+            
+            if self.audioPlayerNodeManager.anyPaused() {
+                /*
+                 * ensure fadeIn/resume is happening on the same queue as other
+                 * requests to change player state
+                 */
+                self.myPropertyQueue.async {
+                    self.audioPlayerNodeManager.resumeAll()
+                }
+            }
+            debug("AVAudioEngineDevice::startCapturing - END - myPropertyQueue.async")
+            return
         }
+
+        debug("AVAudioEngineDevice::startCapturing - END - result: \(result)")
+        return result
     }
 
     public func stopCapturing() -> Bool {
         debug("AVAudioEngineDevice::stopCapturing => nodes playing: \(self.audioPlayerNodeManager.anyPlaying()), nodes paused: \(self.audioPlayerNodeManager.anyPaused())")
-        myPropertyQueue.async {
+        self.myPropertyQueue.async {
             debug("AVAudioEngineDevice::stopCapturing => START - myPropertyQueue.async")
             // If the renderer is in use by a remote participants audio track, or audio player nodes, we will not stop the audio unit.
             if self.renderingContext.deviceContext == nil,
-               !self.audioPlayerNodeManager.anyPlaying(),
-               !self.audioPlayerNodeManager.anyPaused() {
+               !self.audioPlayerNodeManager.isActive() {
                 self.stopAudioUnit()
                 self.teardownAudioUnit()
             }
             self.capturingContext.deviceContext = nil
 
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-            debug("AVAudioEngineDevice::stopCapturing => QUEUE - DispatchQueue.main.async")
-            DispatchQueue.main.async {
-                debug("AVAudioEngineDevice::stopCapturing => START - DispatchQueue.main.async")
-                if let engine = self.recordEngine, engine.isRunning {
-                    debug("AVAudioEngineDevice::stopCapturing => stop recordEngine")
-                    engine.stop()
-                }
-                debug("AVAudioEngineDevice::stopCapturing => END - DispatchQueue.main.async")
+            if let engine = self.recordEngine, engine.isRunning {
+                debug("AVAudioEngineDevice::stopCapturing => stop recordEngine")
+                engine.stop()
             }
             debug("AVAudioEngineDevice::stopCapturing => END - myPropertyQueue.async")
         }
@@ -874,6 +881,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.registerAVAudioSessionObservers()
 
         do {
+            // TODO: ensure that plugin users not using AVAudioEngineDevice can setActive
             try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
         } catch let error {
             debug("Error activating AVAudioSession: \(error)")
@@ -889,7 +897,9 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
     
     func teardownAVAudioSession() {
-        if !self.audioPlayerNodeManager.isActive() && !self.isConnected {
+        let anyActive = self.audioPlayerNodeManager.isActive()
+        debug("AVAudioEngineDevice::teardownAVAudioSession =>\n\tanyActive: \(anyActive)\n\tisConnected: \(self.isConnected)\n\tisRendering: \(self.isRendering)\n\tisStartingRenderer: \(self.isStartingRenderer)\n\tisStoppingRenderer: \(self.isStoppingRenderer)")
+        if !anyActive && !self.isConnected {
             do {
                 NotificationCenter.default.removeObserver(self)
                 let session = AVAudioSession.sharedInstance()
@@ -940,8 +950,10 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                                       &enableOutput, uint32Size)
         if status != 0 {
             debug("Could not enable out bus!")
-            AudioComponentInstanceDispose(audioUnit)
-            self.audioUnit = nil
+            if let audioUnit = self.audioUnit {
+                AudioComponentInstanceDispose(audioUnit)
+                self.audioUnit = nil
+            }
             return
         }
 
@@ -1055,16 +1067,17 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     func stopAudioUnit() -> Bool {
-        debug("AVAudioEngineDevice::stopAudioUnit")
+        debug("AVAudioEngineDevice::stopAudioUnit => START")
         guard let audioUnitUnwrapped = self.audioUnit else {
             return false
         }
 
         let status: OSStatus = AudioOutputUnitStop(audioUnitUnwrapped)
         if status != 0 {
-            debug("Could not stop the audio unit!")
+            debug("AVAudioEngineDevice::stopAudioUnit => END - Could not stop the audio unit!")
             return false
         }
+        debug("AVAudioEngineDevice::stopAudioUnit => END")
         return true
     }
 
@@ -1093,6 +1106,8 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
         var center: NotificationCenter = NotificationCenter.default
 
+        center.removeObserver(self)
+        
         center.addObserver(self, selector: #selector(handleAudioInterruption), name: AVAudioSession.interruptionNotification, object: nil)
         /*
          * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
@@ -1117,35 +1132,42 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             return
         }
 
-        myPropertyQueue.async {
+        self.myPropertyQueue.async {
             // If the worker block is executed, then context is guaranteed to be valid.
             if let context = self.deviceContext() {
                 AudioDeviceExecuteWorkerBlock(context: context) {
                     if type == AVAudioSession.InterruptionType.began {
-                        debug("Interruption began.")
+                        debug("AVAudioEngineDevice::handleAudioInterruption => Interruption began.")
                         self.interrupted = true
                         self.stopAudioUnit()
                     } else {
-                        debug("Interruption ended.")
+                        debug("AVAudioEngineDevice::handleAudioInterruption => Interruption ended.")
                         self.interrupted = false
                         self.startAudioUnit()
                     }
                 }
+            } else {
+                debug("AVAudioEngineDevice::handleAudioInterruption => Ignoring.")
             }
         }
     }
 
     @objc private func handleApplicationDidBecomeActive(notification: Notification) {
         debug("AVAudioEngineDevice::handleApplicationDidBecomeActive")
-        myPropertyQueue.async {
+        self.myPropertyQueue.async {
             // If the worker block is executed, then context is guaranteed to be valid.
-            if let context = self.deviceContext() {
-                AudioDeviceExecuteWorkerBlock(context: context) {
-                    if self.interrupted {
-                        debug("Synthesizing an interruption ended event for iOS 9.x devices.")
-                        self.interrupted = false
-                        self.startAudioUnit()
-                    }
+            if self.interrupted {
+                debug("Synthesizing an interruption ended event for iOS 9.x devices.")
+                self.interrupted = false
+
+                if self.formatChanged() {
+                    self.handleFormatChange("handleApplicationDidBecomeActive")
+                }
+
+                self.setupAVAudioSession()
+                self.startAudioUnit()
+                if self.audioPlayerNodeManager.anyPaused() {
+                    self.audioPlayerNodeManager.resumeAll()
                 }
             }
         }
@@ -1178,22 +1200,9 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                     // With CallKit, AVAudioSession may change the sample rate during a configuration change.
                     // If a valid route change occurs we may want to update our audio graph to reflect the new output device.
                     debug("AVAudioEngineDevice::handleRouteChange => QUEUE - myPropertyQueue.async")
-                    myPropertyQueue.async {
+                    self.myPropertyQueue.async {
                         debug("AVAudioEngineDevice::handleRouteChange => START - myPropertyQueue.async")
-                        // If the worker block is executed, then context is guaranteed to be valid.
-                        if let context = self.deviceContext() {
-                            debug("AVAudioEngineDevice::handleRouteChange => QUEUE - AudioDeviceExecuteWorkerBlock")
-                            AudioDeviceExecuteWorkerBlock(context: context) {
-                                debug("AVAudioEngineDevice::handleRouteChange => START - AudioDeviceExecuteWorkerBlock")
-                                self.handleValidRouteChange()
-                            }
-                        } else {
-                            debug("AVAudioEngineDevice::handleRouteChange => QUEUE - handleValidRouteChange - myPropertyQueue.async")
-                            self.myPropertyQueue.async {
-                                debug("AVAudioEngineDevice::handleRouteChange => START - handleValidRouteChange - myPropertyQueue.async")
-                                self.handleValidRouteChange()
-                            }
-                        }
+                        self.handleValidRouteChange()
                         debug("AVAudioEngineDevice::handleRouteChange => END - myPropertyQueue.async")
                     }
             default:
@@ -1205,44 +1214,49 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         debug("AVAudioEngineDevice::handleValidRouteChange")
         // Nothing to process while we are interrupted. We will interrogate the AVAudioSession once the interruption ends.
         if self.interrupted || self.audioUnit == nil {
-            debug("AVAudioEngineDevice::handleValidRouteChange => do nothing")
+            debug("AVAudioEngineDevice::handleValidRouteChange => do nothing\n\tinterrupted: \(self.interrupted)\n\taudioUnit: \(self.audioUnit)")
+            self.callAudioDeviceFormatChangedOnStart()
             return
         }
 
         debug("A route change ocurred while the AudioUnit was started. Checking the active audio format.")
 
         // Determine if the format actually changed. We only care about sample rate and number of channels.
-        guard let activeFormat: AudioFormat = activeFormat() else {
-            return
-        }
-
-        if !activeFormat.isEqual(renderingFormat) || !activeFormat.isEqual(capturingFormat) {
-            debug("Format changed, restarting with \(activeFormat)")
-
-            self.myPropertyQueue.async {
-                if let context = self.deviceContext() {
-                    // Video SDK is connected
-                    debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN AudioDeviceFormatChanged")
-                    self.handleFormatChange()
-                    // Notify Video SDK about the format change
-                    self.notifyVideoSdkOfFormatChange(context: context)
-                    debug("AVAudioEngineDevice::handleValidRouteChange => END AudioDeviceFormatChanged")
-                } else {
-                    // Video SDK is disconnected or connecting
-                    debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN handleFormatChange")
-                    // TODO: look at format change when playing audio node but not connected
-                    self.callAudioDeviceFormatChangedOnStart()
-                    self.handleFormatChange()
-                    if self.audioPlayerNodeManager.anyPaused() {
-                        debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN startRenderingInternal to resume audio nodes")
-                        self.startRenderingInternal(context: nil)
-                    }
-                    debug("AVAudioEngineDevice::handleValidRouteChange => END handleFormatChange")
-                }
+        if self.formatChanged() {
+            self.handleFormatChange("handleValidRouteChange")
+            if let context = self.deviceContext() {
+                // Video SDK is connected
+                debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN AudioDeviceFormatChanged")
+                // Notify Video SDK about the format change
+                self.notifyVideoSdkOfFormatChange(context: context)
+                debug("AVAudioEngineDevice::handleValidRouteChange => END AudioDeviceFormatChanged")
+            } else {
+                // Video SDK is disconnected or connecting
+                debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN handleFormatChange")
+                // TODO: look at format change when playing audio node but not connected
+                self.callAudioDeviceFormatChangedOnStart()
+                debug("AVAudioEngineDevice::handleValidRouteChange => END handleFormatChange")
+            }
+            
+            if self.audioPlayerNodeManager.anyPaused() {
+                debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN startRenderingInternal to resume audio nodes")
+                self.startRenderingInternal(context: self.deviceContext())
             }
         } else {
             debug("Format unchanged, ignoring")
         }
+    }
+    
+    func formatChanged() -> Bool {
+        var result: Bool = false
+        if let activeFormat: AudioFormat = activeFormat() {
+            result = !activeFormat.isEqual(renderingFormat) || !activeFormat.isEqual(capturingFormat)
+        } else {
+            result = false
+        }
+        
+        debug("AVAudioEngineDevice::formatChanged => \(result)")
+        return result
     }
     
     func callAudioDeviceFormatChangedOnStart() {
@@ -1251,6 +1265,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     
     func notifyVideoSdkOfFormatChange(context: AudioDeviceContext?) {
         if let context = context {
+            debug("AVAudioEngineDevice::notifyVideoSdkOfFormatChange")
             self.didFormatChangeWhileDisconnected = false
             // Notify Video SDK about the format change
             // `AudioDeviceFormatChanged` will cause the Video SDK to
@@ -1261,12 +1276,10 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         }
     }
     
-    func handleFormatChange() {
-        debug("AVAudioEngineDevice::handleFormatChange => START")
+    func handleFormatChange(_ caller: String) {
+        debug("AVAudioEngineDevice::handleFormatChange => START - caller: \(caller)")
         self.stopAudioUnit()
-        DispatchQueue.main.sync {
-            self.audioPlayerNodeManager.pauseAll(true)
-        }
+        self.audioPlayerNodeManager.pauseAll(true)
         self.teardownAudioUnit()
         self.setupAudioUnit()
         self.detachMusicNodes()
@@ -1284,7 +1297,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         // Nodes will be reattached as part of setupPlayoutAudioEngine
         self.setupAudioEngine()
         // TODO: restart rendering if there are paused nodes?
-//            self.startRenderingInternal(context: self.renderingContext.deviceContext)
         debug("AVAudioEngineDevice::handleFormatChange => END")
     }
 
@@ -1354,7 +1366,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
     }
 
     // Next log statement left in for debugging purposes. Commented out to minimize operations on the real time audio thread
-    debug("AVAudioEngineDevicePlayoutCallback =>\n\tinNumberOfFrames: \(inNumberFrames)\n\taudioBufferSizeInBytes: \(audioBufferSizeInBytes)\n\tabl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\tinput buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\tmNumberChannels: \(ioData.pointee.mBuffers.mNumberChannels)\n\taudioSession sampleRate: \(AVAudioSession.sharedInstance().sampleRate)\n\taudioSession preferredSampleRate: \(AVAudioSession.sharedInstance().preferredSampleRate)")
+//    debug("AVAudioEngineDevicePlayoutCallback =>\n\tinNumberOfFrames: \(inNumberFrames)\n\taudioBufferSizeInBytes: \(audioBufferSizeInBytes)\n\tabl buffer: \(abl?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\tinput buffer: \(ioData.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\tmNumberChannels: \(ioData.pointee.mBuffers.mNumberChannels)\n\taudioSession sampleRate: \(AVAudioSession.sharedInstance().sampleRate)\n\taudioSession preferredSampleRate: \(AVAudioSession.sharedInstance().preferredSampleRate)")
     let status: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, ioData, &outputStatus)
 
     /*
@@ -1407,6 +1419,7 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
         return noErr
     }
 
+//        debug("RecordCallback => BEGIN AudioUnitRender:\n\tcontext bufferList: \(context.pointee.bufferList?.first?.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\ttabl bufferList: \(abl.first?.mData?.assumingMemoryBound(to: Int8.self).pointee)")
     var status: OSStatus = noErr
     status = AudioUnitRender(audioUnit,
                              ioActionFlags,
@@ -1439,6 +1452,7 @@ func AVAudioEngineDeviceRecordCallback(inRefCon: UnsafeMutableRawPointer,
     // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
 //    debug("RecordCallback => BEGIN renderBlock:\n\tmixedAudioBufferList: \(mixedAudioBufferList.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)\n\tinNumberFrames: \(inNumberFrames)")
     let ret: AVAudioEngineManualRenderingStatus = renderBlock(inNumberFrames, mixedAudioBufferList, &outputStatus)
+//    debug("RecordCallback => END renderBlock:\n\tmixedAudioBufferList: \(mixedAudioBufferList.pointee.mBuffers.mData?.assumingMemoryBound(to: Int8.self).pointee)")
 
     if ret != AVAudioEngineManualRenderingStatus.success {
         debug("AVAudioEngine failed mix audio => \(String(describing: ret.rawValue)), outputStatus: \(outputStatus)")

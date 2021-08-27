@@ -291,7 +291,7 @@ public class PluginHandler: BaseListener {
     }
     
     private func setAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.setAudioSettings => called")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioSettings => called")
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerPhoneEnabled' and 'bluetoothPreferred' parameters", details: nil))
         }
@@ -322,6 +322,7 @@ public class PluginHandler: BaseListener {
         let audioSession = AVAudioSession.sharedInstance()
         let mode: AVAudioSession.Mode = getAudioMode()
         let options: AVAudioSession.CategoryOptions = getAudioOptions()
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::applyAudioSettings =>\n\tmode: \(mode)\n\toptions: \(options)")
         try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
     }
 

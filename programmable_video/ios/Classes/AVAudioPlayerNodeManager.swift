@@ -40,7 +40,7 @@ internal class AVAudioPlayerNodeManager {
     }
     
     func isActive() -> Bool {
-        return self.anyPaused() || self.anyPlaying()
+        return self.anyQueued() || self.anyPaused() || self.anyPlaying()
     }
 
     func getNode(_ id: Int) -> AVAudioPlayerNodeBundle? {
@@ -51,6 +51,15 @@ internal class AVAudioPlayerNodeManager {
 
         return node
     }
+    
+    public func queueNode(_ id: Int) {
+        guard let node = nodes[id] else {
+            return
+        }
+        
+        debug("AVAudioPlayerNodeManager::queueNode =>\n\tid: \(id)\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)")
+        node.queued = true
+    }
 
     public func playNode(_ id: Int) {
         play(id)
@@ -60,11 +69,14 @@ internal class AVAudioPlayerNodeManager {
         guard let node = nodes[id] else {
             return
         }
+        node.queued = false
 
         debug("AVAudioPlayerNodeManager::play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)")
         
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
+
+            node.playing = true
 
             node.player.scheduleSegment(node.file, startingFrame: position, frameCount: frameCount, at: nil) {
                 debug("AVAudioPlayerNodeManager::segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop), paused: \(self.isPaused(node.id))")
@@ -75,7 +87,6 @@ internal class AVAudioPlayerNodeManager {
                     node.playing = false
                 }
             }
-            node.playing = true
             node.startFrame = position
             node.pauseTime = nil
             node.player.play()
@@ -286,6 +297,17 @@ internal class AVAudioPlayerNodeManager {
         debug("AVAudioPlayerNodeManager::anyPlaying => \(result)")
         return result
     }
+    
+    public func anyQueued() -> Bool {
+        var result = false
+        for nodeBundle in nodes.values where nodeBundle.queued {
+            debug("AVAudioPlayerNodeManager::anyQueued => node \(nodeBundle.id) is queued")
+            result = true
+            break
+        }
+        debug("AVAudioPlayerNodeManager::anyQueued => \(result)")
+        return result
+    }
 
     public func anyPaused() -> Bool {
         let anyPaused = !pausedNodes.values.isEmpty
@@ -308,7 +330,7 @@ internal class AVAudioPlayerNodeManager {
     }
 
     public func resumeAll() {
-        debug("AVAudioPlayerNodeManager::resumeAll => pausedNodes: \(self.pausedNodes.capacity)")
+        debug("AVAudioPlayerNodeManager::resumeAll => pausedNodes: \(self.pausedNodes.count)")
         self.pausedNodes.values.forEach { (node: AVAudioPlayerNodeBundle) in
             if node.resumeAfterRendererStarted {
                 self.resumeNode(node.id)
@@ -324,6 +346,7 @@ internal class AVAudioPlayerNodeBundle {
     let file: AVAudioFile
     let loop: Bool
     var pauseTime: Int64?
+    var queued: Bool = false
     var playing: Bool = false
     var startFrame: Int64 = 0
     var resumeAfterRendererStarted: Bool = false
