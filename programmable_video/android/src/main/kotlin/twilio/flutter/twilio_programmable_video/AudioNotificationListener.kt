@@ -18,8 +18,7 @@ class AudioNotificationListener() : BaseListener() {
             TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onServiceDisconnected => profile: $profile")
             if (profile == BluetoothProfile.HEADSET) {
                 bluetoothProfile = null
-                // TODO: review whether this can be switch to applyAudioSettings. Maybe improve applyBluetoothSettings to look at .getProfileConnectionState(BluetoothProfile.HEADSET)
-                TwilioProgrammableVideoPlugin.pluginHandler.applySpeakerPhoneSettings()
+                TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
             }
         }
 
@@ -46,6 +45,11 @@ class AudioNotificationListener() : BaseListener() {
         intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
         // https://developer.android.com/reference/android/media/AudioManager#ACTION_SCO_AUDIO_STATE_UPDATED
          intentFilter.addAction(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED)
+
+        // We could also addAction for BluetoothAdapter.ACTION_STATE_CHANGED per
+        // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#ACTION_STATE_CHANGED
+        // to handle Bluetooth being toggled at the OS level, but the BluetoothProfile.ServiceListener above
+        // also fills that role.
     }
 
     fun listenForRouteChanges(context: Context) {

@@ -536,7 +536,16 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                     .setAudioAttributes(playbackAttributes)
                     .setAcceptsDelayedFocusGain(true)
-                    .setOnAudioFocusChangeListener { }
+                    .setOnAudioFocusChangeListener {
+                        // Occasionally observe during tests that just after requesting AudioFocus we receive a AudioFocus LOSS event
+                        // When this occurred during tests, Spotify audio continues rather than pausing while our audio begins.
+                        // We could look at introducing retry logic when this occurs, but this can also be solved by the user simply
+                        // pausing playback from external apps if they encounter the issue.
+                        //
+                        // Per https://developer.android.com/guide/topics/media-apps/audio-focus AudioFocus is meant to be cooperative
+                        // and is not enforced by the OS.
+                        TwilioProgrammableVideoPlugin.debug("PluginHandler::onAudioFocusChange => focusChange: $it")
+                    }
                     .build()
                 TwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioFocus =>" +
                     "\n\tfocus: $focus," +
