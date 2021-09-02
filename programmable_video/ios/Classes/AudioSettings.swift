@@ -6,4 +6,9 @@ internal class AudioSettings: NSObject {
         self.speakerEnabled = speakerEnabled
         self.bluetoothPreferred = bluetoothEnabled
     }
+
+    func reset() {
+        self.speakerEnabled = true
+        self.bluetoothPreferred = true
+    }
 }

@@ -1,6 +1,7 @@
 package twilio.flutter.twilio_programmable_video
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
@@ -26,8 +27,8 @@ class AudioNotificationListener() : BaseListener() {
             TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onServiceConnected => profile: $profile, proxy: $proxy")
             if (profile == BluetoothProfile.HEADSET) {
                 bluetoothProfile = proxy
-                if (bluetoothProfile!!.connectedDevices.size > 0
-                    && TwilioProgrammableVideoPlugin.pluginHandler.audioSettings.bluetoothPreferred) {
+                if (bluetoothProfile!!.connectedDevices.size > 0 &&
+                    TwilioProgrammableVideoPlugin.pluginHandler.audioSettings.bluetoothPreferred) {
                     TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
                 }
             }
@@ -43,11 +44,14 @@ class AudioNotificationListener() : BaseListener() {
         intentFilter.addAction(AudioManager.ACTION_HEADSET_PLUG)
         // https://developer.android.com/reference/android/bluetooth/BluetoothHeadset#ACTION_CONNECTION_STATE_CHANGED
         intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
-        // https://developer.android.com/reference/android/media/AudioManager#ACTION_SCO_AUDIO_STATE_UPDATED
-         intentFilter.addAction(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED)
 
-        // We could also addAction for BluetoothAdapter.ACTION_STATE_CHANGED per
-        // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#ACTION_STATE_CHANGED
+        // Other actions we could listen for:
+        // 1. AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED
+        //      https://developer.android.com/reference/android/media/AudioManager#ACTION_SCO_AUDIO_STATE_UPDATED
+        // to handle changes in the BluetoothSco state
+
+        // 2. BluetoothAdapter.ACTION_STATE_CHANGED
+        //      https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#ACTION_STATE_CHANGED
         // to handle Bluetooth being toggled at the OS level, but the BluetoothProfile.ServiceListener above
         // also fills that role.
     }
@@ -71,38 +75,44 @@ class AudioNotificationListener() : BaseListener() {
                 val wiredEvent = intent?.action.equals(AudioManager.ACTION_HEADSET_PLUG)
                 val bluetoothEvent = intent?.action.equals(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
 
-                val connected: Boolean? = when {
+                val connected: Boolean = when {
                     wiredEvent -> {
                         intent?.getIntExtra("state", 0) == 1
                     }
                     bluetoothEvent -> {
                         val state = intent?.getIntExtra(BluetoothProfile.EXTRA_STATE, 0)
+                        if (state == BluetoothProfile.STATE_CONNECTING || state == BluetoothProfile.STATE_DISCONNECTING) {
+                            return
+                        }
                         state == BluetoothProfile.STATE_CONNECTED
                     }
                     else -> null
-                }
+                } ?: return
 
-                if (connected != null) {
-                    val event = if (connected) "newDeviceAvailable" else "oldDeviceUnavailable"
+                val event = if (connected) "newDeviceAvailable" else "oldDeviceUnavailable"
+
+                val deviceName = if (bluetoothEvent) intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)?.name
+                    else intent?.getStringExtra("portName") ?: return
+
+                TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => connected: $connected\n\tevent: $event\n\tbluetoothEvent: $bluetoothEvent\n\twiredEvent: $wiredEvent\n\tdeviceName: $deviceName")
+
+                if (bluetoothEvent) {
                     val anyBluetoothHeadsetConnected = BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET) == BluetoothProfile.STATE_CONNECTED
 
-                    TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => connected: $connected\n\tevent: $event\n\tbluetoothEvent: $bluetoothEvent")
-
-                    if (bluetoothEvent) {
-                        // TODO: review whether this is necessary since disconnecting the active bluetooth headset while another is connected does not automatically switch back to the remaining one
-                        if (!connected && anyBluetoothHeadsetConnected) {
-                            TwilioProgrammableVideoPlugin.pluginHandler.setBluetoothSco(false)
-                        }
-                        TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
+                    // TODO: review whether this is necessary since disconnecting the active bluetooth headset while another is connected does not automatically switch back to the remaining one
+                    if (!connected && anyBluetoothHeadsetConnected) {
+                        TwilioProgrammableVideoPlugin.pluginHandler.setBluetoothSco(false)
                     }
-
-                    TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => event: $event, connected: $connected, bluetooth: $bluetoothEvent, wired: $wiredEvent headsetState: $anyBluetoothHeadsetConnected")
-                    sendEvent(event, mapOf(
-                            "connected" to connected,
-                            "bluetooth" to bluetoothEvent,
-                            "wired" to wiredEvent
-                    ))
+                    TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
                 }
+
+                TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => event: $event, connected: $connected, bluetooth: $bluetoothEvent, wired: $wiredEvent")
+                sendEvent(event, mapOf(
+                        "connected" to connected,
+                        "bluetooth" to bluetoothEvent,
+                        "wired" to wiredEvent,
+                        "deviceName" to deviceName
+                ))
             }
         }
     }

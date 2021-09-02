@@ -22,6 +22,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
         _localParticipantChannel = EventChannel('twilio_programmable_video/local'),
         _remoteDataTrackChannel = EventChannel('twilio_programmable_video/remote_data_track'),
         _audioNotificationChannel = EventChannel('twilio_programmable_video/audio_notification'),
+        _loggingChannel = EventChannel('twilio_programmable_video/logging'),
         super();
 
   /// This constructor is only used for testing and shouldn't be accessed by
@@ -35,6 +36,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     this._localParticipantChannel,
     this._remoteDataTrackChannel,
     this._audioNotificationChannel,
+    this._loggingChannel,
   );
 
   //#region Functions
@@ -69,8 +71,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     );
   }
 
-
   /// Calls native code to set the speaker and bluetooth settings.
+  /// The native layer will then observe changes to audio state and apply
+  /// these settings as needed.
   ///
   /// Bluetooth is given priority over speakers.
   /// In short, if:
@@ -94,9 +97,19 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       'setAudioSettings',
       {
         'speakerPhoneEnabled': speakerPhoneEnabled,
-        'bluetoothPreferred': bluetoothPreferred
+        'bluetoothPreferred': bluetoothPreferred,
       },
     );
+  }
+
+  /// Calls native code to reset the speaker and bluetooth settings to their default values.
+  /// The native layer will stop observing and managing changes to audio state.
+  /// Default values are:
+  /// `speakerPhoneEnabled = true`
+  /// `bluetoothEnabled = true`
+  @override
+  Future disableAudioSettings() {
+    return _methodChannel.invokeMethod('disableAudioSettings', null);
   }
 
   /// Calls native code to check if speaker mode is enabled.
@@ -787,32 +800,46 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// EventChannel over which the native code sends audio route change notifications.
   final EventChannel _audioNotificationChannel;
 
-  Stream<BaseAudioNotificationEvent> _audioNotificationStream;
+  Stream<BaseAudioNotificationEvent>? _audioNotificationStream;
 
   /// Stream of the BaseRemoteDataTrackEvent model.
   ///
   /// This stream is used to update the RemoteDataTrack in a plugin implementation.
   @override
-  Stream<BaseAudioNotificationEvent> audioNotificationStream(int internalId) {
-    _audioNotificationStream ??= _audioNotificationChannel.receiveBroadcastStream(internalId).map(_parseAudioNotificationEvent);
-    return _audioNotificationStream;
+  Stream<BaseAudioNotificationEvent> audioNotificationStream() {
+    _audioNotificationStream ??= _audioNotificationChannel.receiveBroadcastStream().map(_parseAudioNotificationEvent);
+    return _audioNotificationStream!;
   }
 
   /// Parses a map send from native code to a [BaseRemoteDataTrackEvent].
   BaseAudioNotificationEvent _parseAudioNotificationEvent(dynamic event) {
+    print('ProgrammableVideoInstance::parseAudioNotificationEvent => $event');
     final eventName = event['name'];
-    // final data = Map<String, dynamic>.from(event['data']);
-    // If no RemoteDataTrack data is received, skip the event.
-    // if (data['remoteDataTrack'] == null) {
-    //   return SkipAbleRemoteDataTrackEvent();
-    // }
-    // final remoteDataTrackModel = RemoteDataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(data['remoteDataTrack']));
+    final data = Map<String, dynamic>.from(event['data']);
+
+    // If no device name is received, skip the event.
+    if (data['deviceName'] == null) {
+      return SkipAbleAudioEvent();
+    }
+
+    final deviceName = data['deviceName'];
+    final bluetooth = data['bluetooth'];
+    final wired = data['wired'];
+
     switch (eventName) {
       case 'newDeviceAvailable':
-        return NewDeviceAvailableEvent();
+        return NewDeviceAvailableEvent(
+          deviceName: deviceName,
+          bluetooth: bluetooth,
+          wired: wired,
+        );
         break;
       case 'oldDeviceUnavailable':
-        return OldDeviceUnavailableEvent();
+        return OldDeviceUnavailableEvent(
+          deviceName: deviceName,
+          bluetooth: bluetooth,
+          wired: wired,
+        );
         break;
       default:
         return SkipAbleAudioEvent();
@@ -823,8 +850,10 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 //#endregion
 
   /// Stream of dynamic that contains all the native logging output.
+  final EventChannel _loggingChannel;
+
   @override
   Stream<dynamic> loggingStream() {
-    return EventChannel('twilio_programmable_video/logging').receiveBroadcastStream();
+    return _loggingChannel.receiveBroadcastStream();
   }
 }

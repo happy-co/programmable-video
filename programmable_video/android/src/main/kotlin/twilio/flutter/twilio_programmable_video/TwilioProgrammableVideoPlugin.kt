@@ -141,7 +141,7 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 roomListener.room = Video.connect(applicationContext, roomListener.connectOptions, roomListener)
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Room eventChannel detached")
                 roomListener.events = null
             }
@@ -154,7 +154,7 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 remoteParticipantListener.events = events
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteParticipant eventChannel detached")
                 remoteParticipantListener.events = null
             }
@@ -167,7 +167,7 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 localParticipantListener.events = events
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => LocalParticipant eventChannel detached")
                 localParticipantListener.events = null
             }
@@ -180,7 +180,7 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 loggingSink = events
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => Logging eventChannel detached")
                 loggingSink = null
             }
@@ -193,7 +193,7 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
                 remoteDataTrackListener.events = events
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => RemoteDataTrack eventChannel detached")
                 remoteDataTrackListener.events = null
             }
@@ -203,13 +203,11 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
         audioNotificationChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => AudioNotification eventChannel attached")
-                audioNotificationListener.listenForRouteChanges(applicationContext)
                 audioNotificationListener.events = events
             }
 
-            override fun onCancel(arguments: Any) {
+            override fun onCancel(arguments: Any?) {
                 debug("TwilioProgrammableVideoPlugin.onAttachedToEngine => AudioNotification eventChannel detached")
-                audioNotificationListener.stopListeningForRouteChanges(applicationContext)
                 audioNotificationListener.events = null
             }
         })

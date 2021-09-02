@@ -1,40 +1,43 @@
 import 'package:flutter/foundation.dart';
-import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
-import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
-// TODO: Make these events useful
 /// The base LocalParticipantEvent that all other LocalParticipantEvent types must extend.
 abstract class BaseAudioNotificationEvent {
-  // final LocalParticipantModel localParticipantModel;
-
-  const BaseAudioNotificationEvent(
-      // this.localParticipantModel,
-      );
+  const BaseAudioNotificationEvent();
 
   @override
-  String toString() => 'BaseAudioNotificationEvent: { '
-      // 'localParticipantModel: $localParticipantModel'
-      '}';
+  String toString() => 'BaseAudioNotificationEvent: { }';
 }
 
-/// Use this event if a New Audio Device is available.
+/// Use this event if an Audio Device is now available.
 class NewDeviceAvailableEvent extends BaseAudioNotificationEvent {
-  const NewDeviceAvailableEvent();
+  final String deviceName;
+  final bool bluetooth;
+  final bool wired;
+
+  const NewDeviceAvailableEvent({
+    required this.deviceName,
+    required this.bluetooth,
+    required this.wired,
+  });
 
   @override
-  String toString() => 'NewDeviceAvailableEvent: { '
-      // 'localParticipantModel: $localParticipantModel, publicationModel: $publicationModel '
-      '}';
+  String toString() => 'NewDeviceAvailableEvent: { deviceName: $deviceName, bluetooth: $bluetooth, wired: $wired }';
 }
 
-/// Use this event if a New Audio Device is available.
+/// Use this event if an Audio Device is no longer available.
 class OldDeviceUnavailableEvent extends BaseAudioNotificationEvent {
-  const OldDeviceUnavailableEvent();
+  final String deviceName;
+  final bool bluetooth;
+  final bool wired;
+
+  const OldDeviceUnavailableEvent({
+    required this.deviceName,
+    required this.bluetooth,
+    required this.wired,
+  });
 
   @override
-  String toString() => 'OldDeviceUnavailableEvent: { '
-  // 'localParticipantModel: $localParticipantModel, publicationModel: $publicationModel '
-      '}';
+  String toString() => 'OldDeviceUnavailableEvent: { deviceName: $deviceName, bluetooth: $bluetooth, wired: $wired }';
 }
 
 /// Use this event if a New Audio Device is available.
@@ -42,7 +45,5 @@ class SkipAbleAudioEvent extends BaseAudioNotificationEvent {
   const SkipAbleAudioEvent();
 
   @override
-  String toString() => 'SkipAbleAudioEvent: { '
-  // 'localParticipantModel: $localParticipantModel, publicationModel: $publicationModel '
-      '}';
+  String toString() => 'SkipAbleAudioEvent: { }';
 }

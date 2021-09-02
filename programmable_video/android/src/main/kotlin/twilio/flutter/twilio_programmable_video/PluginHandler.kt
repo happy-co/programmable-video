@@ -99,6 +99,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "setAudioSettings" -> setAudioSettings(call, result)
+            "disableAudioSettings" -> disableAudioSettings(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
             "deviceHasReceiver" -> deviceHasReceiver(result)
@@ -235,9 +236,16 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         audioSettings.speakerEnabled = speakerPhoneEnabled
         audioSettings.bluetoothPreferred = bluetoothPreferred
 
+        TwilioProgrammableVideoPlugin.audioNotificationListener.listenForRouteChanges(applicationContext)
+
         applyAudioSettings()
 
         result.success(null)
+    }
+
+    private fun disableAudioSettings(call: MethodCall, result: MethodChannel.Result) {
+        TwilioProgrammableVideoPlugin.audioNotificationListener.stopListeningForRouteChanges(applicationContext)
+        audioSettings.reset()
     }
 
     internal fun applyAudioSettings() {
@@ -296,6 +304,15 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun setSpeakerPhoneOnInternal() {
         val bluetoothProfileConnectionState = BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET)
         TwilioProgrammableVideoPlugin.debug("PluginHandler::setSpeakerPhoneOnInternal => on: ${audioSettings.speakerEnabled}\n bluetoothEnable: ${audioSettings.bluetoothPreferred}\n bluetoothScoOn: ${audioManager.isBluetoothScoOn}\n bluetoothProfileConnectionState: $bluetoothProfileConnectionState")
+
+        // Even if already enabled, setting `audioManager.isSpeakerphoneOn` to true
+        // will reroute audio to the speaker. If using a Bluetooth headset, this will cause audio to
+        // momentarily be routed to the device bottom speaker.
+        //
+        // It has been observed when disconnecting a bluetooth headset that sometimes
+        // the bluetoothProfileConnectionState will still be BluetoothProfile.STATE_CONNECTED
+        // resulting in an edge case where audio will be routed via the receiver rather than the
+        // bottom speaker.
         if (!audioSettings.bluetoothPreferred ||
                 bluetoothProfileConnectionState != BluetoothProfile.STATE_CONNECTED) {
             applySpeakerPhoneSettings()

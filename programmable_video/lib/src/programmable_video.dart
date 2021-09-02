@@ -5,6 +5,16 @@ class TwilioProgrammableVideo {
   // ignore: cancel_subscriptions
   static StreamSubscription? _loggingStream;
 
+  static final StreamController _onAudioNotification = StreamController.broadcast(onListen: () {
+    _audioNotificationStream = ProgrammableVideoPlatform.instance.audioNotificationStream().listen(_parseAudioNotificationEvents);
+  }, onCancel: () {
+    _audioNotificationStream?.cancel();
+  });
+
+  static Stream onAudioNotification = _onAudioNotification.stream;
+
+  static StreamSubscription<BaseAudioNotificationEvent>? _audioNotificationStream;
+
   static var _dartDebug = false;
 
   /// Internal logging method for dart.
@@ -60,7 +70,7 @@ class TwilioProgrammableVideo {
         }
       });
     } else if (!native && _loggingStream != null) {
-      await _loggingStream!.cancel();
+      await _loggingStream?.cancel();
       _loggingStream = null;
     }
   }
@@ -75,8 +85,8 @@ class TwilioProgrammableVideo {
 
   // TODO: comment this
   static Future setAudioSettings({
-    @required bool speakerPhoneEnabled,
-    @required bool bluetoothPreferred,
+    required bool speakerPhoneEnabled,
+    required bool bluetoothPreferred,
   }) async {
     assert(speakerPhoneEnabled != null);
     assert(bluetoothPreferred != null);
@@ -84,6 +94,10 @@ class TwilioProgrammableVideo {
       speakerPhoneEnabled,
       bluetoothPreferred,
     );
+  }
+
+  static Future disableAudioSettings() async {
+    return ProgrammableVideoPlatform.instance.disableAudioSettings();
   }
 
   /// Check if speaker mode is enabled.

@@ -27,6 +27,8 @@ public class PluginHandler: BaseListener {
             disconnect(call, result: result)
         case "setAudioSettings":
             setAudioSettings(call, result: result)
+        case "disableAudioSettings":
+            disableAudioSettings(call, result: result)
         case "setSpeakerphoneOn":
             setSpeakerphoneOn(call, result: result)
         case "getSpeakerphoneOn":
