@@ -18,7 +18,7 @@ class ConferenceRoom with ChangeNotifier {
   late Stream<bool> onAudioEnabled;
   final StreamController<bool> _onVideoEnabledStreamController = StreamController<bool>.broadcast();
   late Stream<bool> onVideoEnabled;
-  final StreamController<Map<String, bool>> _flashStateStreamController = StreamController<Map<String, bool>>.broadcast();
+  late final StreamController<Map<String, bool>> _flashStateStreamController;
   late Stream<Map<String, bool>> flashStateStream;
   final StreamController<Exception> _onExceptionStreamController = StreamController<Exception>.broadcast();
   late Stream<Exception> onException;
@@ -47,6 +47,9 @@ class ConferenceRoom with ChangeNotifier {
   }) {
     onAudioEnabled = _onAudioEnabledStreamController.stream;
     onVideoEnabled = _onVideoEnabledStreamController.stream;
+    _flashStateStreamController = StreamController<Map<String, bool>>.broadcast(onListen: () {
+      _updateFlashState();
+    });
     flashStateStream = _flashStateStreamController.stream;
     onException = _onExceptionStreamController.stream;
     onNetworkQualityLevel = _onNetworkQualityStreamController.stream;
@@ -62,7 +65,10 @@ class ConferenceRoom with ChangeNotifier {
       await TwilioProgrammableVideo.debug(dart: true, native: true);
       await TwilioProgrammableVideo.setSpeakerphoneOn(true);
 
-      _cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
+      final sources = await CameraSource.getSources();
+      _cameraCapturer = CameraCapturer(
+        sources.firstWhere((source) => source.isFrontFacing),
+      );
       trackId = Uuid().v4();
 
       var connectOptions = ConnectOptions(
@@ -205,13 +211,15 @@ class ConferenceRoom with ChangeNotifier {
 
   Future<void> switchCamera() async {
     Debug.log('ConferenceRoom.switchCamera()');
-    try {
-      await _cameraCapturer.switchCamera();
-    } on FormatException catch (e) {
-      Debug.log(
-        'ConferenceRoom.switchCamera() failed because of FormatException with message: ${e.message}',
-      );
-    }
+    final sources = await CameraSource.getSources();
+    final source = sources.firstWhere((source) {
+      if (_cameraCapturer.source!.isFrontFacing) {
+        return source.isBackFacing;
+      }
+      return source.isFrontFacing;
+    });
+
+    await _cameraCapturer.switchCamera(source);
   }
 
   Future<void> toggleFlashlight() async {
@@ -355,7 +363,7 @@ class ConferenceRoom with ChangeNotifier {
 
   Future _updateFlashState() async {
     var flashState = <String, bool>{
-      'hasFlash': await _cameraCapturer.hasTorch(),
+      'hasFlash': _cameraCapturer.hasTorch,
       'flashEnabled': flashEnabled,
     };
     _flashStateStreamController.add(flashState);

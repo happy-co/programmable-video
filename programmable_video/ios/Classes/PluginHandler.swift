@@ -49,10 +49,10 @@ public class PluginHandler: BaseListener {
             isRemoteAudioTrackPlaybackEnabled(call, result: result)
         case "CameraCapturer#switchCamera":
             switchCamera(call, result: result)
-        case "CameraCapturer#hasTorch":
-            hasTorch(result: result)
         case "CameraCapturer#setTorch":
             setTorch(call, result: result)
+        case "CameraSource#getSources":
+            getSources(call, result: result)
         case "getStats":
             getStats(result: result)
         default:
@@ -60,15 +60,30 @@ public class PluginHandler: BaseListener {
         }
     }
 
+    private func getSources(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        return result([
+            cameraPositionToMap(.front),
+            cameraPositionToMap(.back)
+        ])
+    }
+
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
+        guard let arguments = call.arguments as? [String: Any?] else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'cameraId' parameters", details: nil))
+        }
+
+        guard let newCameraId = arguments["cameraId"] as? String else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'cameraId' parameter", details: nil))
+        }
+
         if let cameraSource = SwiftTwilioProgrammableVideoPlugin.cameraSource {
             var captureDevice: AVCaptureDevice?
-            switch cameraSource.device?.position {
-            case .back:
-                captureDevice = CameraSource.captureDevice(position: .front)
-            default: // or .front
+            switch newCameraId {
+            case "BACK_CAMERA":
                 captureDevice = CameraSource.captureDevice(position: .back)
+            default:
+                captureDevice = CameraSource.captureDevice(position: .front)
             }
 
             if let captureDevice = captureDevice {
@@ -86,16 +101,6 @@ public class PluginHandler: BaseListener {
         } else {
             return result(FlutterError(code: "NOT_FOUND", message: "No CameraCapturer has been initialized yet, try connecting first.", details: nil))
         }
-    }
-
-    private func hasTorch(result: @escaping FlutterResult) {
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.hasTorch => called")
-        guard let captureDevice = SwiftTwilioProgrammableVideoPlugin.cameraSource?.device else {
-            return result(false)
-        }
-
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.hasTorch => device: \(captureDevice.uniqueID) hasTorch: \(captureDevice.hasTorch)")
-        return result(captureDevice.hasTorch)
     }
 
     private func setTorch(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -528,14 +533,14 @@ public class PluginHandler: BaseListener {
 
                     switch videoSourceType {
                     default: // or CameraCapturer
-                        let cameraSource = videoCapturer?["cameraSource"] as? String
-                        let cameraDeviceRequested: AVCaptureDevice? = cameraSource == "BACK_CAMERA" ?
+                        let cameraSource = videoCapturer?["source"] as? [String: Any]
+                        let cameraId = cameraSource?["cameraId"] as? String
+                        let cameraDeviceRequested: AVCaptureDevice? = cameraId == "BACK_CAMERA" ?
                             CameraSource.captureDevice(position: .back) :
                             CameraSource.captureDevice(position: .front)
 
                         guard let cameraDevice = cameraDeviceRequested else {
-                            let cameraSourceMessage = videoCapturer?["cameraSource"] ?? "FRONT_CAMERA"
-                            return result(FlutterError(code: "MISSING_CAMERA", message: "No camera found for \(cameraSourceMessage)", details: nil))
+                            return result(FlutterError(code: "MISSING_CAMERA", message: "No camera found for \(cameraId ?? "FRONT_CAMERA")", details: nil))
                         }
 
                         let videoSource = CameraSource()!
@@ -604,7 +609,7 @@ public class PluginHandler: BaseListener {
             let source: AVCaptureDevice.Position? = newCameraSource != nil ? newCameraSource : cameraSource.device?.position
             return [
                 "type": "CameraCapturer",
-                "cameraSource": cameraPositionToString(source)
+                "source": cameraPositionToMap(source)
             ]
         }
         return [
@@ -615,13 +620,26 @@ public class PluginHandler: BaseListener {
 
     private func cameraPositionToString(_ position: AVCaptureDevice.Position?) -> String {
         switch position {
-        case .front:
-            return "FRONT_CAMERA"
-        case .back:
-            return "BACK_CAMERA"
-        default:
-            return "UNKNOWN"
+            case .front:
+                return "FRONT_CAMERA"
+            case .back:
+                return "BACK_CAMERA"
+            default:
+                return "UNKNOWN"
         }
+    }
+
+    private func cameraPositionToMap(_ position: AVCaptureDevice.Position?) -> [String: Any] {
+        var hasTorch = false
+        if let position = position {
+            hasTorch = CameraSource.captureDevice(position: position)?.hasTorch ?? false
+        }
+        return [
+            "isFrontFacing": position == .front,
+            "isBackFacing": position == .back,
+            "hasTorch": hasTorch,
+            "cameraId": cameraPositionToString(position)
+        ]
     }
 
     private func debug(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

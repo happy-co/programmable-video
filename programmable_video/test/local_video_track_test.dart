@@ -13,13 +13,22 @@ void main() {
 
   group('LocalVideoTrack()', () {
     test('should not construct without enabled', () async {
-      expect(() => LocalVideoTrack(null, CameraCapturer(CameraSource.BACK_CAMERA)), throwsAssertionError);
+      expect(
+        () => LocalVideoTrack(
+          null,
+          CameraCapturer(CameraSource('BACK_CAMERA', false, false, false)),
+        ),
+        throwsAssertionError,
+      );
     });
   });
 
   group('.enable()', () {
     test('should call interface code to enable the track', () async {
-      final localVideoTrack = LocalVideoTrack(true, CameraCapturer(CameraSource.BACK_CAMERA));
+      final localVideoTrack = LocalVideoTrack(
+        true,
+        CameraCapturer(CameraSource('BACK_CAMERA', false, false, false)),
+      );
       await localVideoTrack.enable(false);
 
       expect(mockInterface!.enableVideoTrackWasCalled, true);
@@ -29,7 +38,10 @@ void main() {
   group('.isEnabled()', () {
     test('should return correct value', () async {
       final constructionBool = true;
-      final localVideoTrack = LocalVideoTrack(constructionBool, CameraCapturer(CameraSource.BACK_CAMERA));
+      final localVideoTrack = LocalVideoTrack(
+        constructionBool,
+        CameraCapturer(CameraSource('BACK_CAMERA', false, false, false)),
+      );
       expect(localVideoTrack.isEnabled, constructionBool);
       await localVideoTrack.enable(!constructionBool);
       expect(localVideoTrack.isEnabled, !constructionBool);
@@ -38,7 +50,10 @@ void main() {
 
   group('.widget()', () {
     test('should throw exception when not running on a platform', () async {
-      final localVideoTrack = LocalVideoTrack(true, CameraCapturer(CameraSource.BACK_CAMERA));
+      final localVideoTrack = LocalVideoTrack(
+        true,
+        CameraCapturer(CameraSource('BACK_CAMERA', false, false, false)),
+      );
       expect(() => localVideoTrack.widget(), throwsException);
     });
   });

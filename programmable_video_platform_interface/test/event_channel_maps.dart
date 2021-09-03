@@ -93,10 +93,17 @@ class EventChannelMaps {
   static const localDataTrackPublicationMap = {'sid': 'MTbb9a4179496054a4b6dea62601fa6107', 'localDataTrack': localDataTrackMap};
 
   static const localVideoTrackMap = {
-    'name': 'ff7181B9df9'
-        'C4fe80b75cE24ec5A24a4',
+    'name': 'ff7181B9df9C4fe80b75cE24ec5A24a4',
     'enabled': true,
-    'videoCapturer': {'type': 'CameraCapturer', 'cameraSource': 'FRONT_CAMERA'}
+    'videoCapturer': {
+      'type': 'CameraCapturer',
+      'source': {
+        'cameraId': 'FRONT_CAMERA',
+        'isFrontFacing': false,
+        'isBackFacing': false,
+        'hasTorch': false,
+      },
+    }
   };
 
   static const localVideoTrackPublicationMap = {'sid': 'MTa6d9276e5a198dbd9725a55d5fb7eb4c', 'localVideoTrack': localVideoTrackMap};

@@ -4,15 +4,10 @@ import com.twilio.video.VideoTrack
 import com.twilio.video.VideoView
 import io.flutter.plugin.platform.PlatformView
 
-class ParticipantView : PlatformView {
-    private var videoView: VideoView
+class ParticipantView(private var videoView: VideoView, videoTrack: VideoTrack) : PlatformView {
 
-    private var videoTrack: VideoTrack
-
-    constructor(videoView: VideoView, videoTrack: VideoTrack) {
-        this.videoView = videoView
-        this.videoTrack = videoTrack
-        videoTrack.addRenderer(videoView)
+    init {
+        videoTrack.addSink(videoView)
     }
 
     override fun getView(): VideoView {

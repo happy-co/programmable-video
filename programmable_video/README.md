@@ -116,6 +116,12 @@ void _onConnectFailure(RoomConnectFailureEvent event) {
 }
   
 Future<Room> connectToRoom() async {
+  // Retrieve the camera source of your choosing
+  var cameraSources = await CameraSource.getSources(); 
+  var cameraCapturer = CameraCapturer(
+    cameraSources.firstWhere((source) => source.isFrontFacing),
+  );
+
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,                   // Optional name for the room
@@ -133,7 +139,7 @@ Future<Room> connectToRoom() async {
         ),                                // Optional
       ),
     ],                                    // Optional list of data tracks   
-    videoTracks: ([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks.
+    videoTracks: [LocalVideoTrack(true, cameraCapturer)], // Optional list of video tracks.
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -162,6 +168,12 @@ void _onConnectFailure(RoomConnectFailureEvent event) {
 }
   
 Future<Room> connectToRoom() async {
+  // Retrieve the camera source of your choosing
+  var cameraSources = await CameraSource.getSources(); 
+  var cameraCapturer = CameraCapturer(
+    cameraSources.firstWhere((source) => source.isFrontFacing),
+  );
+
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,
@@ -179,7 +191,7 @@ Future<Room> connectToRoom() async {
         ),                                // Optional
       ),
     ],                                    // Optional list of data tracks
-    videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
+    videoTracks([LocalVideoTrack(true, cameraCapturer)]), // Optional list of video tracks. 
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -195,8 +207,11 @@ You can capture local media from your device's microphone or camera in the follo
 // Create an audio track.
 var localAudioTrack = LocalAudioTrack(true);
 
-// A video track request an implementation of VideoCapturer.
-var cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
+// Retrieve the camera source of your choosing
+var cameraSources = await CameraSource.getSources(); 
+var cameraCapturer = CameraCapturer(
+  cameraSources.firstWhere((source) => source.isFrontFacing),
+);
 
 // Create a video track.
 var localVideoTrack = LocalVideoTrack(true, cameraCapturer);
@@ -368,7 +383,10 @@ The `CameraCapturer` class is used to provide video frames for `LocalVideoTrack`
 
 ```dart
 // Share your camera.
-var cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
+var cameraSources = await CameraSource.getSources(); 
+var cameraCapturer = CameraCapturer(
+  cameraSources.firstWhere((source) => source.isFrontFacing),
+);
 var localVideoTrack = LocalVideoTrack(true, cameraCapturer);
 
 // Render camera to a widget (only after connect event).
@@ -377,9 +395,10 @@ var widget = localVideoTrack.widget(mirror);
 _widgets.add(widget);
 
 // Switch the camera source.
-var cameraSource = cameraCapturer.getCameraSource();
-cameraCapturer.switchCamera();
-primaryVideoView.setMirror(cameraSource == CameraSource.BACK_CAMERA);
+var cameraSources = await CameraSource.getSources(); 
+var cameraSource = cameraSources.firstWhere((source) => source.isBackFacing);
+await cameraCapturer.switchCamera(cameraSource);
+await primaryVideoView.setMirror(cameraSource.isBackFacing);
 ```
 
 ### Selecting a specific Audio output

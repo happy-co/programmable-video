@@ -153,7 +153,7 @@ class TwilioProgrammableVideo {
   ///
   /// Will request camera and microphone permissions.
   /// Throws [MissingParameterException] if [ConnectOptions] are not provided.
-  /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource]
+  /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource].
   /// Throws [InitializationException] if an error is caught when attempting to connect.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     if (await requestPermissionForCameraAndMicrophone()) {
@@ -182,7 +182,7 @@ class TwilioProgrammableVideo {
       final values = entry.value;
       values['localAudioTrackStats'].forEach((localAudioTrackStat) {
         statReport.addLocalAudioTrackStats(LocalAudioTrackStats(
-          localAudioTrackStat['trackSide'],
+          localAudioTrackStat['trackSid'],
           localAudioTrackStat['packetsLost'],
           localAudioTrackStat['codec'],
           localAudioTrackStat['ssrc'],
@@ -197,7 +197,7 @@ class TwilioProgrammableVideo {
 
       values['remoteAudioTrackStats'].forEach((remoteAudioTrackStat) {
         statReport.addAudioTrackStats(RemoteAudioTrackStats(
-          remoteAudioTrackStat['trackSide'],
+          remoteAudioTrackStat['trackSid'],
           remoteAudioTrackStat['packetsLost'],
           remoteAudioTrackStat['codec'],
           remoteAudioTrackStat['ssrc'],
@@ -209,9 +209,9 @@ class TwilioProgrammableVideo {
         ));
       });
 
-      values['remoteAudioTrackStats'].forEach((remoteVideoTrackStat) {
+      values['remoteVideoTrackStats'].forEach((remoteVideoTrackStat) {
         statReport.addVideoTrackStats(RemoteVideoTrackStats(
-          remoteVideoTrackStat['trackSide'],
+          remoteVideoTrackStat['trackSid'],
           remoteVideoTrackStat['packetsLost'],
           remoteVideoTrackStat['codec'],
           remoteVideoTrackStat['ssrc'],
@@ -228,7 +228,7 @@ class TwilioProgrammableVideo {
 
       values['localVideoTrackStats'].forEach((localVideoTrackStat) {
         statReport.addLocalVideoTrackStats(LocalVideoTrackStats(
-          localVideoTrackStat['trackSide'],
+          localVideoTrackStat['trackSid'],
           localVideoTrackStat['packetsLost'],
           localVideoTrackStat['codec'],
           localVideoTrackStat['ssrc'],

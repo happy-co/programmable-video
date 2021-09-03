@@ -101,15 +101,9 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<CameraSource> switchCamera() async {
+  Future<CameraSource> switchCamera(CameraSource newSource) async {
     switchCameraWasCalled = true;
-    return Future.delayed(Duration(milliseconds: 1), () => CameraSource.FRONT_CAMERA);
-  }
-
-  @override
-  Future<bool> hasTorch() async {
-    hasTorchWasCalled = true;
-    return Future.delayed(Duration(milliseconds: 1), () => true);
+    return Future.delayed(Duration(milliseconds: 1), () => CameraSource('FRONT_CAMERA', false, false, false));
   }
 
   @override

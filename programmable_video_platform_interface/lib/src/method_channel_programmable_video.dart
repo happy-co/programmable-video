@@ -5,6 +5,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 
 import 'enums/enum_exports.dart';
 import 'models/local_participant/local_participant_event.dart';
@@ -211,29 +212,25 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     );
   }
 
-  /// Calls native code to switch the camera.
-  ///
-  /// Throws a [FormatException] if the result of the [MethodChannel] call could not be parsed to a [CameraSource].
   @override
-  Future<CameraSource> switchCamera() async {
-    final methodData = await _methodChannel.invokeMethod('CameraCapturer#switchCamera');
-
-    final cameraSource = EnumToString.fromString(
-      CameraSource.values,
-      methodData['cameraSource'],
+  Future<List<CameraSource>> getSources() async {
+    List<Object?> methodData = await _methodChannel.invokeMethod(
+      'CameraSource#getSources',
+      null,
     );
-    if (cameraSource == null) {
-      throw FormatException('Failed to parse cameraSource');
-    }
-    return cameraSource;
+    return methodData.map((dynamic source) => CameraSource.fromMap(Map<String, dynamic>.from(source))).toList();
   }
 
-  /// Calls native code to find if the active camera has a flash.
+  /// Calls native code to switch the camera.
+  ///
+  /// Returns the new camera source.
   @override
-  Future<bool> hasTorch() async {
-    final hasTorch = await _methodChannel.invokeMethod('CameraCapturer#hasTorch', null) ?? false;
+  Future<CameraSource> switchCamera(CameraSource source) async {
+    final methodData = await _methodChannel.invokeMethod('CameraCapturer#switchCamera', <String, dynamic>{
+      'cameraId': source.cameraId,
+    });
 
-    return hasTorch;
+    return CameraSource.fromMap(Map<String, dynamic>.from(methodData['source']));
   }
 
   /// Calls native code to change the torch state.
@@ -264,9 +261,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   BaseCameraEvent _parseCameraEvent(dynamic event) {
     final String? eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
-    final cameraSource = EnumToString.fromString(CameraSource.values, data['capturer']['cameraSource']);
-    if (cameraSource != null) {
-      final model = CameraCapturerModel(cameraSource, data['capturer']['type']);
+    final sourceData = data['capturer']['source'];
+    if (sourceData != null && sourceData['cameraId'] != null) {
+      final model = CameraCapturerModel(
+        CameraSource.fromMap(Map<String, dynamic>.from(sourceData)),
+        data['capturer']['type'],
+      );
 
       switch (eventName) {
         case 'cameraSwitched':
@@ -286,6 +286,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
     return SkipableCameraEvent();
   }
+
 //#endregion
 
 //#region roomStream

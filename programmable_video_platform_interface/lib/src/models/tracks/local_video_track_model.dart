@@ -1,5 +1,4 @@
-import 'package:enum_to_string/enum_to_string.dart';
-import 'package:twilio_programmable_video_platform_interface/src/enums/enum_exports.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// Model that a plugin implementation can use to construct a LocalVideoTrack.
@@ -14,18 +13,18 @@ class LocalVideoTrackModel extends TrackModel {
 
   factory LocalVideoTrackModel.fromEventChannelMap(Map<String, dynamic> map) {
     assert(map['videoCapturer'] != null);
-    var videoCapturerMap = Map<String, dynamic>.from(map['videoCapturer'] as Map<dynamic, dynamic>);
+    var videoCapturerMap = Map<String, dynamic>.from(
+      map['videoCapturer'] as Map<dynamic, dynamic>,
+    );
 
-    final cameraSource = videoCapturerMap['cameraSource'];
-    assert(cameraSource != null);
+    final sourceData = videoCapturerMap['source'];
+    assert(sourceData != null && sourceData['cameraId'] != null);
+    final source = CameraSource.fromMap(Map<String, dynamic>.from(sourceData));
 
     return LocalVideoTrackModel(
       name: map['name'],
       enabled: map['enabled'],
-      cameraCapturer: CameraCapturerModel(
-        EnumToString.fromString(CameraSource.values, cameraSource),
-        videoCapturerMap['type'],
-      ),
+      cameraCapturer: CameraCapturerModel(source, videoCapturerMap['type']),
     );
   }
 
@@ -42,7 +41,7 @@ class LocalVideoTrackModel extends TrackModel {
       'enable': enabled,
       'name': name,
       'videoCapturer': {
-        'cameraSource': EnumToString.convertToString(cameraCapturer.source),
+        'source': cameraCapturer.source?.toMap(),
         'type': 'CameraCapturer',
       },
     };

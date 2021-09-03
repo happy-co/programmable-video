@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
-import 'package:twilio_programmable_video_platform_interface/src/enums/camera_source.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/region.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
@@ -30,7 +30,7 @@ void main() {
     LocalVideoTrackModel(
       name: 'video',
       enabled: true,
-      cameraCapturer: CameraCapturerModel(CameraSource.FRONT_CAMERA, 'type'),
+      cameraCapturer: CameraCapturerModel(CameraSource('FRONT_CAMERA', false, false, false), 'type'),
     ),
   ];
   final enableAutomaticSubscription = true;
