@@ -283,12 +283,12 @@ public class PluginHandler: BaseListener {
         }
         return result(FlutterError(code: "NOT_FOUND", message: "No LocalDataTrack found with the name '\(localDataTrackName)'", details: nil))
     }
-    
+
     private func getAudioMode() -> AVAudioSession.Mode {
         let mode: AVAudioSession.Mode = audioSettings.speakerEnabled ? .videoChat : .voiceChat
         return mode
     }
-    
+
     private func getAudioOptions() -> AVAudioSession.CategoryOptions {
         let options: AVAudioSession.CategoryOptions = audioSettings.bluetoothPreferred && audioSettings.speakerEnabled
             ? [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
@@ -296,7 +296,7 @@ public class PluginHandler: BaseListener {
         [.allowAirPlay, .allowBluetooth, .allowBluetoothA2DP] : []
         return options
     }
-    
+
     private func setAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioSettings => called")
         guard let arguments = call.arguments as? [String: Any?] else {
@@ -310,14 +310,14 @@ public class PluginHandler: BaseListener {
         guard let bluetoothPreferred = arguments["bluetoothPreferred"] as? Bool else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'bluetoothPreferred' parameter", details: nil))
         }
-        
+
         initializeAudioDevice()
         SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.listenForRouteChanges()
 
         do {
             audioSettings.speakerEnabled = speakerPhoneEnabled
             audioSettings.bluetoothPreferred = bluetoothPreferred
-            
+
             try applyAudioSettings()
 
             return result(nil)
@@ -331,7 +331,7 @@ public class PluginHandler: BaseListener {
         audioSettings.reset()
         result(nil)
     }
-    
+
     func applyAudioSettings() throws {
         let audioSession = AVAudioSession.sharedInstance()
         let mode: AVAudioSession.Mode = getAudioMode()
@@ -354,12 +354,12 @@ public class PluginHandler: BaseListener {
 
         do {
             audioSettings.speakerEnabled = on
-            
+
             let audioSession = AVAudioSession.sharedInstance()
             let mode: AVAudioSession.Mode = getAudioMode()
             let options: AVAudioSession.CategoryOptions = getAudioOptions()
             try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
-            
+
             return result(on)
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
@@ -392,7 +392,7 @@ public class PluginHandler: BaseListener {
             camera.stopCapture()
             SwiftTwilioProgrammableVideoPlugin.cameraSource = nil
         }
-        
+
         if let onDisconnect = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnDisconnected {
             onDisconnect()
         }
@@ -578,13 +578,13 @@ public class PluginHandler: BaseListener {
             builder.isDominantSpeakerEnabled = optionsObj["enableDominantSpeaker"] as? Bool ?? false
             builder.isAutomaticSubscriptionEnabled = optionsObj["enableAutomaticSubscription"] as? Bool ?? true
         }
-        
+
         do {
             try applyAudioSettings()
         } catch let error as NSError {
             SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => Error applying audio settings.\n\tCode: \(error.code)\n\tMessage: \(error.description)")
         }
-        
+
         if let onConnected = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnConnected {
             onConnected()
         }

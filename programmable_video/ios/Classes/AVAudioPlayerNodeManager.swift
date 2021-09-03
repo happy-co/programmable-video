@@ -38,7 +38,7 @@ internal class AVAudioPlayerNodeManager {
     func shouldReattachNodes() -> Bool {
         return !nodes.values.isEmpty
     }
-    
+
     func isActive() -> Bool {
         return self.anyQueued() || self.anyPaused() || self.anyPlaying()
     }
@@ -51,12 +51,12 @@ internal class AVAudioPlayerNodeManager {
 
         return node
     }
-    
+
     public func queueNode(_ id: Int) {
         guard let node = nodes[id] else {
             return
         }
-        
+
         debug("AVAudioPlayerNodeManager::queueNode =>\n\tid: \(id)\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)")
         node.queued = true
     }
@@ -72,7 +72,7 @@ internal class AVAudioPlayerNodeManager {
         node.queued = false
 
         debug("AVAudioPlayerNodeManager::play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)\n\tposition: \(position)")
-        
+
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
 
@@ -301,7 +301,7 @@ internal class AVAudioPlayerNodeManager {
         debug("AVAudioPlayerNodeManager::anyPlaying => \(result)")
         return result
     }
-    
+
     public func anyQueued() -> Bool {
         var result = false
         for nodeBundle in nodes.values where nodeBundle.queued {

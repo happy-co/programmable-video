@@ -12,7 +12,7 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     internal static var localParticipantListener = LocalParticipantListener()
 
     internal static var remoteDataTrackListener = RemoteDataTrackListener()
-    
+
     internal static var audioNotificationListener = AudioNotificationListener()
 
     public static var cameraSource: CameraSource?
@@ -20,11 +20,11 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     public static var loggingSink: FlutterEventSink?
 
     public static var nativeDebug = false
-    
+
     internal static var audioDevice: AudioDevice?
-    
+
     internal static var audioDeviceOnConnected: (() -> Void)?
-    
+
     internal static var audioDeviceOnDisconnected: (() -> Void)?
 
     public static func debug(_ msg: String) {
@@ -41,7 +41,7 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         let instance = SwiftTwilioProgrammableVideoPlugin()
         instance.onRegister(registrar)
     }
-    
+
     public static func setCustomAudioDevice(_ device: AudioDevice, onConnected: @escaping () -> Void, onDisconnected: @escaping () -> Void) {
         audioDevice = device
         audioDeviceOnConnected = onConnected
@@ -50,7 +50,7 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
             audioDevice.setApplyAudioSettings(pluginHandler.applyAudioSettings)
         }
     }
-    
+
     public static func clearCustomAudioDevice() {
         audioDevice = nil
         audioDeviceOnConnected = nil
@@ -188,7 +188,7 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
             return nil
         }
     }
-    
+
     class AudioNotificationStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
             SwiftTwilioProgrammableVideoPlugin.debug("AudioNotificationStreamHandler.onListen => AudioNotification eventChannel attached")
