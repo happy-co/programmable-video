@@ -1,3 +1,8 @@
+## 0.7.0
+
+- Added `setAudioSettings`.
+- Added `disableAudioSettings`.
+
 ## 0.6.0
 
 - **BREAKING**: Replaced `CameraSource` enum with a class variant to represent a potential source for camera capturing.
