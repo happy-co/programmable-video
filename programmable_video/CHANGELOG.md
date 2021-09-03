@@ -1,3 +1,11 @@
+## 0.11.0
+
+- Added responsive management of audio settings using `setAudioSettings`.
+- Added optional integration with `ocarina` on Android to allow for integrated audio focus management.
+- Made improvements to `AVAudioEngineDevice`.
+- Deprecated `setSpeakerPhoneOn`.
+- Added audio device notifications to dart layer.
+
 ## 0.10.0
 
 - **BREAKING**: Migrated TwilioVideo iOS SDK from v3 to v4.

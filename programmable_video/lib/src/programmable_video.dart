@@ -57,6 +57,18 @@ class TwilioProgrammableVideo {
     return err;
   }
 
+  /// Parse native audio notification events.
+  /// Or at least, issue them to observers.
+  static void _parseAudioNotificationEvents(BaseAudioNotificationEvent event) {
+    _log("AudioNotificationEvent => Event '$event'");
+
+    if (event is SkipAbleAudioEvent) {
+      return;
+    }
+
+    _onAudioNotification.add(event);
+  }
+
   /// Enable debug logging.
   ///
   /// For native logging set [native] to `true` and for dart set [dart] to `true`.

@@ -36,6 +36,7 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.CAMERA"/>
 <uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 ...
 ```
 
@@ -402,22 +403,42 @@ await primaryVideoView.setMirror(cameraSource.isBackFacing);
 ```
 
 ### Selecting a specific Audio output
-Using the `TwilioProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
+Using the `TwilioProgrammableVideo` class, you can specify if audio should be routed through the headset, speaker, or an available Bluetooth audio device.
 
 **Note:**
-> Calling this method before being connected to a room on iOS will result in nothing. If you wish to route audio through the headset or speaker call this method in the `onConnected` event.
+> If both `speakerPhoneEnabled` and `bluetoothPreferred` are true, a Bluetooth audio device will be used if available, otherwise audio will be routed through the speaker.
 
 ```dart
 // Route audio through speaker
-TwilioProgrammableVideo.setSpeakerphoneOn(true);
+await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: false);
 
 // Route audio through headset
-TwilioProgrammableVideo.setSpeakerphoneOn(false);
+await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: false, bluetoothPreferred: false);
+
+// Use Bluetooth if available, otherwise use the headset.
+await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: false, bluetoothPreferred: true);
+
+// Use Bluetooth if available, otherwise use the speaker.
+await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: true);
+```
+
+**Note:**
+> Once `setAudioSettings` has been called, the Android and iOS implementations will listen for route changes, and work to ensure that the applied audio settings continue to be used. While this is the case, you can listen for such changes using the `TwilioProgrammableVideo` class.
+
+```dart
+TwilioProgrammableVideo.onAudioNotification.listen((event) {
+// do things.
+});
+```
+
+> To disable audio setting management, and route change observation, call `disableAudioSettings` using the `TwilioProgrammableVideo` class.
+```dart
+await TwilioProgrammableVideo.disableAudioSettings();
 ```
 
 ### Playing audio files to provide a rich user experience
 
-For the purposes of playing audio files while using this plugin, we recommend the [`ocarina`](https://pub.dev/packages/ocarina) plugin (v0.0.5 and upwards).
+**iOS:** For the purposes of playing audio files while using this plugin, we recommend the [`ocarina`](https://pub.dev/packages/ocarina) plugin (v0.1.2 and upwards).
 
 This recommendation comes after surveying the available plugins for this functionality in the Flutter ecosystem for plugins that play nice with this one.
 
@@ -434,8 +455,11 @@ To enable usage of the `AVAudioEngineDevice`, and delegate audio file playback m
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    let audioDevice = AVAudioEngineDevice()
-    SwiftTwilioProgrammableVideoPlugin.audioDevice = audioDevice
+    let audioDevice = AVAudioEngineDevice.getInstance()
+    SwiftTwilioProgrammableVideoPlugin.setCustomAudioDevice(
+        audioDevice,
+        onConnected: audioDevice.onConnected,
+        onDisconnected: audioDevice.onDisconnected)
     SwiftOcarinaPlugin.useDelegate(
         load: audioDevice.addMusicNode,
         dispose: audioDevice.disposeMusicNode,
@@ -453,6 +477,28 @@ To enable usage of the `AVAudioEngineDevice`, and delegate audio file playback m
 ```
 
 Once you have done this, you should be able to continue using this plugin, and `ocarina` as normal.
+
+**Android:** As of version `0.11.0`, we now provide an integration with `ocarina` on Android as well.
+
+The purposes of this integration are to allow smart management of audio settings, and audio focus based upon playing state.
+
+To gain the benefits of this integration, add the following to your `MainActivity.kt`.
+
+```kotlin
+    private lateinit var PACKAGE_ID: String
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        PACKAGE_ID = applicationContext.packageName
+        OcarinaPlugin.addListener(PACKAGE_ID, TwilioProgrammableVideoPlugin.getAudioPlayerEventListener());
+    }
+
+    override fun cleanUpFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        super.cleanUpFlutterEngine(flutterEngine)
+        OcarinaPlugin.removeListener(PACKAGE_ID)
+    }
+```
 
 ## Enable debug logging
 Using the `TwilioProgrammableVideo` class, you can enable native and dart logging of the plugin.

@@ -63,7 +63,10 @@ class ConferenceRoom with ChangeNotifier {
     Debug.log('ConferenceRoom.connect()');
     try {
       await TwilioProgrammableVideo.debug(dart: true, native: true);
-      await TwilioProgrammableVideo.setSpeakerphoneOn(true);
+      _streamSubscriptions.add(TwilioProgrammableVideo.onAudioNotification.listen((event) {
+        print('ConferenceRoom::onAudioNotificationEvent => $event');
+      }));
+      await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: true);
 
       final sources = await CameraSource.getSources();
       _cameraCapturer = CameraCapturer(
@@ -109,6 +112,7 @@ class ConferenceRoom with ChangeNotifier {
   Future<void> disconnect() async {
     Debug.log('ConferenceRoom.disconnect()');
     _timer.cancel();
+    await TwilioProgrammableVideo.disableAudioSettings();
     await _room.disconnect();
   }
 

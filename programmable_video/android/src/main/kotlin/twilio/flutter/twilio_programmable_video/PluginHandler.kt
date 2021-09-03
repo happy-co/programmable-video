@@ -260,6 +260,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun disableAudioSettings(call: MethodCall, result: MethodChannel.Result) {
         TwilioProgrammableVideoPlugin.audioNotificationListener.stopListeningForRouteChanges(applicationContext)
         audioSettings.reset()
+        result.success(null)
     }
 
     internal fun applyAudioSettings() {

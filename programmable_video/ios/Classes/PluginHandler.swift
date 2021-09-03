@@ -329,6 +329,7 @@ public class PluginHandler: BaseListener {
     private func disableAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.stopListeningForRouteChanges()
         audioSettings.reset()
+        result(nil)
     }
     
     func applyAudioSettings() throws {
