@@ -452,6 +452,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             self.stopRendering()
         }
         self.safelyTeardownAVAudioSession()
+        debug("AVAudioEngineDevice::stopMusic => END node: \(id)")
     }
     
     func safelyTeardownAVAudioSession() {
@@ -762,9 +763,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             
             self.setupAudioUnit()
 
-            debug("AVAudioEngineDevice::startCapturing => QUEUE - DispatchQueue.main.async")
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-            debug("AVAudioEngineDevice::startCapturing => START - DispatchQueue.main.async")
             if let engine = self.recordEngine,
                let engineFormat = AudioFormat(
                 channels: Int(engine.manualRenderingFormat.channelCount),
@@ -787,7 +786,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                 self.teardownRecordAudioEngine()
                 self.setupRecordAudioEngine()
             }
-            debug("AVAudioEngineDevice::startCapturing => END - DispatchQueue.main.async")
 
             self.capturingContext.deviceContext = context
 
@@ -1303,31 +1301,47 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     @objc private func handleMediaServiceLost(notification: Notification) {
         debug("AVAudioEngineDevice::handleMediaServiceLost")
 
-        myPropertyQueue.async {
-            DispatchQueue.main.async {
-                self.teardownAudioEngine()
-            }
-            // If the worker block is executed, then context is guaranteed to be valid.
-            if let context = self.deviceContext() {
-                AudioDeviceExecuteWorkerBlock(context: context) {
-                    self.teardownAudioUnit()
-                }
-            }
+        self.myPropertyQueue.async {
+            self.interrupted = true
+            self.stopAudioUnit()
+            self.audioPlayerNodeManager.pauseAll(true)
+            self.teardownAudioUnit()
+            self.detachMusicNodes()
+            self.teardownAudioEngine()
+            self.deallocateMemoryForAudioBuffers()
         }
     }
 
+    // Reference: https://developer.apple.com/library/archive/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/HandlingAudioInterruptions/HandlingAudioInterruptions.html#//apple_ref/doc/uid/TP40007875-CH4-SW8
     @objc private func handleMediaServiceRestored(notification: Notification) {
         debug("AVAudioEngineDevice::handleMediaServiceRestored")
 
-        myPropertyQueue.async {
-            DispatchQueue.main.async {
-                self.setupAudioEngine()
+        self.myPropertyQueue.async {
+            self.interrupted = false
+            self.setupAudioUnit()
+            self.getMaximumSliceSize()
+            do {
+                let result = try AVAudioSession.sharedInstance().setPreferredSampleRate(Double(AVAudioEngineDevice.kPreferredSampleRate))
+                debug("AVAudioEngineDevice::handleFormatChange => setPreferredSampleRate result: \(result) sampleRate: \(AVAudioEngineDevice.kPreferredSampleRate)")
+            } catch let error {
+                debug("AVAudioEngineDevice::handleFormatChange => setPreferredSampleRate error: \(error)")
             }
+            self.allocateMemoryForAudioBuffers()
+            self.setupAudioEngine()
             // If the worker block is executed, then context is guaranteed to be valid.
-            if let context = self.deviceContext() {
-                AudioDeviceExecuteWorkerBlock(context: context) {
-                    self.startAudioUnit()
-                }
+            self.setupAVAudioSession()
+            if !self.startAudioUnit() {
+                self.interrupted = true
+                return
+            }
+
+            if self.audioPlayerNodeManager.anyPaused() {
+                self.startRenderingInternal(context: self.deviceContext())
+                self.audioPlayerNodeManager.resumeAll()
+            }
+            
+            if let deviceContext = self.deviceContext() {
+                self.notifyVideoSdkOfFormatChange(context: deviceContext)
             }
         }
     }

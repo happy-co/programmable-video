@@ -307,6 +307,7 @@ public class PluginHandler: BaseListener {
         }
         
         initializeAudioDevice()
+        SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.listenForRouteChanges()
 
         do {
             audioSettings.speakerEnabled = speakerPhoneEnabled
@@ -318,6 +319,11 @@ public class PluginHandler: BaseListener {
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
+    }
+
+    private func disableAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.stopListeningForRouteChanges()
+        audioSettings.reset()
     }
     
     func applyAudioSettings() throws {

@@ -4,6 +4,7 @@ import TwilioVideo
 
 internal class AudioNotificationListener: BaseListener {
     internal func listenForRouteChanges() {
+        stopListeningForRouteChanges()
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
     }
     

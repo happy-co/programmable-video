@@ -71,7 +71,7 @@ internal class AVAudioPlayerNodeManager {
         }
         node.queued = false
 
-        debug("AVAudioPlayerNodeManager::play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)")
+        debug("AVAudioPlayerNodeManager::play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)\n\tposition: \(position)")
         
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
@@ -185,9 +185,13 @@ internal class AVAudioPlayerNodeManager {
     }
 
     func fadeInNode(_ node: AVAudioPlayerNodeBundle) {
-        debug("AVAudioPlayerNodeManager::fadeInNode => START - node \(node.id), volume \(node.volume)")
-        var increment = node.volume / 10
-        fadeIn(node, 0, increment)
+        debug("AVAudioPlayerNodeManager::fadeInNode => START - node \(node.id), volume \(node.volume), fadingIn: \(node.fadingIn)")
+        if !node.fadingIn {
+            let increment = node.volume / 10
+            node.fadingIn = true
+            fadeIn(node, 0, increment)
+            node.fadingIn = false
+        }
         debug("AVAudioPlayerNodeManager::fadeInNode => END - node \(node.id)")
     }
 
@@ -348,6 +352,7 @@ internal class AVAudioPlayerNodeBundle {
     var pauseTime: Int64?
     var queued: Bool = false
     var playing: Bool = false
+    var fadingIn: Bool = false
     var startFrame: Int64 = 0
     var resumeAfterRendererStarted: Bool = false
     let eq: AVAudioUnitEQ
