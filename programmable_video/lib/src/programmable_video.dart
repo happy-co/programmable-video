@@ -100,8 +100,6 @@ class TwilioProgrammableVideo {
     required bool speakerPhoneEnabled,
     required bool bluetoothPreferred,
   }) async {
-    assert(speakerPhoneEnabled != null);
-    assert(bluetoothPreferred != null);
     return await ProgrammableVideoPlatform.instance.setAudioSettings(
       speakerPhoneEnabled,
       bluetoothPreferred,

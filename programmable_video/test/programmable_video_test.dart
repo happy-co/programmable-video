@@ -33,18 +33,28 @@ void main() {
 
   group('.setSpeakerPhoneOn() & .getSpeakerPhoneOn()', () {
     final mockInterface = MockInterface();
-    final on = true;
+    final speakerPhoneOn = true;
+    final bluetoothOn = true;
     setUpAll(() => ProgrammableVideoPlatform.instance = mockInterface);
 
     test('should call interface code to enable speakerphone', () async {
-      await TwilioProgrammableVideo.setSpeakerphoneOn(on);
-      expect(mockInterface.setSpeakerPhoneOnWasCalled, true);
+      await TwilioProgrammableVideo.setAudioSettings(
+        speakerPhoneEnabled: speakerPhoneOn,
+        bluetoothPreferred: bluetoothOn,
+      );
+      expect(mockInterface.setSpeakerPhoneOnWasCalled, false);
+      expect(mockInterface.setAudioSettingsWasCalled, true);
     });
 
     test('should call interface code to check speaker mode', () async {
       final result = await TwilioProgrammableVideo.getSpeakerphoneOn();
       expect(mockInterface.getSpeakerPhoneOnWasCalled, true);
-      expect(result, on);
+      expect(result, speakerPhoneOn);
+    });
+
+    test('should call interface code to disable audio settings', () async {
+      await TwilioProgrammableVideo.disableAudioSettings();
+      expect(mockInterface.disableAudioSettingsWasCalled, true);
     });
   });
 
