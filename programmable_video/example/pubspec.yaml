@@ -21,18 +21,17 @@ dependencies:
   after_layout: ^1.1.0
   firebase_core: ^1.1.0
   uuid: ^3.0.4
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-
-# TODO: Remove the pendantic here and remove the override once the following issue is resolved:
-# https://github.com/flutter/flutter/issues/48246
   collection: ^1.15.0-nullsafety.4
+
 dev_dependencies:
   flutter_driver:
     sdk: flutter
   test: ^1.16.5
+# TODO: Remove the pendantic here and remove the override once the following issue is resolved:
+# https://github.com/flutter/flutter/issues/48246
   pedantic: ^1.11.0
   twilio_programmable_video:
     path: ../
@@ -41,5 +40,4 @@ dependency_overrides:
   pedantic: ^1.9.0
 
 flutter:
-
   uses-material-design: true

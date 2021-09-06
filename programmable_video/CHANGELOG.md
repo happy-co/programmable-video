@@ -1,3 +1,7 @@
+## 0.10.0+1
+
+- Bumped minor versions of dependencies
+
 ## 0.10.0
 
 - **BREAKING**: Migrated TwilioVideo iOS SDK from v3 to v4.
