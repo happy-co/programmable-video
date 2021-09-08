@@ -329,6 +329,15 @@ public class PluginHandler: BaseListener {
     private func disableAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.stopListeningForRouteChanges()
         audioSettings.reset()
+
+        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil || !(SwiftTwilioProgrammableVideoPlugin.audioDevice! is AVAudioEngineDevice) {
+            do {
+                let session: AVAudioSession = AVAudioSession.sharedInstance()
+                try session.setActive(false, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
+            } catch let error {
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::disableAudioSettings => Exception when deactivating AVAudioSession: \(error)")
+            }
+        }
         result(nil)
     }
 
@@ -338,6 +347,11 @@ public class PluginHandler: BaseListener {
         let options: AVAudioSession.CategoryOptions = getAudioOptions()
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::applyAudioSettings =>\n\tmode: \(mode)\n\toptions: \(options)")
         try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
+
+        if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil || !(SwiftTwilioProgrammableVideoPlugin.audioDevice! is AVAudioEngineDevice) {
+            let session: AVAudioSession = AVAudioSession.sharedInstance()
+            try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
+        }
     }
 
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -399,6 +413,7 @@ public class PluginHandler: BaseListener {
 
         result(true)
     }
+
     private func getStats(result:@escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.getStats {
             result(StatsMapper.statsReportsToDict($0))
@@ -582,7 +597,7 @@ public class PluginHandler: BaseListener {
         do {
             try applyAudioSettings()
         } catch let error as NSError {
-            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => Error applying audio settings.\n\tCode: \(error.code)\n\tMessage: \(error.description)")
+            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::connect => Error applying audio settings.\n\tCode: \(error.code)\n\tMessage: \(error.description)")
         }
 
         if let onConnected = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnConnected {

@@ -1,10 +1,3 @@
-//
-//  AVAudioPlayerNodeManager.swift
-//  twilio_programmable_video
-//
-//  Created by John MacPherson on 2021-04-15.
-//
-
 import Foundation
 import TwilioVideo
 
@@ -137,8 +130,6 @@ internal class AVAudioPlayerNodeManager {
             return
         }
 
-        // TODO: review
-//        if node.player.isPlaying {
         if node.playing {
             return
         }
@@ -147,7 +138,6 @@ internal class AVAudioPlayerNodeManager {
         node.resumeAfterRendererStarted = false
         pausedNodes.removeValue(forKey: node.id)
         seekPosition(id, pausePosition)
-//        fadeInNode(node)
     }
 
     public func setMusicVolume(_ id: Int, _ volume: Double) {

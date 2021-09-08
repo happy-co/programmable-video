@@ -98,8 +98,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.stopCapturing()
         NotificationCenter.default.removeObserver(self)
         self.teardownAudioEngine()
-        // TODO: teardownAudioUnit?
-
         deallocateMemoryForAudioBuffers()
     }
 
@@ -161,10 +159,11 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         return "AVAudioEngine Audio Mixing"
     }
 
-    // TODO: update or delete this comment
     /*
-     * Determine at runtime the maximum slice size used by VoiceProcessingIO. Setting the stream format and sample rate
-     * doesn't appear to impact the maximum size so we prefer to read this value once at initialization time.
+     * Determine at runtime the maximum slice size used by VoiceProcessingIO. While I/O Audio Units
+     * Ostensibly can handle any format, the AVAudioEngine's need to have the format provided at configuration
+     * time. As a result, when format is determined to have changed, or has potentially changed, we reinitialize
+     * AudioUnit, ensure that we have its maximum slice size, and then reinitialize the AVAudioEngines.
      */
     func getMaximumSliceSize() {
         guard let audioUnit = self.audioUnit else {
@@ -382,7 +381,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func onConnected() {
-        // TODO: Add in conditional to handle scenario where engine is running prior to connection
         // May not be necessary due to now using PluginHandler.applyAudioSettings()
         debug("AVAudioEngineDevice::onConnected => START")
         self.setupAVAudioSession()
@@ -444,7 +442,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         debug("AVAudioEngineDevice::stopMusic => node: \(id)")
         self.audioPlayerNodeManager.stopNode(id)
 
-        // TODO: review case where playMusic/is starting rendering/waiting to start rendering before starting music
         if !self.audioPlayerNodeManager.isActive(),
            !self.isConnected,
             !self.isStartingRenderer,
@@ -702,9 +699,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             if let engine = self.playoutEngine,
                engine.isRunning,
                !self.audioPlayerNodeManager.isActive() {
-                debug("AVAudioEngineDevice::stopRendering => QUEUE - DispatchQueue.main.async")
                 // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-                debug("AVAudioEngineDevice::stopRendering => START - DispatchQueue.main.async")
 
                 // If audio player nodes are in use, we will not stop the engine
                 if let engine = self.playoutEngine {
@@ -797,7 +792,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
                  * ensure fadeIn/resume is happening on the same queue as other
                  * requests to change player state
                  */
-                 // TODO: review whether queue is needed
                 self.myPropertyQueue.async {
                     self.audioPlayerNodeManager.resumeAll()
                 }
@@ -884,7 +878,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.registerAVAudioSessionObservers()
 
         do {
-            // TODO: ensure that plugin users not using AVAudioEngineDevice can setActive
             try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
         } catch let error {
             debug("Error activating AVAudioSession: \(error)")
@@ -1064,7 +1057,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             failedInitializeAttempts += 1
 
             debug("Pause 100ms and try audio unit initialization again.")
-            // TODO: review whether Thread.sleep causes synchronicity issues
             Thread.sleep(forTimeInterval: 0.1)
         }
 
@@ -1239,7 +1231,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
             } else {
                 // Video SDK is disconnected or connecting
                 debug("AVAudioEngineDevice::handleValidRouteChange => BEGIN handleFormatChange")
-                // TODO: look at format change when playing audio node but not connected
                 self.callAudioDeviceFormatChangedOnStart()
                 debug("AVAudioEngineDevice::handleValidRouteChange => END handleFormatChange")
             }
@@ -1302,7 +1293,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         // Nodes will be reattached as part of setupPlayoutAudioEngine
         self.setupAudioEngine()
-        // TODO: restart rendering if there are paused nodes?
+        // When to resume paused nodes left to calling functions
         debug("AVAudioEngineDevice::handleFormatChange => END")
     }
 
