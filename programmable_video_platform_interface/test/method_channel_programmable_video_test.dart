@@ -39,6 +39,8 @@ void main() {
   late StreamController remoteParticipantController;
   late StreamController localParticipantController;
   late StreamController remoteDataTrackController;
+  late StreamController audioNotificationController;
+  late StreamController loggingController;
 
   setUpAll(() {
     cameraController = StreamController<dynamic>.broadcast();
@@ -61,6 +63,14 @@ void main() {
     final remoteDataTrackChannel = MockEventChannel();
     when(remoteDataTrackChannel.receiveBroadcastStream(0)).thenAnswer((Invocation invoke) => remoteDataTrackController.stream);
 
+    audioNotificationController = StreamController<dynamic>.broadcast(sync: true);
+    final audioNotificationChannel = MockEventChannel();
+    when(audioNotificationChannel.receiveBroadcastStream()).thenAnswer((Invocation invoke) => audioNotificationController.stream);
+
+    loggingController = StreamController<dynamic>.broadcast(sync: true);
+    final loggingChannel = MockEventChannel();
+    when(loggingChannel.receiveBroadcastStream()).thenAnswer((Invocation invoke) => loggingController.stream);
+
     instance = MethodChannelProgrammableVideo.private(
       MethodChannel('twilio_programmable_video'),
       cameraChannel,
@@ -68,6 +78,8 @@ void main() {
       remoteParticipantChannel,
       localParticipantChannel,
       remoteDataTrackChannel,
+      audioNotificationChannel,
+      loggingChannel,
     );
 
     MethodChannel('twilio_programmable_video').setMockMethodCallHandler((MethodCall methodCall) async {
@@ -127,6 +139,8 @@ void main() {
     await remoteParticipantController.close();
     await localParticipantController.close();
     await remoteDataTrackController.close();
+    await audioNotificationController.close();
+    await loggingController.close();
   });
 
   group('.debug()', () {
@@ -775,6 +789,12 @@ void main() {
   group('.loggingStream()', () {
     test('should return a Stream of dynamic', () {
       expect(instance.loggingStream(), isA<Stream<dynamic>>());
+    });
+  });
+
+  group('.audioNotificationStream()', () {
+    test('should return a Stream of dynamic', () {
+      expect(instance.audioNotificationStream(), isA<Stream<dynamic>>());
     });
   });
 }

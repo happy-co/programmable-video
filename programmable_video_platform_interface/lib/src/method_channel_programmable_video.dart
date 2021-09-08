@@ -92,8 +92,6 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// scenario, it will be used.
   @override
   Future setAudioSettings(bool speakerPhoneEnabled, bool bluetoothPreferred) {
-    assert(speakerPhoneEnabled != null);
-    assert(bluetoothPreferred != null);
     return _methodChannel.invokeMethod(
       'setAudioSettings',
       {
@@ -834,17 +832,14 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
           bluetooth: bluetooth,
           wired: wired,
         );
-        break;
       case 'oldDeviceUnavailable':
         return OldDeviceUnavailableEvent(
           deviceName: deviceName,
           bluetooth: bluetooth,
           wired: wired,
         );
-        break;
       default:
         return SkipAbleAudioEvent();
-        break;
     }
   }
 

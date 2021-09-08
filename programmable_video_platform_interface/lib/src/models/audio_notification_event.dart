@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// The base LocalParticipantEvent that all other LocalParticipantEvent types must extend.
 abstract class BaseAudioNotificationEvent {
   const BaseAudioNotificationEvent();
