@@ -13,24 +13,24 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   permission_handler: ^7.0.0
   enum_to_string: ^2.0.1
   twilio_programmable_video_platform_interface:
     path: ../programmable_video_platform_interface
-
-# TODO: Remove the pendantic here and remove the override once the following issue is resolved:
-# https://github.com/flutter/flutter/issues/48246
   collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+# TODO: Remove the pendantic here and remove the override once the following issue is resolved:
+# https://github.com/flutter/flutter/issues/48246
   pedantic: ^1.11.0
   mockito: ^5.0.6
   build_runner: ^2.0.1
+
 dependency_overrides:
   pedantic: ^1.9.0
+
 flutter:
   plugin:
     platforms:
