@@ -145,7 +145,6 @@ unit_test:
       - programmable_video_platform_interface/test/**/*
       - .gitlab-ci.yml
 
-
 dry-run_programmable_video:
   stage: publish
   script:
@@ -164,7 +163,6 @@ dry-run_programmable_video:
       - programmable_video/**/*
       - .gitlab-ci.yml
 
-
 dry-run_platform_interface:
   stage: publish
   script:
@@ -177,8 +175,6 @@ dry-run_platform_interface:
     changes:
       - programmable_video_platform_interface/**/*
       - .gitlab-ci.yml
-
-
 
 firebase_programmable_video:
   image: andreysenov/firebase-tools
@@ -207,7 +203,6 @@ firebase_programmable_video:
   except:
     refs:
       - branches
-
 
 pub-dev_platform_interface:
   # https://robertohuertas.com/2019/01/20/publish-flutter-package-with-travis/
@@ -302,7 +297,6 @@ pub-dev_programmable_video:
     refs:
       - branches
 
-
 changelog_programmable_video:
   image: curlimages/curl
   stage: publish
@@ -371,7 +365,7 @@ tag_programmable_video:
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video_v${TAG_NAME}" \
         --data-urlencode "ref=master" \
-        --data-urlencode "message=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video/CHANGELOG.md)" \
+        --data-urlencode "release_description=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/master/programmable_video/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
     name: pub-dev-plugin
@@ -383,7 +377,6 @@ tag_programmable_video:
     changes:
       - programmable_video/**/*
       - .gitlab-ci.yml
-
 
 tag_platform_interface:
   image: curlimages/curl
@@ -398,11 +391,10 @@ tag_platform_interface:
       fi
 
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
-      echo "ENV: ${ENV}"
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video-platform-interface_v${TAG_NAME}" \
         --data-urlencode "ref=master" \
-        --data-urlencode "message=Check the [CHANGELOG.md](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video_platform_interface/CHANGELOG.md)" \
+        --data-urlencode "release_description=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/master/programmable_video_platform_interface/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
     name: pub-dev-platform-interface
