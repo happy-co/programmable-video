@@ -381,7 +381,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
     }
 
     public func onConnected() {
-        // May not be necessary due to now using PluginHandler.applyAudioSettings()
         debug("AVAudioEngineDevice::onConnected => START")
         self.setupAVAudioSession()
         self.isConnected = true
@@ -631,7 +630,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
         self.setupAudioUnit()
 
-        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         if let engine = self.playoutEngine,
            let engineFormat = AudioFormat(
             channels: Int(engine.manualRenderingFormat.channelCount),
@@ -759,7 +757,6 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
 
             self.setupAudioUnit()
 
-            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
             if let engine = self.recordEngine,
                let engineFormat = AudioFormat(
                 channels: Int(engine.manualRenderingFormat.channelCount),
@@ -1394,7 +1391,7 @@ func AVAudioEngineDevicePlayoutCallback(inRefCon: UnsafeMutableRawPointer,
             debug("Can handle a max of \(maxFramesPerBuffer) frames but got \(inNumberFrames). Status: \(status.rawValue) OutputStatus: \(outputStatus)")
         }
         // Next line left in for debugging purposes. Commented out to minimize operations on the real time audio thread
-        debug("AVAudioEngineDevicePlayoutCallback => render silence - outputStatus: \(outputStatus) status: \(status.rawValue)")
+//        debug("AVAudioEngineDevicePlayoutCallback => render silence - outputStatus: \(outputStatus) status: \(status.rawValue)")
         ioActionFlags.pointee = AudioUnitRenderActionFlags(rawValue: ioActionFlags.pointee.rawValue | AudioUnitRenderActionFlags.unitRenderAction_OutputIsSilence.rawValue)
         memset(ioData.pointee.mBuffers.mData, 0, Int(audioBufferSizeInBytes))
     }

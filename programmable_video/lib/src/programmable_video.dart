@@ -95,7 +95,13 @@ class TwilioProgrammableVideo {
     return await ProgrammableVideoPlatform.instance.setSpeakerphoneOn(on);
   }
 
-  // TODO: comment this
+  /// Set audio settings to be applied by the native layer.
+  ///
+  /// Calling this method will cause the native layer (iOS and Android) to watch
+  /// for route changes, and changes in available bluetooth devices, and update routing
+  /// based upon the specified settings.
+  ///
+  /// Bluetooth takes precedence over speaker phone, speaker phone over receiver.
   static Future setAudioSettings({
     required bool speakerPhoneEnabled,
     required bool bluetoothPreferred,
@@ -106,6 +112,11 @@ class TwilioProgrammableVideo {
     );
   }
 
+  /// Resets audio settings at the native layer. Defaults are:
+  /// speakerPhoneEnabled = true
+  /// bluetoothPreferred = true
+  ///
+  /// Native layer will stop listening for route changes.
   static Future disableAudioSettings() async {
     return ProgrammableVideoPlatform.instance.disableAudioSettings();
   }
