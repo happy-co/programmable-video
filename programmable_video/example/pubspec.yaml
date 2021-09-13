@@ -17,7 +17,8 @@ dependencies:
   recase: ^4.0.0
   intl: ^0.17.0
   device_info: ^2.0.0
-  wakelock: ^0.5.1
+  wakelock: 0.5.3+3
+  wakelock_platform_interface: 0.2.1+2
   after_layout: ^1.1.0
   firebase_core: ^1.1.0
   uuid: ^3.0.4
