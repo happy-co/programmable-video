@@ -103,6 +103,7 @@ captures/
 .idea/uiDesigner.xml
 .idea/assetWizardSettings.xml
 .idea/codeStyles/Project.xml
+.idea/runConfigurations/
 
 # OS-specific files
 .DS_Store

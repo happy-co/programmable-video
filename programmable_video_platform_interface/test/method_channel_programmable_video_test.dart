@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/method_channel_programmable_video.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/programmable_video_platform_interface.dart';
@@ -27,10 +28,11 @@ void main() {
   var nativeConnectIsCalled = false;
   var nativeSetSpeakerphoneOnIsCalled = false;
   var nativeSpeakerPhoneOn = false;
+  var nativeCameraId = '';
   var nativeGetSpeakerphoneOnIsCalled = false;
   var nativeSwitchCameraIsCalled = false;
 
-  var cameraSource = 'BACK_CAMERA';
+  var cameraSource = CameraSource('BACK_CAMERA', false, false, false);
 
   StreamController cameraController;
   late StreamController roomController;
@@ -107,7 +109,8 @@ void main() {
           return nativeSpeakerPhoneOn;
         case 'CameraCapturer#switchCamera':
           nativeSwitchCameraIsCalled = true;
-          return {'type': 'CameraCapturer', 'cameraSource': cameraSource};
+          nativeCameraId = methodCall.arguments['cameraId'];
+          return {'type': 'CameraCapturer', 'source': cameraSource.toMap()};
         default:
           throw Exception('Methodcall: ${methodCall.method} was not found');
       }
@@ -321,19 +324,16 @@ void main() {
 
   group('.switchCamera()', () {
     test('should call native switchCamera code in dart', () async {
-      await instance.switchCamera();
+      final source = CameraSource('FRONT_CAMERA', false, false, false);
+      await instance.switchCamera(source);
       expect(nativeSwitchCameraIsCalled, true);
+      expect(nativeCameraId, source.cameraId);
       expect(methodCalls, <Matcher>[
         isMethodCall(
           'CameraCapturer#switchCamera',
-          arguments: null,
-        )
+          arguments: {'cameraId': source.cameraId},
+        ),
       ]);
-    });
-
-    test('should handle unimplemented or wrong camerasource values from native code by throwing an exception', () async {
-      cameraSource = 'falseSource';
-      expect(() => instance.switchCamera(), throwsFormatException);
     });
   });
 

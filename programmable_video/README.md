@@ -1,34 +1,42 @@
 # twilio_programmable_video
+
 Flutter plugin for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin), which enables you to build real-time videocall applications (WebRTC) \
 This Flutter plugin is a community-maintained project for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin) and not maintained by Twilio. If you have any issues, please file an issue instead of contacting support.
 
 This package is currently work-in-progress and should not be used for production apps. We can't guarantee that the current API implementation will stay the same between versions, until we have reached v1.0.0.
 
 # Example
+
 Check out our comprehensive [example](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/example) provided with this plugin.
 
 [![Twilio Programmable Video Example](https://j.gifs.com/5QEyOB.gif)](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/example "Twilio Programmable Video Example")
 
 ## Join the community
+
 If you have any question or problems, please join us on [Discord](https://discord.gg/MWnu4nW)
 
 ## FAQ
+
 Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video/FAQ.md) first before creating a new issue.
 
 ## Supported platforms
-* Android
-* iOS
-* ~~Web~~ (not yet)
+
+- Android
+- iOS
+- ~~Web~~ (not yet)
 
 ## Getting started
 
 ### Prerequisites
+
 Before you can start using the plugin you need to make sure you have everything setup for your project.
 
 #### Android
+
 For this plugin to work for Android, you will have to tweak a few files.
 
 ##### Permissions
+
 Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and add the following device permissions:
 
 ```xml
@@ -40,6 +48,7 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 ```
 
 ##### Proguard
+
 Add the following lines to your `android/app/proguard-rules.pro` file.
 
 ```
@@ -61,7 +70,7 @@ android {
 
         release {
 
-            ...    
+            ...
 
             minifyEnabled true
             useProguard true
@@ -74,10 +83,13 @@ android {
 ```
 
 #### iOS
+
 For this plugin to work for iOS, you will have to tweak a few files.
 
 ##### Permissions
+
 Open the `Info.plist` file in your `ios/Runner` directory and add the following permissions:
+
 ```
 ...
 <key>NSCameraUsageDescription</key>
@@ -90,15 +102,18 @@ Open the `Info.plist` file in your `ios/Runner` directory and add the following 
 ```
 
 ##### Setting minimal iOS target to 11
+
 1. In Xcode, open `Runner.xcworkspace` in your app's `ios` folder.
 2. To view your app’s settings, select the **Runner** project in the Xcode project navigator. Then, in the main view sidebar, select the **Runner** target.
 3. Select the **General** tab.
 4. In the **Deployment Info** section, set the Target to iOS 11.
 
 ##### Background Modes
+
 To allow a connection to a Room to be persisted while an application is running in the background, you must select the Audio, AirPlay, and Picture in Picture background mode from the Capabilities project settings page. See [Twilio Docs](https://www.twilio.com/docs/video/ios-v3-getting-started#background-modes) for more information.
 
 ### Connect to a Room
+
 Call `TwilioProgrammableVideo.connect()` to connect to a Room in your Flutter application. Once connected, you can send and receive audio and video streams with other Participants who are connected to the Room.
 
 ```dart
@@ -114,8 +129,14 @@ void _onConnectFailure(RoomConnectFailureEvent event) {
   print('Failed to connect to room ${event.room.name} with exception: ${event.exception}');
   _completer.completeError(event.exception);
 }
-  
+
 Future<Room> connectToRoom() async {
+  // Retrieve the camera source of your choosing
+  var cameraSources = await CameraSource.getSources();
+  var cameraCapturer = CameraCapturer(
+    cameraSources.firstWhere((source) => source.isFrontFacing),
+  );
+
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,                   // Optional name for the room
@@ -132,8 +153,8 @@ Future<Room> connectToRoom() async {
           name: name                             // Optional
         ),                                // Optional
       ),
-    ],                                    // Optional list of data tracks   
-    videoTracks: ([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks.
+    ],                                    // Optional list of data tracks
+    videoTracks: [LocalVideoTrack(true, cameraCapturer)], // Optional list of video tracks.
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -145,6 +166,7 @@ Future<Room> connectToRoom() async {
 You **must** pass the [Access Token](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/README.md#access-tokens) when connecting to a Room.
 
 ### Join a Room
+
 If you'd like to join a Room you know already exists, you handle that exactly the same way as creating a room: just pass the Room name to the `connect` method. Once in a Room, you'll receive a `RoomParticipantConnectedEvent` for each Participant that successfully joins. Querying the `room.remoteParticipants` getter will return any existing Participants who have already joined the Room.
 
 ```dart
@@ -160,8 +182,14 @@ void _onConnectFailure(RoomConnectFailureEvent event) {
   print('Failed to connect to room ${event.room.name} with exception: ${event.exception}');
   _completer.completeError(event.exception);
 }
-  
+
 Future<Room> connectToRoom() async {
+  // Retrieve the camera source of your choosing
+  var cameraSources = await CameraSource.getSources();
+  var cameraCapturer = CameraCapturer(
+    cameraSources.firstWhere((source) => source.isFrontFacing),
+  );
+
   var connectOptions = ConnectOptions(
     accessToken,
     roomName: roomName,
@@ -179,7 +207,7 @@ Future<Room> connectToRoom() async {
         ),                                // Optional
       ),
     ],                                    // Optional list of data tracks
-    videoTracks([LocalVideoTrack(true, CameraCapturer(CameraSource.FRONT_CAMERA))]), // Optional list of video tracks. 
+    videoTracks([LocalVideoTrack(true, cameraCapturer)]), // Optional list of video tracks.
   );
   _room = await TwilioProgrammableVideo.connect(connectOptions);
   _room.onConnected.listen(_onConnected);
@@ -189,14 +217,18 @@ Future<Room> connectToRoom() async {
 ```
 
 ### Set up local media
+
 You can capture local media from your device's microphone or camera in the following ways:
 
 ```dart
 // Create an audio track.
 var localAudioTrack = LocalAudioTrack(true);
 
-// A video track request an implementation of VideoCapturer.
-var cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
+// Retrieve the camera source of your choosing
+var cameraSources = await CameraSource.getSources();
+var cameraCapturer = CameraCapturer(
+  cameraSources.firstWhere((source) => source.isFrontFacing),
+);
 
 // Create a video track.
 var localVideoTrack = LocalVideoTrack(true, cameraCapturer);
@@ -207,11 +239,13 @@ var widget = localVideoTrack.widget();
 ```
 
 ### Connect as a publish-only Participant
+
 It is currently not possible to connect as a publish-only participant.
 
 ### Working with Remote Participants
 
 #### Handle Connected Participants
+
 When you join a Room, Participants may already be present. You can check for existing Participants when the `Room.onConnected` listener gets called by using the `room.remoteParticipants` getter.
 
 ```dart
@@ -250,6 +284,7 @@ print('RemoteParticipant ${remoteParticipant.identity} is in the room');
 ```
 
 #### Handle Participant Connection Events
+
 When Participants connect to or disconnect from a Room that you're connected to, you'll be notified via an event listener. These events help your application keep track of the participants who join or leave a Room.
 
 ```dart
@@ -266,6 +301,7 @@ room.onParticipantDisconnected((RoomParticipantDisconnectedEvent event) {
 ```
 
 #### Display a Remote Participant's Widget
+
 To see the Video Tracks being sent by remote Participants, we need to add their widgets to the tree.
 
 ```dart
@@ -279,6 +315,7 @@ room.onParticipantConnected((RoomParticipantConnectedEvent roomEvent) {
 ```
 
 ### Using the DataTrack API
+
 The DataTrack API lets you create a DataTrack channel which can be used to send low latency messages to zero or more receivers subscribed to the data.
 
 Currently the only way you can start using a DataTrack is by specifying it in the ConnectOptions when [connecting to a room](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/README.md#connect-to-a-room)
@@ -330,9 +367,11 @@ Remember, you will not receive messages that were send before you started listen
 ### Participating in a Room
 
 #### Display a Camera Preview
+
 Just like Twilio we totally get that you want to look fantastic before entering a Room. Sadly that isn't yet implemented so you should go analog and use a mirror.
 
 #### Disconnect from a Room
+
 You can disconnect from a Room you're currently participating in. Other Participants will receive a `RoomParticipantDisconnectedEvent`.
 
 ```dart
@@ -347,6 +386,7 @@ room.onDisconnected((RoomDisconnectEvent event) {
 ```
 
 ### Room reconnection
+
 A Room reconnection is triggered due to a signaling or media reconnection event.
 
 ```dart
@@ -361,14 +401,19 @@ room.onReconnected((Room room) {
 ```
 
 ## Configuring Audio, Video Input and Output devices
+
 Taking advantage of the ability to control input and output devices lets you build a better end user experience.
 
 ### Selecting a specific Video Input
+
 The `CameraCapturer` class is used to provide video frames for `LocalVideoTrack` from a given `CameraSource`.
 
 ```dart
 // Share your camera.
-var cameraCapturer = CameraCapturer(CameraSource.FRONT_CAMERA);
+var cameraSources = await CameraSource.getSources();
+var cameraCapturer = CameraCapturer(
+  cameraSources.firstWhere((source) => source.isFrontFacing),
+);
 var localVideoTrack = LocalVideoTrack(true, cameraCapturer);
 
 // Render camera to a widget (only after connect event).
@@ -377,15 +422,17 @@ var widget = localVideoTrack.widget(mirror);
 _widgets.add(widget);
 
 // Switch the camera source.
-var cameraSource = cameraCapturer.getCameraSource();
-cameraCapturer.switchCamera();
-primaryVideoView.setMirror(cameraSource == CameraSource.BACK_CAMERA);
+var cameraSources = await CameraSource.getSources();
+var cameraSource = cameraSources.firstWhere((source) => source.isBackFacing);
+await cameraCapturer.switchCamera(cameraSource);
 ```
 
 ### Selecting a specific Audio output
+
 Using the `TwilioProgrammableVideo` class, you can specify if audio is routed through the headset or speaker.
 
 **Note:**
+
 > Calling this method before being connected to a room on iOS will result in nothing. If you wish to route audio through the headset or speaker call this method in the `onConnected` event.
 
 ```dart
@@ -436,6 +483,7 @@ To enable usage of the `AVAudioEngineDevice`, and delegate audio file playback m
 Once you have done this, you should be able to continue using this plugin, and `ocarina` as normal.
 
 ## Enable debug logging
+
 Using the `TwilioProgrammableVideo` class, you can enable native and dart logging of the plugin.
 
 ```dart
@@ -445,54 +493,56 @@ TwilioProgrammableVideo.debug(native: nativeEnabled, dart: dartEnabled);
 ```
 
 ## Access Tokens
+
 Keep in mind, you can't generate access tokens for programmable-video using the [TestCredentials](https://www.twilio.com/docs/iam/test-credentials#supported-resources), make use of the LIVE credentials.
 
 You can easily generate an access token in the Twilio dashboard with the [Testing Tools](https://www.twilio.com/console/video/project/testing-tools) to start testing your code. But we recommend you setup a backend to generate these tokens for you and secure your Twilio credentials. Like we do in our [example app](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/example).
 
 ## Events table
+
 Reference table of all the events the plugin currently supports
 
-| Type              | Event streams                  | Event data                                | Implemented  |
-| :---------------- | :----------------------------- | :---------------------------------------- | ------------ |
-| LocalParticipant  | onAudioTrackPublished          | LocalAudioTrackPublishedEvent             | Android Only |
-| LocalParticipant  | onAudioTrackPublicationFailed  | LocalAudioTrackPublicationFailedEvent     | Android Only |
-| LocalParticipant  | onDataTrackPublished           | LocalDataTrackPublishedEvent              | Android Only |
-| LocalParticipant  | onDataTrackPublicationFailed   | LocalDataTrackPublicationFailedEvent      | Android Only |
-| LocalParticipant  | onVideoTrackPublished          | LocalVideoTrackPublishedEvent             | Android Only |
-| LocalParticipant  | onVideoTrackPublicationFailed  | LocalVideoTrackPublicationFailedEvent     | Android Only |
-| RemoteDataTrack   | onStringMessage                | RemoteDataTrackStringMessageEvent         | Android Only |
-| RemoteDataTrack   | onBufferMessage                | RemoteDataTrackBufferMessageEvent         | Android Only |
-| RemoteParticipant | onAudioTrackDisabled           | RemoteAudioTrackEvent                     | Yes          |
-| RemoteParticipant | onAudioTrackEnabled            | RemoteAudioTrackEvent                     | Yes          |
-| RemoteParticipant | onAudioTrackPublished          | RemoteAudioTrackEvent                     | Yes          |
-| RemoteParticipant | onAudioTrackSubscribed         | RemoteAudioTrackSubscriptionEvent         | Yes          |
-| RemoteParticipant | onAudioTrackSubscriptionFailed | RemoteAudioTrackSubscriptionFailedEvent   | Yes          |
-| RemoteParticipant | onAudioTrackUnpublished        | RemoteAudioTrackEvent                     | Yes          |
-| RemoteParticipant | onAudioTrackUnsubscribed       | RemoteAudioTrackSubscriptionEvent         | Yes          |
-| RemoteParticipant | onDataTrackPublished           | RemoteDataTrackEvent                      | Yes          |
-| RemoteParticipant | onDataTrackSubscribed          | RemoteDataTrackSubscriptionEvent          | Yes          |
-| RemoteParticipant | onDataTrackSubscriptionFailed  | RemoteDataTrackSubscriptionFailedEvent    | Yes          |
-| RemoteParticipant | onDataTrackUnpublished         | RemoteDataTrackEvent                      | Yes          |
-| RemoteParticipant | onDataTrackUnsubscribed        | RemoteDataTrackSubscriptionEvent          | Yes          |
-| RemoteParticipant | onVideoTrackDisabled           | RemoteVideoTrackEvent                     | Yes          |
-| RemoteParticipant | onVideoTrackEnabled            | RemoteVideoTrackEvent                     | Yes          |
-| RemoteParticipant | onVideoTrackPublished          | RemoteVideoTrackEvent                     | Yes          |
-| RemoteParticipant | onVideoTrackSubscribed         | RemoteVideoTrackSubscriptionEvent         | Yes          |
-| RemoteParticipant | onVideoTrackSubscriptionFailed | RemoteVideoTrackSubscriptionFailedEvent   | Yes          |
-| RemoteParticipant | onVideoTrackUnpublished        | RemoteVideoTrackEvent                     | Yes          |
-| RemoteParticipant | onVideoTrackUnsubscribed       | RemoteVideoTrackSubscriptionEvent         | Yes          |
-| Room              | onConnectFailure               | RoomConnectFailureEvent                   | Yes          |
-| Room              | onConnected                    | Room                                      | Yes          |
-| Room              | onDisconnected                 | RoomDisconnectedEvent                     | Yes          |
-| Room              | onParticipantConnected         | RoomParticipantConnectedEvent             | Yes          |
-| Room              | onParticipantDisconnected      | RoomParticipantDisconnectedEvent          | Yes          |
-| Room              | onReconnected                  | Room                                      | Yes          |
-| Room              | onReconnecting                 | RoomReconnectingEvent                     | Yes          |
-| Room              | onRecordingStarted             | Room                                      | Yes          |
-| Room              | onRecordingStopped             | Room                                      | Yes          |
-
+| Type              | Event streams                  | Event data                              | Implemented  |
+| :---------------- | :----------------------------- | :-------------------------------------- | ------------ |
+| LocalParticipant  | onAudioTrackPublished          | LocalAudioTrackPublishedEvent           | Android Only |
+| LocalParticipant  | onAudioTrackPublicationFailed  | LocalAudioTrackPublicationFailedEvent   | Android Only |
+| LocalParticipant  | onDataTrackPublished           | LocalDataTrackPublishedEvent            | Android Only |
+| LocalParticipant  | onDataTrackPublicationFailed   | LocalDataTrackPublicationFailedEvent    | Android Only |
+| LocalParticipant  | onVideoTrackPublished          | LocalVideoTrackPublishedEvent           | Android Only |
+| LocalParticipant  | onVideoTrackPublicationFailed  | LocalVideoTrackPublicationFailedEvent   | Android Only |
+| RemoteDataTrack   | onStringMessage                | RemoteDataTrackStringMessageEvent       | Android Only |
+| RemoteDataTrack   | onBufferMessage                | RemoteDataTrackBufferMessageEvent       | Android Only |
+| RemoteParticipant | onAudioTrackDisabled           | RemoteAudioTrackEvent                   | Yes          |
+| RemoteParticipant | onAudioTrackEnabled            | RemoteAudioTrackEvent                   | Yes          |
+| RemoteParticipant | onAudioTrackPublished          | RemoteAudioTrackEvent                   | Yes          |
+| RemoteParticipant | onAudioTrackSubscribed         | RemoteAudioTrackSubscriptionEvent       | Yes          |
+| RemoteParticipant | onAudioTrackSubscriptionFailed | RemoteAudioTrackSubscriptionFailedEvent | Yes          |
+| RemoteParticipant | onAudioTrackUnpublished        | RemoteAudioTrackEvent                   | Yes          |
+| RemoteParticipant | onAudioTrackUnsubscribed       | RemoteAudioTrackSubscriptionEvent       | Yes          |
+| RemoteParticipant | onDataTrackPublished           | RemoteDataTrackEvent                    | Yes          |
+| RemoteParticipant | onDataTrackSubscribed          | RemoteDataTrackSubscriptionEvent        | Yes          |
+| RemoteParticipant | onDataTrackSubscriptionFailed  | RemoteDataTrackSubscriptionFailedEvent  | Yes          |
+| RemoteParticipant | onDataTrackUnpublished         | RemoteDataTrackEvent                    | Yes          |
+| RemoteParticipant | onDataTrackUnsubscribed        | RemoteDataTrackSubscriptionEvent        | Yes          |
+| RemoteParticipant | onVideoTrackDisabled           | RemoteVideoTrackEvent                   | Yes          |
+| RemoteParticipant | onVideoTrackEnabled            | RemoteVideoTrackEvent                   | Yes          |
+| RemoteParticipant | onVideoTrackPublished          | RemoteVideoTrackEvent                   | Yes          |
+| RemoteParticipant | onVideoTrackSubscribed         | RemoteVideoTrackSubscriptionEvent       | Yes          |
+| RemoteParticipant | onVideoTrackSubscriptionFailed | RemoteVideoTrackSubscriptionFailedEvent | Yes          |
+| RemoteParticipant | onVideoTrackUnpublished        | RemoteVideoTrackEvent                   | Yes          |
+| RemoteParticipant | onVideoTrackUnsubscribed       | RemoteVideoTrackSubscriptionEvent       | Yes          |
+| Room              | onConnectFailure               | RoomConnectFailureEvent                 | Yes          |
+| Room              | onConnected                    | Room                                    | Yes          |
+| Room              | onDisconnected                 | RoomDisconnectedEvent                   | Yes          |
+| Room              | onParticipantConnected         | RoomParticipantConnectedEvent           | Yes          |
+| Room              | onParticipantDisconnected      | RoomParticipantDisconnectedEvent        | Yes          |
+| Room              | onReconnected                  | Room                                    | Yes          |
+| Room              | onReconnecting                 | RoomReconnectingEvent                   | Yes          |
+| Room              | onRecordingStarted             | Room                                    | Yes          |
+| Room              | onRecordingStopped             | Room                                    | Yes          |
 
 # Development and Contributing
+
 Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/CONTRIBUTING.md) guidelines.
 
 # Contributions By

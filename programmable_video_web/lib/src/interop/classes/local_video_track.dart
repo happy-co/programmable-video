@@ -25,7 +25,7 @@ extension Interop on LocalVideoTrack {
   LocalVideoTrackModel toModel() {
     return LocalVideoTrackModel(
       cameraCapturer: CameraCapturerModel(
-        CameraSource.FRONT_CAMERA,
+        CameraSource('FRONT_CAMERA', true, false, false),
         'CameraCapturer',
       ),
       enabled: isEnabled,

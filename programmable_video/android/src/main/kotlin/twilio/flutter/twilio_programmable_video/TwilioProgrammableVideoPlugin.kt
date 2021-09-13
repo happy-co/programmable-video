@@ -14,6 +14,9 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformViewRegistry
+import tvi.webrtc.Camera1Enumerator
+import tvi.webrtc.Camera2Enumerator
+import tvi.webrtc.CameraEnumerator
 
 /** TwilioProgrammableVideoPlugin */
 class TwilioProgrammableVideoPlugin : FlutterPlugin {
@@ -70,9 +73,11 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
         lateinit var pluginHandler: PluginHandler
 
+        lateinit var cameraEnumerator: CameraEnumerator
+
         lateinit var roomListener: RoomListener
 
-        lateinit var cameraCapturer: VideoCapturer
+        var cameraCapturer: VideoCapturer? = null
 
         var loggingSink: EventChannel.EventSink? = null
 
@@ -103,6 +108,11 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
     private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger, platformViewRegistry: PlatformViewRegistry) {
         pluginHandler = PluginHandler(applicationContext)
+        cameraEnumerator = if (Camera2Enumerator.isSupported(applicationContext))
+            Camera2Enumerator(applicationContext)
+        else
+            Camera1Enumerator()
+
         methodChannel = MethodChannel(messenger, "twilio_programmable_video")
         methodChannel.setMethodCallHandler(pluginHandler)
 

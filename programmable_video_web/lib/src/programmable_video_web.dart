@@ -239,13 +239,13 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<CameraSource> switchCamera() {
-    return Future(() => CameraSource.FRONT_CAMERA);
+  Future<List<CameraSource>> getSources() {
+    return Future(() => [CameraSource('FRONT_CAMERA', true, false, false)]);
   }
 
   @override
-  Future<bool> hasTorch() async {
-    return Future(() => false);
+  Future<CameraSource> switchCamera(CameraSource source) {
+    return Future(() => source);
   }
 
   @override

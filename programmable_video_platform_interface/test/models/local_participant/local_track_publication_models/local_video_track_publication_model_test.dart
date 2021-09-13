@@ -1,4 +1,3 @@
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
@@ -15,7 +14,7 @@ void main() {
           'name': localVideoTrack.name,
           'enabled': localVideoTrack.enabled,
           'videoCapturer': {
-            'cameraSource': EnumToString.convertToString(localVideoTrack.cameraCapturer.source),
+            'source': localVideoTrack.cameraCapturer.source?.toMap(),
             'type': localVideoTrack.cameraCapturer.type,
           }
         },
@@ -25,7 +24,9 @@ void main() {
       expect(model.sid, sid);
       expect(model.localVideoTrack.enabled, localVideoTrack.enabled);
       expect(model.localVideoTrack.name, localVideoTrack.name);
-      expect(model.localVideoTrack.cameraCapturer.source, localVideoTrack.cameraCapturer.source);
+      expect(model.localVideoTrack.cameraCapturer.source?.cameraId, localVideoTrack.cameraCapturer.source?.cameraId);
+      expect(model.localVideoTrack.cameraCapturer.source?.isFrontFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
+      expect(model.localVideoTrack.cameraCapturer.source?.isBackFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
       expect(model.localVideoTrack.cameraCapturer.type, localVideoTrack.cameraCapturer.type);
     });
 

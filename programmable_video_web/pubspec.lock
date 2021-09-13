@@ -21,7 +21,7 @@ packages:
       name: dartlin
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.2"
+    version: "0.6.1"
   enum_to_string:
     dependency: "direct main"
     description:
@@ -59,7 +59,7 @@ packages:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.3.0"
+    version: "1.7.0"
   pedantic:
     dependency: "direct dev"
     description:
@@ -73,7 +73,7 @@ packages:
       name: plugin_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -85,7 +85,7 @@ packages:
       path: "../programmable_video_platform_interface"
       relative: true
     source: path
-    version: "0.4.0+1"
+    version: "0.6.0+1"
   typed_data:
     dependency: transitive
     description:

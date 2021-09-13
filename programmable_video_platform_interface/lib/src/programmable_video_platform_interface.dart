@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/capturers/camera_event.dart';
 
-import 'enums/enum_exports.dart';
 import 'method_channel_programmable_video.dart';
 import 'models/model_exports.dart';
 
@@ -84,6 +84,7 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
     throw UnimplementedError('getStats() has not been implemented.');
   }
 
+  /// Calls native code to check if the device has a receiver.
   Future<bool> deviceHasReceiver() {
     throw UnimplementedError('deviceHasReceiver() has not been implemented.');
   }
@@ -126,20 +127,21 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
     throw UnimplementedError('isRemoteAudioTrackPlaybackEnabled() has not been implemented.');
   }
 
-  /// Calls native code to switch the camera.
-  Future<CameraSource> switchCamera() {
-    throw UnimplementedError('switchCamera() has not been implemented.');
+  /// Calls native code for retrieving the different camera sources available.
+  Future<List<CameraSource>> getSources() {
+    throw UnimplementedError('getSources() has not been implemented.');
   }
 
-  /// Calls native code to find if the active camera has a flash.
-  Future<bool> hasTorch() {
-    throw UnimplementedError('hasTorch() has not been implemented.');
+  /// Calls native code to switch the camera.
+  Future<CameraSource> switchCamera(CameraSource source) {
+    throw UnimplementedError('switchCamera() has not been implemented.');
   }
 
   /// Calls native code to change the torch state.
   Future<void> setTorch(bool enabled) {
     throw UnimplementedError('setTorch(bool enabled) has not been implemented.');
   }
+
   //#endregion
 
   //#region Streams
@@ -183,5 +185,5 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   Stream<dynamic> loggingStream() {
     throw UnimplementedError('loggingStream() has not been implemented');
   }
-  //#endregion
+//#endregion
 }

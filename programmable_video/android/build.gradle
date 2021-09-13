@@ -3,7 +3,7 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.4.0'
-    ext.twilio_video_version = '5.12.+'
+    ext.twilio_video_version = '6.4.+'
     repositories {
         google()
         jcenter()

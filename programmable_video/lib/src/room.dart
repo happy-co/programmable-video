@@ -174,7 +174,8 @@ class Room {
     _updateFromModel(event.roomModel);
 
     if (event is ConnectFailure) {
-      _onConnectFailure.add(RoomConnectFailureEvent(this, TwilioException._fromModel(event.exception)));
+      final exception = event.exception != null ? TwilioException._fromModel(event.exception!) : null;
+      _onConnectFailure.add(RoomConnectFailureEvent(this, exception));
     } else if (event is Connected) {
       _onConnected.add(this);
     } else if (event is Disconnected) {
@@ -183,12 +184,8 @@ class Room {
       }
       _remoteParticipants.clear();
 
-      final exception = event.exception;
-
-      _onDisconnected.add(RoomDisconnectedEvent(
-        this,
-        exception != null ? TwilioException._fromModel(exception) : null,
-      ));
+      final exception = event.exception != null ? TwilioException._fromModel(event.exception!) : null;
+      _onDisconnected.add(RoomDisconnectedEvent(this, exception));
     } else if (event is ParticipantConnected) {
       final remoteParticipant = _findOrCreateRemoteParticipant(event.connectedParticipant);
 
@@ -205,7 +202,8 @@ class Room {
     } else if (event is Reconnected) {
       _onReconnected.add(this);
     } else if (event is Reconnecting) {
-      _onReconnecting.add(RoomReconnectingEvent(this, TwilioException._fromModel(event.exception)));
+      final exception = event.exception != null ? TwilioException._fromModel(event.exception!) : null;
+      _onReconnecting.add(RoomReconnectingEvent(this, exception));
     } else if (event is RecordingStarted) {
       _onRecordingStarted.add(this);
     } else if (event is RecordingStopped) {

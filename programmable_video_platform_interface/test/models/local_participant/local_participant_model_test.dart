@@ -37,7 +37,7 @@ void main() {
       'name': localVideoTrack.name,
       'enabled': localVideoTrack.enabled,
       'videoCapturer': {
-        'cameraSource': EnumToString.convertToString(localVideoTrack.cameraCapturer.source),
+        'source': localVideoTrack.cameraCapturer.source?.toMap(),
         'type': localVideoTrack.cameraCapturer.type,
       }
     },
@@ -87,7 +87,9 @@ void main() {
       expect(model.localVideoTrackPublications[0].localVideoTrack.enabled, localVideoTrack.enabled);
       expect(model.localVideoTrackPublications[0].localVideoTrack.name, localVideoTrack.name);
       expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.isScreencast, localVideoTrack.cameraCapturer.isScreencast);
-      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source, localVideoTrack.cameraCapturer.source);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.cameraId, localVideoTrack.cameraCapturer.source?.cameraId);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.isFrontFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.isBackFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
     });
   });
 

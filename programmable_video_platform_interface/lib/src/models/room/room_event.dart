@@ -12,7 +12,7 @@ abstract class BaseRoomEvent {
 
 /// Use this event if connecting to a Room failed.
 class ConnectFailure extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const ConnectFailure(
     RoomModel roomModel,
@@ -80,7 +80,7 @@ class Reconnected extends BaseRoomEvent {
 
 /// Use this event when the LocalParticipant is reconnecting to the Room.
 class Reconnecting extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const Reconnecting(
     RoomModel roomModel,

@@ -9,23 +9,11 @@ void main() {
     test('should call interface code to enable the track', () async {
       final mockInterface = MockInterface();
       ProgrammableVideoPlatform.instance = mockInterface;
-      final cameraCapturer = CameraCapturer(CameraSource.BACK_CAMERA);
-      await cameraCapturer.switchCamera();
+      final cameraCapturer = CameraCapturer(CameraSource('BACK_CAMERA', false, false, false));
+      await cameraCapturer.switchCamera(CameraSource('FRONT_CAMERA', false, false, false));
 
       expect(mockInterface.switchCameraWasCalled, true);
-      expect(cameraCapturer.cameraSource, CameraSource.FRONT_CAMERA);
-    });
-  });
-
-  group('.hasTorch()', () {
-    test('should call interface code to check for presence of torch', () async {
-      final mockInterface = MockInterface();
-      ProgrammableVideoPlatform.instance = mockInterface;
-      final cameraCapturer = CameraCapturer(CameraSource.BACK_CAMERA);
-      var hasTorch = await cameraCapturer.hasTorch();
-
-      expect(mockInterface.hasTorchWasCalled, true);
-      expect(hasTorch, true);
+      expect(cameraCapturer.source?.cameraId, 'FRONT_CAMERA');
     });
   });
 
@@ -33,7 +21,7 @@ void main() {
     test('should call interface code to set torch enable state', () async {
       final mockInterface = MockInterface();
       ProgrammableVideoPlatform.instance = mockInterface;
-      final cameraCapturer = CameraCapturer(CameraSource.BACK_CAMERA);
+      final cameraCapturer = CameraCapturer(CameraSource('BACK_CAMERA', false, false, false));
       expect(mockInterface.torchEnabled, false);
       await cameraCapturer.setTorch(true);
 
@@ -43,10 +31,10 @@ void main() {
 
   group('CameraCapturer()', () {
     test('CameraCapturer should be a singleton', () async {
-      final firstInstance = CameraCapturer(CameraSource.BACK_CAMERA);
-      expect(firstInstance.cameraSource, CameraSource.BACK_CAMERA);
-      final secondInstance = CameraCapturer(CameraSource.FRONT_CAMERA);
-      expect(firstInstance.cameraSource, CameraSource.FRONT_CAMERA);
+      final firstInstance = CameraCapturer(CameraSource('BACK_CAMERA', false, false, false));
+      expect(firstInstance.source?.cameraId, 'BACK_CAMERA');
+      final secondInstance = CameraCapturer(CameraSource('FRONT_CAMERA', false, false, false));
+      expect(firstInstance.source?.cameraId, 'FRONT_CAMERA');
 
       expect(firstInstance, secondInstance);
     });
