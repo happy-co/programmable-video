@@ -211,6 +211,9 @@ pub-dev_platform_interface:
       }
       EOF
     - cd programmable_video_platform_interface
+    - sudo add-apt-repository ppa:rmescandon/yq -y
+    - sudo apt update
+    - sudo apt install yq -y
     - version=$(yq eval '.version' pubspec.yaml)
     - if [[ ! -n $(echo $version | grep "-") ]]; then echo "Can't release non-pre-releases from the web branch"; exit 1; fi
     - flutter pub get
