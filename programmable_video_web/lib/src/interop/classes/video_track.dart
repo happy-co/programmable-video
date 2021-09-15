@@ -2,7 +2,7 @@
 library video_track;
 
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/track.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/track.dart';
 
 @JS('Twilio.Video.AudioTrack')
 class VideoTrack extends Track {

@@ -2,7 +2,7 @@
 library remote_track_publication;
 
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/track_publication.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/track_publication.dart';
 
 @JS()
 class RemoteTrackPublication extends TrackPublication {

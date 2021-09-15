@@ -1,5 +1,7 @@
 # twilio_programmable_video
 
+## **NOTE**: THIS IS A PRE-RELEASE FOR WEB SUPPORT WE DO NOT GUARANTEE THAT THE API STAYS THE SAME NOR DO WE GUARANTEE THAT EACH RELEASE IS FULLY WORKING AS EXPECTED
+
 Flutter plugin for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin), which enables you to build real-time videocall applications (WebRTC) \
 This Flutter plugin is a community-maintained project for [Twilio Programmable Video](https://www.twilio.com/video?utm_source=opensource&utm_campaign=flutter-plugin) and not maintained by Twilio. If you have any issues, please file an issue instead of contacting support.
 
@@ -17,13 +19,13 @@ If you have any question or problems, please join us on [Discord](https://discor
 
 ## FAQ
 
-Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/programmable_video/FAQ.md) first before creating a new issue.
+Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/programmable-video/-/blob/master/FAQ.md) first before creating a new issue.
 
 ## Supported platforms
 
 - Android
 - iOS
-- ~~Web~~ (not yet)
+- Web (pre-release)
 
 ## Getting started
 
@@ -111,6 +113,31 @@ Open the `Info.plist` file in your `ios/Runner` directory and add the following 
 ##### Background Modes
 
 To allow a connection to a Room to be persisted while an application is running in the background, you must select the Audio, AirPlay, and Picture in Picture background mode from the Capabilities project settings page. See [Twilio Docs](https://www.twilio.com/docs/video/ios-v3-getting-started#background-modes) for more information.
+
+#### Web
+
+For this plugin to work for the web you need to add a script tag with the twilio-video javascript package to your `index.html` in the `web` directory.
+
+A simple way to do this would be to add the following line to your `<head>` in the `index.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    ...
+
+    <script src="//media.twiliocdn.com/sdk/js/video/releases/2.14.0/twilio-video.min.js"></script>
+  </head>
+  ....
+</html>
+```
+
+The version (in this case `2.14.0`) will be checked when connecting. The plugin will then check:
+
+- that the major version is equal to the major defined within the plugin.
+- that the minor is less than or equal to the minor defined within the plugin.
+
+If it does not pass any of these checks it will throw an `UnsupportedError` error at runtime.
 
 ### Connect to a Room
 
@@ -543,7 +570,7 @@ Reference table of all the events the plugin currently supports
 
 # Development and Contributing
 
-Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video/CONTRIBUTING.md) guidelines.
+Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/CONTRIBUTING.md) guidelines.
 
 # Contributions By
 

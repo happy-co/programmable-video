@@ -1,4 +1,4 @@
-import 'package:programmable_video_web/src/programmable_video_web.dart';
+import 'package:twilio_programmable_video_web/src/programmable_video_web.dart';
 
 abstract class BaseListener {
   // Should be overridden by all subclasses.

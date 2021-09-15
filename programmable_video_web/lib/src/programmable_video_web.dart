@@ -7,20 +7,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/js_map.dart';
-import 'package:programmable_video_web/src/interop/classes/local_audio_track_publication.dart';
-import 'package:programmable_video_web/src/interop/classes/local_data_track_publication.dart';
-import 'package:programmable_video_web/src/interop/classes/local_video_track_publication.dart';
-import 'package:programmable_video_web/src/interop/classes/remote_audio_track.dart';
-import 'package:programmable_video_web/src/interop/classes/remote_audio_track_publication.dart';
-import 'package:programmable_video_web/src/interop/classes/remote_participant.dart';
-import 'package:programmable_video_web/src/interop/classes/room.dart';
-import 'package:programmable_video_web/src/interop/connect.dart';
-import 'package:programmable_video_web/src/interop/classes/logger.dart';
-import 'package:programmable_video_web/src/listeners//room_event_listener.dart';
-import 'package:programmable_video_web/src/listeners/local_participant_event_listener.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/js_map.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/local_audio_track_publication.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/local_data_track_publication.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/local_video_track_publication.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/remote_audio_track.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/remote_audio_track_publication.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/remote_participant.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/room.dart';
+import 'package:twilio_programmable_video_web/src/interop/connect.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/logger.dart';
+import 'package:twilio_programmable_video_web/src/interop/version.dart';
+import 'package:twilio_programmable_video_web/src/listeners//room_event_listener.dart';
+import 'package:twilio_programmable_video_web/src/listeners/local_participant_event_listener.dart';
 
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
+import 'package:version/version.dart';
 
 class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
   static Room? _room;
@@ -125,6 +127,11 @@ class ProgrammableVideoPlugin extends ProgrammableVideoPlatform {
   @override
   Future<int> connectToRoom(ConnectOptionsModel connectOptions) async {
     _roomStreamController.onListen = _onConnected;
+
+    final twilioVersion = Version.parse(version);
+    if (twilioVersion.major != supportedVersion.major || (twilioVersion.major == supportedVersion.major && twilioVersion.minor > supportedVersion.minor)) {
+      throw UnsupportedError('Current supported JS version is: $supportedVersion');
+    }
 
     try {
       _room = await connectWithModel(connectOptions);

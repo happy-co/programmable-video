@@ -1,8 +1,9 @@
-name: programmable_video_web
-description: A new flutter plugin project.
-version: 0.1.0
-# TODO: remove this line when web branch is ready to be merged into master
-publish_to: none
+name: twilio_programmable_video_web
+description: A web implementation of the Twilio Programmable Video Plugin.
+version: 1.0.0-alpha.1
+homepage: https://gitlab.com/twilio-flutter/programmable-video
+repository: https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video_web
+issue_tracker: https://gitlab.com/twilio-flutter/programmable-video/issues
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -18,6 +19,7 @@ dependencies:
   js: ^0.6.3
   enum_to_string: ^2.0.1
   dartlin: ^0.6.1
+  version: ^2.0.0
 
 dev_dependencies:
   pedantic: ^1.8.0+1

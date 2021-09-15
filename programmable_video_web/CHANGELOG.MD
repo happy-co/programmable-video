@@ -1,3 +1,3 @@
-## 0.1.0
+## 0.1.0-alpha.1
 
-* TODO: Describe initial release.
+- Initial pre-release of the web implementation.

@@ -147,5 +147,8 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+pubspec.lock
+
 # End of https://www.gitignore.io/api/flutter,androidstudio
 \ No newline at end of file
+

@@ -121,14 +121,14 @@ class _JoinRoomFormState extends State<JoinRoomForm> {
           if (states.contains(MaterialState.disabled)) {
             return Colors.grey.shade300;
           } else {
-            return Theme.of(context).appBarTheme.color ?? Theme.of(context).primaryColor;
+            return Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor;
           }
         })),
         onPressed: roomModel.canSubmit && !roomModel.isLoading ? () => _submit() : null,
         child: FittedBox(
           child: Text(
             'JOIN',
-            style: TextStyle(color: Theme.of(context).appBarTheme.textTheme?.headline6?.color ?? Colors.white),
+            style: TextStyle(color: Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.white),
           ),
         ),
       ),

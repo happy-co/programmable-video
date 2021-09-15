@@ -35,8 +35,6 @@ dev_dependencies:
   pedantic: ^1.11.0
   twilio_programmable_video:
     path: ../
-  programmable_video_web:
-    path: ../../programmable_video_web
 
 dependency_overrides:
   pedantic: ^1.9.0

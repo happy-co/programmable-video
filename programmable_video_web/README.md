@@ -1,15 +1,11 @@
-# programmable_video_web
+# twilio_programmable_video_web
 
-A new flutter plugin project.
+A web implementation of the [Twilio Programmable Video Plugin](https://pub.dev/packages/twilio_programmable_video).
 
-## Getting Started
+# Development and Contributing
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/CONTRIBUTING.md) guidelines.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Contributions By
 
+[![HomeX - Home Repairs Made Easy](https://homex.com/static/brand/homex-logo-green.svg)](https://homex.com)

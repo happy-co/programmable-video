@@ -2,7 +2,7 @@
 library local_data_track;
 
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/track.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/track.dart';
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
 @JS()

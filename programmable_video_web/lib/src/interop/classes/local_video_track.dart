@@ -3,7 +3,7 @@ library local_video_track;
 
 import 'dart:html';
 import 'package:js/js.dart';
-import 'package:programmable_video_web/src/interop/classes/video_track.dart';
+import 'package:twilio_programmable_video_web/src/interop/classes/video_track.dart';
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
 @JS('Twilio.Video.LocalVideoTrack')

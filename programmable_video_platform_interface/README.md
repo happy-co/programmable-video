@@ -24,3 +24,11 @@ on why a less-clean interface is preferable to a breaking change.
 
 [1]: https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video
 [2]: https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/programmable_video_platform_interface/lib/src/programmable_video_platform_interface.dart
+
+# Development and Contributing
+
+Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/twilio-flutter/programmable-video/-/tree/master/CONTRIBUTING.md) guidelines.
+
+# Contributions By
+
+[![HomeX - Home Repairs Made Easy](https://homex.com/static/brand/homex-logo-green.svg)](https://homex.com)
