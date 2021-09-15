@@ -318,8 +318,6 @@ pub-dev_programmable_web:
     - sudo apt install yq -y
     - platformInterfaceVersion=$(yq eval '.version' ../programmable_video_platform_interface/pubspec.yaml | sed 's/\+.*$//')
     - yq eval -i ".dependencies.twilio_programmable_video_platform_interface=\"^${platformInterfaceVersion}\"" pubspec.yaml
-    - webVersion=$(yq eval '.version' ../programmable_video_web/pubspec.yaml | sed 's/\+.*$//')
-    - yq eval -i ".dependencies.twilio_programmable_video_web=\"^${webVersion}\"" pubspec.yaml
     - version=$(yq eval '.version' pubspec.yaml)
     - if [[ ! -n $(echo $version | grep "-") ]]; then echo "Can't release non-pre-releases from the web branch"; exit 1; fi
     - flutter pub get
