@@ -395,8 +395,8 @@ tag_programmable_video:
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video_v${TAG_NAME}" \
-        --data-urlencode "ref=master" \
-        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/master/programmable_video/CHANGELOG.md)" \
+        --data-urlencode "ref=${CI_COMMIT_REF_NAME}" \
+        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_REF_NAME}/programmable_video/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
     name: pub-dev-plugin
@@ -425,8 +425,8 @@ tag_platform_interface:
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
         --data-urlencode "tag_name=programmable-video-platform-interface_v${TAG_NAME}" \
-        --data-urlencode "ref=master" \
-        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/master/programmable_video_platform_interface/CHANGELOG.md)" \
+        --data-urlencode "ref=${CI_COMMIT_REF_NAME}" \
+        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_REF_NAME}/programmable_video_platform_interface/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
     name: pub-dev-platform-interface
@@ -445,7 +445,7 @@ tag_platform_web:
   stage: publish
   script:
     - |
-      cd programmable_video_platform_web || exit 1
+      cd programmable_video_web || exit 1
 
       if [ -z "${GITLAB_API_TOKEN}" ]; then
         echo "Missing GITLAB_API_TOKEN environment variable"
@@ -454,12 +454,12 @@ tag_platform_web:
 
       export TAG_NAME="$(awk '/^version: /{print $NF}' pubspec.yaml)"
       curl --fail --request POST --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-        --data-urlencode "tag_name=programmable-video-platform-web_v${TAG_NAME}" \
-        --data-urlencode "ref=master" \
-        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/master/programmable_video_platform_web/CHANGELOG.md)" \
+        --data-urlencode "tag_name=programmable-video-web_v${TAG_NAME}" \
+        --data-urlencode "ref=${CI_COMMIT_REF_NAME}" \
+        --data-urlencode "message=Check the [CHANGELOG.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_REF_NAME}/programmable_video_web/CHANGELOG.md)" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
   environment:
-    name: pub-dev-platform-web
+    name: pub-dev-web
     url: https://pub.dev/packages/twilio_programmable_video_web
   when: manual
   only:
@@ -467,5 +467,5 @@ tag_platform_web:
       - master
       - web
     changes:
-      - programmable_video_platform_web/**/*
+      - programmable_video_web/**/*
       - .gitlab-ci.yml
