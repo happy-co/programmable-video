@@ -91,6 +91,8 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
         var nativeDebug: Boolean = false
 
+        var audioDebug: Boolean = false
+
         var remoteDataTrackListener = RemoteDataTrackListener()
 
         var audioNotificationListener = AudioNotificationListener()
@@ -98,6 +100,16 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
         @JvmStatic
         fun debug(msg: String) {
             if (nativeDebug) {
+                Log.d(LOG_TAG, msg)
+                handler.post {
+                    loggingSink?.success(msg)
+                }
+            }
+        }
+
+        @JvmStatic
+        fun debugAudio(msg: String) {
+            if (audioDebug) {
                 Log.d(LOG_TAG, msg)
                 handler.post {
                     loggingSink?.success(msg)

@@ -20,6 +20,8 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     public static var loggingSink: FlutterEventSink?
 
     public static var nativeDebug = false
+    
+    public static var audioDebug = false
 
     internal static var audioDevice: AudioDevice?
 
@@ -30,6 +32,15 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     public static func debug(_ msg: String) {
         if SwiftTwilioProgrammableVideoPlugin.nativeDebug {
             NSLog(msg)
+            guard let loggingSink = loggingSink else {
+                return
+            }
+            loggingSink(msg)
+        }
+    }
+    
+    public static func debugAudio(_ msg: String) {
+        if SwiftTwilioProgrammableVideoPlugin.audioDebug {
             guard let loggingSink = loggingSink else {
                 return
             }

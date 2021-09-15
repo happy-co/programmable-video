@@ -48,7 +48,7 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   }
 
   /// You can listen to these logs on the [loggingStream].
-  Future<void> setNativeDebug(bool native) {
+  Future<void> setNativeDebug(bool native, bool audio) {
     throw UnimplementedError('setNativeDebug() has not been implemented.');
   }
 

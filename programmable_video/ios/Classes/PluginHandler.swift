@@ -68,7 +68,7 @@ public class PluginHandler: BaseListener {
     }
 
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::switchCamera => called")
         guard let arguments = call.arguments as? [String: Any?] else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'cameraId' parameters", details: nil))
         }
@@ -150,7 +150,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackEnable => called for \(localVideoTrackName), enable=\(localVideoTrackEnable)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::localVideoTrackEnable => called for \(localVideoTrackName), enable=\(localVideoTrackEnable)")
 
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
         if let localVideoTrack = localVideoTrack {
@@ -173,7 +173,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localAudioTrackEnable => called for \(localAudioTrackName), enable=\(localAudioTrackEnable)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::localAudioTrackEnable => called for \(localAudioTrackName), enable=\(localAudioTrackEnable)")
 
         let localAudioTrack = getLocalParticipant()?.localAudioTracks.first(where: {$0.trackName == localAudioTrackName})
         if let localAudioTrack = localAudioTrack {
@@ -196,7 +196,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.remoteAudioTrackEnable => called for \(remoteAudioTrackSid), enable=\(remoteAudioTrackEnable)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::remoteAudioTrackEnable => called for \(remoteAudioTrackSid), enable=\(remoteAudioTrackEnable)")
 
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
@@ -215,7 +215,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'sid' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.isRemoteAudioTrackPlaybackEnabled => called for \(remoteAudioTrackSid)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::isRemoteAudioTrackPlaybackEnabled => called for \(remoteAudioTrackSid)")
 
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
@@ -251,7 +251,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for \(localDataTrackName)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::localDataTrackSendString => called for \(localDataTrackName)")
 
         let localDataTrack = getLocalParticipant()?.localDataTracks.first(where: {$0.trackName == localDataTrackName})
         if let localDataTrack = localDataTrack {
@@ -274,7 +274,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
         }
 
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localDataTrackSendString => called for \(localDataTrackName)")
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::localDataTrackSendString => called for \(localDataTrackName)")
 
         let localDataTrack = getLocalParticipant()?.localDataTracks.first(where: {$0.trackName == localDataTrackName})
         if let localDataTrack = localDataTrack {
@@ -290,6 +290,7 @@ public class PluginHandler: BaseListener {
     }
 
     private func getAudioOptions() -> AVAudioSession.CategoryOptions {
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::getAudioOptions =>\n\tbluetoothPreferred: \(audioSettings.bluetoothPreferred)\n\taudioSettings.speakerEnabled: \(audioSettings.speakerEnabled)")
         let options: AVAudioSession.CategoryOptions = audioSettings.bluetoothPreferred && audioSettings.speakerEnabled
             ? [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
             : audioSettings.bluetoothPreferred ?
@@ -349,6 +350,7 @@ public class PluginHandler: BaseListener {
         try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
 
         if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil || !(SwiftTwilioProgrammableVideoPlugin.audioDevice! is AVAudioEngineDevice) {
+                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::applyAudioSettings => setActive")
             let session: AVAudioSession = AVAudioSession.sharedInstance()
             try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
         }
@@ -667,7 +669,12 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'native' parameter", details: nil))
         }
 
+        guard let enableAudio = arguments["audio"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'audio' parameter", details: nil))
+        }
+
         SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
+        SwiftTwilioProgrammableVideoPlugin.audioDebug = enableAudio
         result(enableNative)
     }
 }

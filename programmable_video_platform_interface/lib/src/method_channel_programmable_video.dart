@@ -52,11 +52,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
   /// You can listen to these logs on the [loggingStream].
   @override
-  Future<void> setNativeDebug(bool native) {
+  Future<void> setNativeDebug(bool native, bool audio) {
     return _methodChannel.invokeMethod(
       'debug',
       {
         'native': native,
+        'audio': audio,
       },
     );
   }

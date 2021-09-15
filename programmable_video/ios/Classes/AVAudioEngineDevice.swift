@@ -875,6 +875,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         self.registerAVAudioSessionObservers()
 
         do {
+            debug("AVaudioEngineDevice::setupAVAudioSession => setActive")
             try session.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
         } catch let error {
             debug("Error activating AVAudioSession: \(error)")
@@ -1519,5 +1520,5 @@ class AudioCapturerContext {
 
 // Can swap internal usage to NSLog if you need to guarantee logging at app startup
 internal func debug(_ msg: String) {
-    SwiftTwilioProgrammableVideoPlugin.debug(msg)
+    SwiftTwilioProgrammableVideoPlugin.debugAudio(msg)
 }

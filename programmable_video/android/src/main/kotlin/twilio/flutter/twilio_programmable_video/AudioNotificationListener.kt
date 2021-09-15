@@ -16,7 +16,7 @@ class AudioNotificationListener() : BaseListener() {
 
     private var bluetoothProfileProxy: BluetoothProfile.ServiceListener = object : BluetoothProfile.ServiceListener {
         override fun onServiceDisconnected(profile: Int) {
-            TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onServiceDisconnected => profile: $profile")
+            debug("AudioNotificationListener::onServiceDisconnected => profile: $profile")
             if (profile == BluetoothProfile.HEADSET) {
                 bluetoothProfile = null
                 TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
@@ -24,7 +24,7 @@ class AudioNotificationListener() : BaseListener() {
         }
 
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
-            TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onServiceConnected => profile: $profile, proxy: $proxy")
+            debug("AudioNotificationListener::onServiceConnected => profile: $profile, proxy: $proxy")
             if (profile == BluetoothProfile.HEADSET) {
                 bluetoothProfile = proxy
                 if (bluetoothProfile!!.connectedDevices.size > 0 &&
@@ -57,19 +57,19 @@ class AudioNotificationListener() : BaseListener() {
     }
 
     fun listenForRouteChanges(context: Context) {
-        TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::listenForRouteChanges")
+        debug("AudioNotificationListener::listenForRouteChanges")
         context.registerReceiver(receiver, intentFilter)
         BluetoothAdapter.getDefaultAdapter().getProfileProxy(context, getProfileProxy(), BluetoothProfile.HEADSET)
     }
 
     fun stopListeningForRouteChanges(context: Context) {
-        TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::stopListeningForRouteChanges")
+        debug("AudioNotificationListener::stopListeningForRouteChanges")
         context.unregisterReceiver(receiver)
         BluetoothAdapter.getDefaultAdapter().closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProfile)
     }
 
     fun getBroadcastReceiver(): BroadcastReceiver {
-        TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::getBroadcastReceiver")
+        debug("AudioNotificationListener::getBroadcastReceiver")
         return object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val wiredEvent = intent?.action.equals(AudioManager.ACTION_HEADSET_PLUG)
@@ -94,7 +94,7 @@ class AudioNotificationListener() : BaseListener() {
                 val deviceName = if (bluetoothEvent) intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)?.name
                     else intent?.getStringExtra("portName") ?: return
 
-                TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => connected: $connected\n\tevent: $event\n\tbluetoothEvent: $bluetoothEvent\n\twiredEvent: $wiredEvent\n\tdeviceName: $deviceName")
+                debug("AudioNotificationListener::onReceive => connected: $connected\n\tevent: $event\n\tbluetoothEvent: $bluetoothEvent\n\twiredEvent: $wiredEvent\n\tdeviceName: $deviceName")
 
                 if (bluetoothEvent) {
                     val anyBluetoothHeadsetConnected = BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.HEADSET) == BluetoothProfile.STATE_CONNECTED
@@ -106,7 +106,7 @@ class AudioNotificationListener() : BaseListener() {
                     TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
                 }
 
-                TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::onReceive => event: $event, connected: $connected, bluetooth: $bluetoothEvent, wired: $wiredEvent")
+                debug("AudioNotificationListener::onReceive => event: $event, connected: $connected, bluetooth: $bluetoothEvent, wired: $wiredEvent")
                 sendEvent(event, mapOf(
                         "connected" to connected,
                         "bluetooth" to bluetoothEvent,
@@ -118,12 +118,12 @@ class AudioNotificationListener() : BaseListener() {
     }
 
     fun getProfileProxy(): BluetoothProfile.ServiceListener {
-        TwilioProgrammableVideoPlugin.debug("AudioNotificationListener::getProfileProxy")
+        debug("AudioNotificationListener::getProfileProxy")
         return bluetoothProfileProxy
     }
 
     internal fun audioPlayerEventListener(url: String, isPlaying: Boolean) {
-        TwilioProgrammableVideoPlugin.debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener => url: $url, isPlaying: $isPlaying")
+        debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener => url: $url, isPlaying: $isPlaying")
 
         val anyAudioPlayersAlreadyActive = anyAudioPlayersActive()
         updateActiveAudioPlayerList(url, isPlaying)
@@ -131,7 +131,7 @@ class AudioNotificationListener() : BaseListener() {
 
         val isConnected = TwilioProgrammableVideoPlugin.isConnected()
 
-        TwilioProgrammableVideoPlugin.debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener =>\n\tisConnected: $isConnected\n\talreadyActive: $anyAudioPlayersAlreadyActive\n\tnowActive: $anyAudioPlayersNowActive")
+        debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener =>\n\tisConnected: $isConnected\n\talreadyActive: $anyAudioPlayersAlreadyActive\n\tnowActive: $anyAudioPlayersNowActive")
         if (anyAudioPlayersNowActive && !anyAudioPlayersAlreadyActive) {
             TwilioProgrammableVideoPlugin.pluginHandler.applyAudioSettings()
         } else if (!isConnected && !anyAudioPlayersNowActive && anyAudioPlayersAlreadyActive) {
@@ -144,7 +144,7 @@ class AudioNotificationListener() : BaseListener() {
         // Do not setAudioFocus here if we are Connected, because if we are we presumably already have
         // audio focus, and want to keep it.
         if (!isConnected && anyAudioPlayersAlreadyActive != anyAudioPlayersNowActive) {
-            TwilioProgrammableVideoPlugin.debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener => setAudioFocus: $anyAudioPlayersNowActive")
+            debug("TwilioProgrammableVideoPlugin::audioPlayerEventListener => setAudioFocus: $anyAudioPlayersNowActive")
             TwilioProgrammableVideoPlugin.pluginHandler.setAudioFocus(anyAudioPlayersNowActive)
         }
     }
@@ -159,5 +159,9 @@ class AudioNotificationListener() : BaseListener() {
 
     internal fun anyAudioPlayersActive(): Boolean {
         return activeAudioPlayers.isNotEmpty()
+    }
+
+    internal fun debug(msg: String) {
+        TwilioProgrammableVideoPlugin.debugAudio(msg)
     }
 }
