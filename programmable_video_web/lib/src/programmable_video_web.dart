@@ -18,7 +18,7 @@ import 'package:twilio_programmable_video_web/src/interop/classes/room.dart';
 import 'package:twilio_programmable_video_web/src/interop/connect.dart';
 import 'package:twilio_programmable_video_web/src/interop/classes/logger.dart';
 import 'package:twilio_programmable_video_web/src/interop/version.dart';
-import 'package:twilio_programmable_video_web/src/listeners//room_event_listener.dart';
+import 'package:twilio_programmable_video_web/src/listeners/room_event_listener.dart';
 import 'package:twilio_programmable_video_web/src/listeners/local_participant_event_listener.dart';
 
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
