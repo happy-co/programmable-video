@@ -438,7 +438,9 @@ await TwilioProgrammableVideo.disableAudioSettings();
 
 ### Playing audio files to provide a rich user experience
 
-**iOS:** For the purposes of playing audio files while using this plugin, we recommend the [`ocarina`](https://pub.dev/packages/ocarina) plugin (v0.1.2 and upwards).
+###### iOS:
+
+For the purposes of playing audio files while using this plugin, we recommend the [`ocarina`](https://pub.dev/packages/ocarina) plugin (v0.1.2 and upwards).
 
 This recommendation comes after surveying the available plugins for this functionality in the Flutter ecosystem for plugins that play nice with this one.
 
@@ -478,7 +480,9 @@ To enable usage of the `AVAudioEngineDevice`, and delegate audio file playback m
 
 Once you have done this, you should be able to continue using this plugin, and `ocarina` as normal.
 
-**Android:** As of version `0.11.0`, we now provide an integration with `ocarina` on Android as well.
+###### Android:
+
+As of version `0.11.0`, we now provide an integration with `ocarina` on Android as well.
 
 The purposes of this integration are to allow smart management of audio settings, and audio focus based upon playing state.
 
