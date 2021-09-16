@@ -26,7 +26,7 @@ void main() {
       ProgrammableVideoPlatform.instance = ExtendsProgrammableVideoPlatform();
 
       expect(() => ProgrammableVideoPlatform.instance.disconnect(), throwsUnimplementedError);
-      expect(() => ProgrammableVideoPlatform.instance.setNativeDebug(true), throwsUnimplementedError);
+      expect(() => ProgrammableVideoPlatform.instance.setNativeDebug(true, true), throwsUnimplementedError);
       expect(() => ProgrammableVideoPlatform.instance.setSpeakerphoneOn(true), throwsUnimplementedError);
       expect(() => ProgrammableVideoPlatform.instance.getSpeakerphoneOn(), throwsUnimplementedError);
       expect(() => ProgrammableVideoPlatform.instance.connectToRoom(MockConnectOptionsModel()), throwsUnimplementedError);
