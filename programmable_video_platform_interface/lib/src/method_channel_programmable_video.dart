@@ -283,7 +283,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       }
     }
 
-    return SkipableCameraEvent();
+    return SkippableCameraEvent();
   }
 
 //#endregion
@@ -310,7 +310,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
     // If no room data is received, skip the event.
     final room = data['room'];
-    if (room == null) return SkipAbleRoomEvent();
+    if (room == null) return SkippableRoomEvent();
 
     final roomMap = Map<String, dynamic>.from(room);
 
@@ -382,7 +382,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
       case 'dominantSpeakerChanged':
         return DominantSpeakerChanged(roomModel, dominantSpeaker);
       default:
-        return SkipAbleRoomEvent();
+        return SkippableRoomEvent();
     }
   }
 
@@ -411,7 +411,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
     // If no remoteParticipant data is received, skip the event.
     if (data['remoteParticipant'] == null) {
-      return SkipAbleRemoteParticipantEvent();
+      return SkippableRemoteParticipantEvent();
     }
     final remoteParticipantMap = Map<String, dynamic>.from(data['remoteParticipant']);
     final remoteParticipantModel = RemoteParticipantModel.fromEventChannelMap(remoteParticipantMap);
@@ -490,7 +490,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
                 remoteAudioTrackModel: remoteAudioTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'audioTrackSubscriptionFailed':
         return (twilioException != null)
             ? RemoteAudioTrackSubscriptionFailed(
@@ -498,7 +498,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
                 exception: twilioException,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'audioTrackUnpublished':
         return RemoteAudioTrackUnpublished(
           remoteParticipantModel,
@@ -511,7 +511,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteAudioTrackPublicationModel: remoteAudioTrackPublicationModel,
                 remoteAudioTrackModel: remoteAudioTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'dataTrackPublished':
         return RemoteDataTrackPublished(
           remoteParticipantModel,
@@ -524,7 +524,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteDataTrackPublicationModel: remoteDataTrackPublicationModel,
                 remoteDataTrackModel: remoteDataTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'dataTrackSubscriptionFailed':
         assert(twilioException != null);
         return RemoteDataTrackSubscriptionFailed(
@@ -544,7 +544,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteDataTrackPublicationModel: remoteDataTrackPublicationModel,
                 remoteDataTrackModel: remoteDataTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'videoTrackDisabled':
         return RemoteVideoTrackDisabled(
           remoteParticipantModel,
@@ -567,7 +567,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
                 remoteVideoTrackModel: remoteVideoTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'videoTrackSubscriptionFailed':
         return (twilioException != null)
             ? RemoteVideoTrackSubscriptionFailed(
@@ -575,7 +575,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
                 exception: twilioException,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'videoTrackUnpublished':
         return RemoteVideoTrackUnpublished(
           remoteParticipantModel,
@@ -588,7 +588,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteVideoTrackPublicationModel: remoteVideoTrackPublicationModel,
                 remoteVideoTrackModel: remoteVideoTrackModel,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       case 'networkQualityLevelChanged':
         NetworkQualityLevel? networkQualityLevel;
         if (data['networkQualityLevel'] != null) {
@@ -601,9 +601,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 remoteParticipantModel,
                 networkQualityLevelEnum,
               )
-            : SkipAbleRemoteParticipantEvent();
+            : SkippableRemoteParticipantEvent();
       default:
-        return SkipAbleRemoteParticipantEvent();
+        return SkippableRemoteParticipantEvent();
     }
   }
 
@@ -626,7 +626,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     final data = Map<String, dynamic>.from(event['data']);
     // If no localParticipant data is received, skip the event.
     if (data['localParticipant'] == null) {
-      return SkipAbleLocalParticipantEvent();
+      return SkippableLocalParticipantEvent();
     }
 
     final localParticipantModel = LocalParticipantModel.fromEventChannelMap(Map<String, dynamic>.from(data['localParticipant']));
@@ -655,7 +655,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 localParticipantModel,
                 localAudioTrackPublicationModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'audioTrackPublicationFailed':
         TrackModel? localAudioTrack;
         if (data['localAudioTrack'] != null) {
@@ -670,7 +670,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 exception: exception,
                 localParticipantModel: localParticipantModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'dataTrackPublished':
         LocalDataTrackPublicationModel? localDataTrackPublication;
         if (data['localDataTrackPublication'] != null) {
@@ -684,7 +684,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 localParticipantModel,
                 localDataTrackPublicationModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'dataTrackPublicationFailed':
         LocalDataTrackModel? localDataTrack;
         if (data['localDataTrack'] != null) {
@@ -699,7 +699,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 exception: exception,
                 localParticipantModel: localParticipantModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'videoTrackPublished':
         LocalVideoTrackPublicationModel? localVideoTrackPublication;
         if (data['localVideoTrackPublication'] != null) {
@@ -713,7 +713,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 localParticipantModel,
                 localVideoTrackPublicationModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'videoTrackPublicationFailed':
         LocalVideoTrackModel? localVideoTrack;
         if (data['localVideoTrack'] != null) {
@@ -728,7 +728,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 exception: exception,
                 localParticipantModel: localParticipantModel,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       case 'networkQualityLevelChanged':
         NetworkQualityLevel? networkQualityLevel;
         if (data['networkQualityLevel'] != null) {
@@ -741,9 +741,9 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
                 localParticipantModel,
                 networkQualityLevelEnum,
               )
-            : SkipAbleLocalParticipantEvent();
+            : SkippableLocalParticipantEvent();
       default:
-        return SkipAbleLocalParticipantEvent();
+        return SkippableLocalParticipantEvent();
     }
   }
 
@@ -771,7 +771,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     final data = Map<String, dynamic>.from(event['data']);
     // If no RemoteDataTrack data is received, skip the event.
     if (data['remoteDataTrack'] == null) {
-      return SkipAbleRemoteDataTrackEvent();
+      return SkippableRemoteDataTrackEvent();
     }
     final remoteDataTrackModel = RemoteDataTrackModel.fromEventChannelMap(Map<String, dynamic>.from(data['remoteDataTrack']));
     switch (eventName) {
@@ -822,7 +822,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
 
     // If no device name is received, skip the event.
     if (deviceName == null) {
-      return SkipAbleAudioEvent();
+      return SkippableAudioEvent();
     }
 
     switch (eventName) {
@@ -839,7 +839,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
           wired: wired,
         );
       default:
-        return SkipAbleAudioEvent();
+        return SkippableAudioEvent();
     }
   }
 

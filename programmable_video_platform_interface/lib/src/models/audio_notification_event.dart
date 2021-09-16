@@ -39,9 +39,9 @@ class OldDeviceUnavailableEvent extends BaseAudioNotificationEvent {
 }
 
 /// Use this event if a New Audio Device is available.
-class SkipAbleAudioEvent extends BaseAudioNotificationEvent {
-  const SkipAbleAudioEvent();
+class SkippableAudioEvent extends BaseAudioNotificationEvent {
+  const SkippableAudioEvent();
 
   @override
-  String toString() => 'SkipAbleAudioEvent: { }';
+  String toString() => 'SkippableAudioEvent: { }';
 }

@@ -32,7 +32,7 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<void> setNativeDebug(bool native) {
+  Future<void> setNativeDebug(bool native, bool audio) {
     setNativeDebugWasCalled = true;
     nativeDebug = native;
     return Future.delayed(Duration(milliseconds: 1));
@@ -40,7 +40,7 @@ class MockInterface extends ProgrammableVideoPlatform {
 
   @override
   Stream<BaseCameraEvent>? cameraStream() {
-    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1), (x) => SkipableCameraEvent());
+    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1), (x) => SkippableCameraEvent());
   }
 
   @override

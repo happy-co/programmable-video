@@ -111,9 +111,9 @@ class LocalNetworkQualityLevelChanged extends BaseLocalParticipantEvent {
 }
 
 /// Use this event if an invalid LocalParticipantEvent is received from native code which should be skipped.
-class SkipAbleLocalParticipantEvent extends BaseLocalParticipantEvent {
-  const SkipAbleLocalParticipantEvent() : super(null);
+class SkippableLocalParticipantEvent extends BaseLocalParticipantEvent {
+  const SkippableLocalParticipantEvent() : super(null);
 
   @override
-  String toString() => 'SkipAbleLocalParticipantEvent';
+  String toString() => 'SkippableLocalParticipantEvent';
 }

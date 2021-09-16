@@ -145,12 +145,15 @@ void main() {
 
   group('.debug()', () {
     test('should enable native debug in dart', () async {
-      await instance.setNativeDebug(true);
+      await instance.setNativeDebug(true, true);
       expect(nativeDebugIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
           'debug',
-          arguments: {'native': true},
+          arguments: {
+            'native': true,
+            'audio': true,
+          },
         )
       ]);
     });
@@ -466,9 +469,9 @@ void main() {
       expect(lastEvent, isA<DominantSpeakerChanged>());
     });
 
-    test('invalid map should result in SkipAbleRoomEvent', () async {
+    test('invalid map should result in SkippableRoomEvent', () async {
       roomController.add({'data': {}});
-      expect(lastEvent, isA<SkipAbleRoomEvent>());
+      expect(lastEvent, isA<SkippableRoomEvent>());
     });
   });
 
@@ -658,9 +661,9 @@ void main() {
       expect(lastEvent, isA<RemoteVideoTrackUnsubscribed>());
     });
 
-    test('invalid map should result in SkipAbleRemoteParticipantEvent', () async {
+    test('invalid map should result in SkippableRemoteParticipantEvent', () async {
       remoteParticipantController.add({'data': {}});
-      expect(lastEvent, isA<SkipAbleRemoteParticipantEvent>());
+      expect(lastEvent, isA<SkippableRemoteParticipantEvent>());
     });
   });
 
@@ -732,9 +735,9 @@ void main() {
       expect(lastEvent, isA<LocalVideoTrackPublicationFailed>());
     });
 
-    test('invalid map should result in SkipAbleLocalParticipantEvent', () async {
+    test('invalid map should result in SkippableLocalParticipantEvent', () async {
       localParticipantController.add({'data': {}});
-      expect(lastEvent, isA<SkipAbleLocalParticipantEvent>());
+      expect(lastEvent, isA<SkippableLocalParticipantEvent>());
     });
   });
 
@@ -753,9 +756,9 @@ void main() {
     });
 
     final remoteDataTrackMap = EventChannelMaps.remoteDataTrackMap;
-    test('invalid map should result in SkipAbleRemoteDataTrackEvent', () async {
+    test('invalid map should result in SkippableRemoteDataTrackEvent', () async {
       remoteDataTrackController.add({'data': {}});
-      expect(lastEvent, isA<SkipAbleRemoteDataTrackEvent>());
+      expect(lastEvent, isA<SkippableRemoteDataTrackEvent>());
     });
 
     test('valid map with unknown event name should result in UnknownEvent', () async {

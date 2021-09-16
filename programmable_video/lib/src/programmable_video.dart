@@ -62,7 +62,7 @@ class TwilioProgrammableVideo {
   static void _parseAudioNotificationEvents(BaseAudioNotificationEvent event) {
     _log("AudioNotificationEvent => Event '$event'");
 
-    if (event is SkipAbleAudioEvent) {
+    if (event is SkippableAudioEvent) {
       return;
     }
 

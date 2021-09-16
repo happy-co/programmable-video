@@ -52,9 +52,9 @@ class UnknownEvent extends BaseRemoteDataTrackEvent {
 }
 
 /// Use this event if an invalid RemoteDataTrackEvent was received from native code which should be skipped.
-class SkipAbleRemoteDataTrackEvent extends BaseRemoteDataTrackEvent {
-  const SkipAbleRemoteDataTrackEvent() : super(null);
+class SkippableRemoteDataTrackEvent extends BaseRemoteDataTrackEvent {
+  const SkippableRemoteDataTrackEvent() : super(null);
 
   @override
-  String toString() => 'SkipAbleRemoteDataTrackEvent';
+  String toString() => 'SkippableRemoteDataTrackEvent';
 }

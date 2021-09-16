@@ -42,9 +42,9 @@ class CameraError extends BaseCameraEvent {
   String toString() => 'CameraErrorEvent: { source: ${model!.source}, exception: $exception }';
 }
 
-class SkipableCameraEvent extends BaseCameraEvent {
-  const SkipableCameraEvent() : super(null);
+class SkippableCameraEvent extends BaseCameraEvent {
+  const SkippableCameraEvent() : super(null);
 
   @override
-  String toString() => 'SkipableCameraEvent';
+  String toString() => 'SkippableCameraEvent';
 }
