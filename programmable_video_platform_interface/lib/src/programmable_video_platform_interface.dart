@@ -61,13 +61,13 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   /// The native layer will then observe changes to audio state and apply
   /// these settings as needed.
   Future setAudioSettings(bool speakerPhoneEnabled, bool bluetoothPreferred) {
-    throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
+    throw UnimplementedError('setAudioSettings() has not been implemented.');
   }
 
   /// Calls native code to reset the speaker and bluetooth settings to their default values.
   /// The native layer will stop observing and managing changes to audio state.
   Future disableAudioSettings() {
-    throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
+    throw UnimplementedError('disableAudioSettings() has not been implemented.');
   }
 
   /// Calls native code to check if speaker mode is enabled.
