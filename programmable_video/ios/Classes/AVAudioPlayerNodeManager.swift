@@ -164,7 +164,7 @@ internal class AVAudioPlayerNodeManager {
     func fadeOut(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume >= 0 ? volume : 0
         node.eq.globalGain = volumeToGain(volume)
-        debug("AVAudioPlayerNodeManager::fadeOut => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("AVAudioPlayerNodeManager::fadeOut => node \(node.id), volume \(node.volume) currentVolume: \(volume)")
 
         if volume > 0 {
             let timeSecs = 0.001  /// 1 ms
@@ -188,7 +188,7 @@ internal class AVAudioPlayerNodeManager {
     func fadeIn(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume <= node.volume ? volume : node.volume
         node.eq.globalGain = volumeToGain(vol)
-        debug("AVAudioPlayerNodeManager::fadeIn => START - node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("AVAudioPlayerNodeManager::fadeIn => node \(node.id), volume \(node.volume) currentVolume: \(volume)")
 
         if volume < node.volume {
             let timeSecs = 0.001  /// 1 ms
