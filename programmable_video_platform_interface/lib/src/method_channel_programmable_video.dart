@@ -816,15 +816,14 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     print('ProgrammableVideoInstance::parseAudioNotificationEvent => $event');
     final eventName = event['name'];
     final data = Map<String, dynamic>.from(event['data']);
+    final deviceName = data['deviceName'];
+    final bluetooth = data['bluetooth'] ?? false;
+    final wired = data['wired'] ?? false;
 
     // If no device name is received, skip the event.
-    if (data['deviceName'] == null) {
+    if (deviceName == null) {
       return SkipAbleAudioEvent();
     }
-
-    final deviceName = data['deviceName'];
-    final bluetooth = data['bluetooth'];
-    final wired = data['wired'];
 
     switch (eventName) {
       case 'newDeviceAvailable':
