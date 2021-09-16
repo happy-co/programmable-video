@@ -1,4 +1,8 @@
-## 0.1.0-alpha.1
+## 1.0.0-alpha.2
+
+- Added `web` as supported platform.
+
+## 1.0.0-alpha.1
 
 - Initial pre-release of the web implementation.
 
