@@ -301,11 +301,11 @@ public class PluginHandler: BaseListener {
     private func setAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler::setAudioSettings => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerPhoneEnabled' and 'bluetoothPreferred' parameters", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerphoneEnabled' and 'bluetoothPreferred' parameters", details: nil))
         }
 
-        guard let speakerPhoneEnabled = arguments["speakerPhoneEnabled"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerPhoneEnabled' parameter", details: nil))
+        guard let speakerphoneEnabled = arguments["speakerphoneEnabled"] as? Bool else {
+            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerphoneEnabled' parameter", details: nil))
         }
 
         guard let bluetoothPreferred = arguments["bluetoothPreferred"] as? Bool else {
@@ -316,7 +316,7 @@ public class PluginHandler: BaseListener {
         SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.listenForRouteChanges()
 
         do {
-            audioSettings.speakerEnabled = speakerPhoneEnabled
+            audioSettings.speakerEnabled = speakerphoneEnabled
             audioSettings.bluetoothPreferred = bluetoothPreferred
 
             try applyAudioSettings()
@@ -383,9 +383,9 @@ public class PluginHandler: BaseListener {
     }
 
     private func getSpeakerphoneOn(result: @escaping FlutterResult) {
-        let speakerPhoneOn = AVAudioSession.sharedInstance().mode == .videoChat
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.getSpeakerphoneOn => called \(speakerPhoneOn)")
-        return result(speakerPhoneOn)
+        let speakerphoneOn = AVAudioSession.sharedInstance().mode == .videoChat
+        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.getSpeakerphoneOn => called \(speakerphoneOn)")
+        return result(speakerphoneOn)
     }
 
     private func deviceHasReceiver(result: @escaping FlutterResult) {

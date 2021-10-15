@@ -406,20 +406,20 @@ await primaryVideoView.setMirror(cameraSource.isBackFacing);
 Using the `TwilioProgrammableVideo` class, you can specify if audio should be routed through the headset, speaker, or an available Bluetooth audio device.
 
 **Note:**
-> If both `speakerPhoneEnabled` and `bluetoothPreferred` are true, a Bluetooth audio device will be used if available, otherwise audio will be routed through the speaker.
+> If both `speakerphoneEnabled` and `bluetoothPreferred` are true, a Bluetooth audio device will be used if available, otherwise audio will be routed through the speaker.
 
 ```dart
 // Route audio through speaker
-await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: false);
+await TwilioProgrammableVideo.setAudioSettings(speakerphoneEnabled: true, bluetoothPreferred: false);
 
 // Route audio through headset
-await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: false, bluetoothPreferred: false);
+await TwilioProgrammableVideo.setAudioSettings(speakerphoneEnabled: false, bluetoothPreferred: false);
 
 // Use Bluetooth if available, otherwise use the headset.
-await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: false, bluetoothPreferred: true);
+await TwilioProgrammableVideo.setAudioSettings(speakerphoneEnabled: false, bluetoothPreferred: true);
 
 // Use Bluetooth if available, otherwise use the speaker.
-await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: true);
+await TwilioProgrammableVideo.setAudioSettings(speakerphoneEnabled: true, bluetoothPreferred: true);
 ```
 
 **Note:**

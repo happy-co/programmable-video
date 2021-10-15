@@ -103,17 +103,17 @@ class TwilioProgrammableVideo {
   ///
   /// Bluetooth takes precedence over speaker phone, speaker phone over receiver.
   static Future setAudioSettings({
-    required bool speakerPhoneEnabled,
+    required bool speakerphoneEnabled,
     required bool bluetoothPreferred,
   }) async {
     return await ProgrammableVideoPlatform.instance.setAudioSettings(
-      speakerPhoneEnabled,
+      speakerphoneEnabled,
       bluetoothPreferred,
     );
   }
 
   /// Resets audio settings at the native layer. Defaults are:
-  /// speakerPhoneEnabled = true
+  /// speakerphoneEnabled = true
   /// bluetoothPreferred = true
   ///
   /// Native layer will stop listening for route changes.

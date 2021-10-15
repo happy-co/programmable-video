@@ -79,24 +79,24 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   ///
   /// Bluetooth is given priority over speakers.
   /// In short, if:
-  /// `speakerPhoneEnabled == true && bluetoothEnabled == true`
+  /// `speakerphoneEnabled == true && bluetoothEnabled == true`
   /// and a bluetooth device is connected, it will be used.
   /// If no bluetooth device is connected, the speaker will be used.
   ///
   /// if:
-  /// `speakerPhoneEnabled == true && bluetoothEnabled == false`
+  /// `speakerphoneEnabled == true && bluetoothEnabled == false`
   /// and a bluetooth device is connected, the speaker will be used.
   ///
-  /// if: `speakerPhoneEnabled == false && bluetoothEnabled == false`
+  /// if: `speakerphoneEnabled == false && bluetoothEnabled == false`
   /// The receiver, if the device has one, will be used.
   /// If there is a wired headset connected to an android device in this
   /// scenario, it will be used.
   @override
-  Future setAudioSettings(bool speakerPhoneEnabled, bool bluetoothPreferred) {
+  Future setAudioSettings(bool speakerphoneEnabled, bool bluetoothPreferred) {
     return _methodChannel.invokeMethod(
       'setAudioSettings',
       {
-        'speakerPhoneEnabled': speakerPhoneEnabled,
+        'speakerphoneEnabled': speakerphoneEnabled,
         'bluetoothPreferred': bluetoothPreferred,
       },
     );
@@ -105,7 +105,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   /// Calls native code to reset the speaker and bluetooth settings to their default values.
   /// The native layer will stop observing and managing changes to audio state.
   /// Default values are:
-  /// `speakerPhoneEnabled = true`
+  /// `speakerphoneEnabled = true`
   /// `bluetoothEnabled = true`
   @override
   Future disableAudioSettings() {

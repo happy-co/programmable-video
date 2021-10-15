@@ -66,7 +66,7 @@ class ConferenceRoom with ChangeNotifier {
       _streamSubscriptions.add(TwilioProgrammableVideo.onAudioNotification.listen((event) {
         print('ConferenceRoom::onAudioNotificationEvent => $event');
       }));
-      await TwilioProgrammableVideo.setAudioSettings(speakerPhoneEnabled: true, bluetoothPreferred: true);
+      await TwilioProgrammableVideo.setAudioSettings(speakerphoneEnabled: true, bluetoothPreferred: true);
 
       final sources = await CameraSource.getSources();
       _cameraCapturer = CameraCapturer(
