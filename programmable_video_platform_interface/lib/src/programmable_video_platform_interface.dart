@@ -53,6 +53,7 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   }
 
   /// Calls native code to set the speaker mode on or off.
+  @Deprecated('Use setAudioSettings for more reliable audio output management.')
   Future<bool?> setSpeakerphoneOn(bool on) {
     throw UnimplementedError('setSpeakerphoneOn() has not been implemented.');
   }
@@ -76,6 +77,7 @@ abstract class ProgrammableVideoPlatform extends PlatformInterface {
   }
 
   /// Calls native code to check if speaker mode is enabled.
+  @Deprecated('Use getAudioSettings for more reliable audio output management.')
   Future<bool?> getSpeakerphoneOn() {
     throw UnimplementedError('getSpeakerphoneOn() has not been implemented.');
   }

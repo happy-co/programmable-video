@@ -63,6 +63,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   }
 
   /// Calls native code to set the speaker mode on or off.
+  @Deprecated('Use setAudioSettings for more reliable audio output management.')
   @override
   Future<bool?> setSpeakerphoneOn(bool on) {
     return _methodChannel.invokeMethod(
@@ -119,6 +120,7 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
   }
 
   /// Calls native code to check if speaker mode is enabled.
+  @Deprecated('Use getAudioSettings for more reliable audio output management.')
   @override
   Future<bool?> getSpeakerphoneOn() {
     return _methodChannel.invokeMethod('getSpeakerphoneOn');
