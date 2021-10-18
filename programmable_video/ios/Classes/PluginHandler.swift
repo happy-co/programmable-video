@@ -27,6 +27,8 @@ public class PluginHandler: BaseListener {
             disconnect(call, result: result)
         case "setAudioSettings":
             setAudioSettings(call, result: result)
+        case "getAudioSettings":
+            getAudioSettings(call, result: result)
         case "disableAudioSettings":
             disableAudioSettings(call, result: result)
         case "setSpeakerphoneOn":
@@ -325,6 +327,14 @@ public class PluginHandler: BaseListener {
         } catch let error as NSError {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
+    }
+    
+    private func getAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let audioSettingsDict = [
+            "speakerphoneEnabled": audioSettings.speakerEnabled,
+            "bluetoothPreferred": audioSettings.bluetoothPreferred
+        ]
+        result(audioSettingsDict)
     }
 
     private func disableAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

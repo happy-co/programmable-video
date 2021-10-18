@@ -101,6 +101,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "connect" -> connect(call, result)
             "disconnect" -> disconnect(call, result)
             "setAudioSettings" -> setAudioSettings(call, result)
+            "getAudioSettings" -> getAudioSettings(call, result)
             "disableAudioSettings" -> disableAudioSettings(call, result)
             "setSpeakerphoneOn" -> setSpeakerphoneOn(call, result)
             "getSpeakerphoneOn" -> getSpeakerphoneOn(result)
@@ -255,6 +256,15 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         applyAudioSettings()
 
         result.success(null)
+    }
+
+    private fun getAudioSettings(call: MethodCall, result: MethodChannel.Result) {
+        val audioSettingsMap =
+            mapOf(
+                "speakerphoneEnabled" to audioSettings.speakerEnabled,
+                "bluetoothPreferred" to audioSettings.bluetoothPreferred
+            )
+        result.success(audioSettingsMap)
     }
 
     private fun disableAudioSettings(call: MethodCall, result: MethodChannel.Result) {

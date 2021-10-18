@@ -102,6 +102,12 @@ class MethodChannelProgrammableVideo extends ProgrammableVideoPlatform {
     );
   }
 
+  @override
+  Future<Map<String, dynamic>> getAudioSettings() async {
+    final result = await _methodChannel.invokeMethod('getAudioSettings', null);
+    return Map<String, dynamic>.from(result);
+  }
+
   /// Calls native code to reset the speaker and bluetooth settings to their default values.
   /// The native layer will stop observing and managing changes to audio state.
   /// Default values are:

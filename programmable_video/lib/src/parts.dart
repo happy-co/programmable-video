@@ -16,6 +16,7 @@ export 'package:twilio_programmable_video_platform_interface/src/video_codecs/vi
 
 export 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 
+part 'audio_settings.dart';
 part 'audio_track.dart';
 part 'audio_track_publication.dart';
 part 'camera_capturer.dart';

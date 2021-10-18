@@ -122,8 +122,15 @@ class TwilioProgrammableVideo {
   }
 
   /// Check if speaker mode is enabled.
+  @Deprecated('Use getAudioSettings for more reliable audio output management.')
   static Future<bool?> getSpeakerphoneOn() async {
     return await ProgrammableVideoPlatform.instance.getSpeakerphoneOn();
+  }
+
+  static Future<AudioSettings> getAudioSettings() async {
+    final result = await ProgrammableVideoPlatform.instance.getAudioSettings();
+    final settings = AudioSettings._fromMap(Map<String, dynamic>.from(result));
+    return settings;
   }
 
   /// This check is extraneous to the plugin itself, and its reliability and implementation varies by platform

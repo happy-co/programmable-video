@@ -68,7 +68,7 @@ class AudioNotificationListener() : BaseListener() {
         BluetoothAdapter.getDefaultAdapter().closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProfile)
     }
 
-    fun getBroadcastReceiver(): BroadcastReceiver {
+    private fun getBroadcastReceiver(): BroadcastReceiver {
         debug("AudioNotificationListener::getBroadcastReceiver")
         return object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
