@@ -1520,5 +1520,5 @@ class AudioCapturerContext {
 
 // Can swap internal usage to NSLog if you need to guarantee logging at app startup
 internal func debug(_ msg: String) {
-    SwiftTwilioProgrammableVideoPlugin.debugAudio(msg)
+    SwiftTwilioProgrammableVideoPlugin.debugAudio("AVAudioEngineDevice::\(msg)")
 }

@@ -645,6 +645,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     internal fun debug(msg: String) {
-        TwilioProgrammableVideoPlugin.debugAudio("$TAG::$msg")
+        TwilioProgrammableVideoPlugin.debug("$TAG::$msg")
     }
 }

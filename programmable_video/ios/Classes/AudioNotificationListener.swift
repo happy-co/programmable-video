@@ -4,6 +4,8 @@ import Foundation
 import TwilioVideo
 
 internal class AudioNotificationListener: BaseListener {
+    let TAG = "AudioNotificationListener"
+    
     internal func listenForRouteChanges() {
         stopListeningForRouteChanges()
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange), name: AVAudioSession.routeChangeNotification, object: nil)
@@ -14,18 +16,18 @@ internal class AudioNotificationListener: BaseListener {
     }
 
     @objc private func handleRouteChange(notification: NSNotification) {
-        debug("AudioNotificationListener::handleRouteChange => notification: \(notification)")
+        debug("handleRouteChange => notification: \(notification)")
         // Check if the sample rate, or channels changed and trigger a format change if it did.
         guard let userInfo = notification.userInfo,
               let reasonRaw = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: reasonRaw) else {
-            debug("AudioNotificationListener::handleRouteChange => parse error")
+            debug("handleRouteChange => parse error")
             return
         }
 
         let bluetoothConnected = bluetoothAudioConnected()
 
-        debug("AudioNotificationListener::handleRouteChange => reason: \(reason.rawValue), category: \(AVAudioSession.sharedInstance().category)")
+        debug("handleRouteChange => reason: \(reason.rawValue), category: \(AVAudioSession.sharedInstance().category)")
 
         switch reason {
             case AVAudioSession.RouteChangeReason.unknown,
@@ -39,19 +41,20 @@ internal class AudioNotificationListener: BaseListener {
             // Each device change might cause the actual sample rate or channel configuration of the session to change.
             case AVAudioSession.RouteChangeReason.newDeviceAvailable:
                 let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey]
-                let newRouteName = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portName as? String
+                let newRouteName = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portName
 
                 // iOS Devices don't typically have ports to support wired headsets
                 // but, for the sake of consistency across platforms we will include both keys
-                let eventData = ["connected": bluetoothConnected, "bluetooth": true, "wired": false, "deviceName": newRouteName] as [String: Any]
-                debug("newDeviceAvailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(previousRoute),\n\tbluetoothConnected: \(bluetoothConnected)")
-                debug("\tavailableInputs: \(AVAudioSession.sharedInstance().availableInputs)")
+                let eventData = ["connected": bluetoothConnected, "bluetooth": true, "wired": false, "deviceName": newRouteName as Any] as [String: Any]
+                debug("newDeviceAvailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(String(describing: previousRoute))" +
+                        "\n\tbluetoothConnected: \(bluetoothConnected)\n\tavailableInputs: \(String(describing: AVAudioSession.sharedInstance().availableInputs))")
                 sendEvent("newDeviceAvailable", data: eventData, error: nil)
             case AVAudioSession.RouteChangeReason.oldDeviceUnavailable:
                 let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey]
-                let previousRouteName = (previousRoute as? AVAudioSessionRouteDescription)?.outputs.first?.portName as? String
-                let eventData = ["connected": bluetoothConnected, "bluetooth": true, "wired": false, "deviceName": previousRouteName] as [String: Any]
-                debug("oldDeviceUnavailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(previousRoute),\n\tbluetoothConnected: \(bluetoothConnected)")
+                let previousRouteName = (previousRoute as? AVAudioSessionRouteDescription)?.outputs.first?.portName
+                let eventData = ["connected": bluetoothConnected, "bluetooth": true, "wired": false, "deviceName": previousRouteName as Any] as [String: Any]
+                debug("oldDeviceUnavailable => \n\tcurrentRoute: \(AVAudioSession.sharedInstance().currentRoute)\n\tpreviousRoute: \(String(describing: previousRoute))" +
+                      "\n\tbluetoothConnected: \(bluetoothConnected)")
                 sendEvent("oldDeviceUnavailable", data: eventData, error: nil)
             default:
                 debug("default")
@@ -68,6 +71,6 @@ internal class AudioNotificationListener: BaseListener {
     }
 
     func debug(_ msg: String) {
-        SwiftTwilioProgrammableVideoPlugin.debugAudio(msg)
+        SwiftTwilioProgrammableVideoPlugin.debugAudio("\(TAG)::\(msg)")
     }
 }

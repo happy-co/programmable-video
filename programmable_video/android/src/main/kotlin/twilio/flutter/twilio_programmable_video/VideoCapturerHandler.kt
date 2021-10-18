@@ -15,6 +15,8 @@ import tvi.webrtc.VideoCapturer
 
 class VideoCapturerHandler {
     companion object {
+        private val TAG = "VideoCapturerHandler"
+
         @JvmStatic
         fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result) {
             if (Camera2Capturer.isSupported(TwilioProgrammableVideoPlugin.pluginHandler.applicationContext)) {
@@ -26,7 +28,7 @@ class VideoCapturerHandler {
 
         @JvmStatic
         fun setTorch(call: MethodCall, result: MethodChannel.Result) {
-            TwilioProgrammableVideoPlugin.debug("VideoCapturerHandler.setTorch => called")
+            debug("setTorch => called")
             val enableTorch = call.argument<Boolean>("enable")
                     ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
 
@@ -46,21 +48,21 @@ class VideoCapturerHandler {
             val listener = object : CameraCapturer.Listener {
                 override fun onError(errorCode: Int) {
                     TwilioProgrammableVideoPlugin.handler.post {
-                        TwilioProgrammableVideoPlugin.debug("CameraCapturer.onError => code: $errorCode")
+                        debug("CameraCapturer.onError => code: $errorCode")
                         TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!)), Exception(errorCode.toString()))
                     }
                 }
 
                 override fun onFirstFrameAvailable() {
                     TwilioProgrammableVideoPlugin.handler.post {
-                        TwilioProgrammableVideoPlugin.debug("CameraCapturer.onFirstFrameAvailable")
+                        debug("CameraCapturer.onFirstFrameAvailable")
                         TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("firstFrameAvailable", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!)), null)
                     }
                 }
 
                 override fun onCameraSwitched(newCameraId: String) {
                     TwilioProgrammableVideoPlugin.handler.post {
-                        TwilioProgrammableVideoPlugin.debug("CameraCapturer.onCameraSwitched => newCameraId: $newCameraId")
+                        debug("CameraCapturer.onCameraSwitched => newCameraId: $newCameraId")
                         TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraSwitched", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!, newCameraId)), null)
                     }
                 }
@@ -93,17 +95,17 @@ class VideoCapturerHandler {
                     cameraId!!,
                     object : Camera2Capturer.Listener {
                         override fun onError(camera2CapturerException: Camera2Capturer.Exception) {
-                            TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onError => $camera2CapturerException")
+                            debug("Camera2Capturer.onError => $camera2CapturerException")
                             TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraError", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!)), camera2CapturerException)
                         }
 
                         override fun onFirstFrameAvailable() {
-                            TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onFirstFrameAvailable")
+                            debug("Camera2Capturer.onFirstFrameAvailable")
                             TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("firstFrameAvailable", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!)), null)
                         }
 
                         override fun onCameraSwitched(newCameraId: String) {
-                            TwilioProgrammableVideoPlugin.debug("Camera2Capturer.onCameraSwitched => newCameraId: $newCameraId")
+                            debug("Camera2Capturer.onCameraSwitched => newCameraId: $newCameraId")
                             TwilioProgrammableVideoPlugin.pluginHandler.sendCameraEvent("cameraSwitched", mapOf("capturer" to videoCapturerToMap(TwilioProgrammableVideoPlugin.cameraCapturer!!)), null)
                         }
                     }
@@ -135,7 +137,7 @@ class VideoCapturerHandler {
         }
 
         private fun hasTorchCameraCapturer(): Boolean {
-            TwilioProgrammableVideoPlugin.debug("VideoCapturerHandler::hasTorchCameraCapturer")
+            debug("hasTorchCameraCapturer")
             if (TwilioProgrammableVideoPlugin.cameraCapturer == null || TwilioProgrammableVideoPlugin.cameraCapturer !is CameraCapturer) return false
             val cameraManager: CameraManager = getCameraManager()
             val capturer = TwilioProgrammableVideoPlugin.cameraCapturer as CameraCapturer
@@ -148,7 +150,7 @@ class VideoCapturerHandler {
         }
 
         private fun hasTorchCamera2Capturer(): Boolean {
-            TwilioProgrammableVideoPlugin.debug("VideoCapturerHandler::hasTorchCamera2Capturer")
+            debug("hasTorchCamera2Capturer")
             if (TwilioProgrammableVideoPlugin.cameraCapturer == null || TwilioProgrammableVideoPlugin.cameraCapturer !is Camera2Capturer) return false
             val cameraManager: CameraManager = getCameraManager()
             val capturer = TwilioProgrammableVideoPlugin.cameraCapturer as Camera2Capturer
@@ -238,6 +240,10 @@ class VideoCapturerHandler {
                     "type" to "Unknown",
                     "isScreencast" to videoCapturer.isScreencast
             )
+        }
+
+        internal fun debug(msg: String) {
+            TwilioProgrammableVideoPlugin.debug("$TAG::$msg")
         }
     }
 }
