@@ -10,6 +10,7 @@ class MockInterface extends ProgrammableVideoPlatform {
   var setSpeakerPhoneOnWasCalled = false;
   var getSpeakerPhoneOnWasCalled = false;
   var setAudioSettingsWasCalled = false;
+  var getAudioSettingsWasCalled = false;
   var disableAudioSettingsWasCalled = false;
   var speakerphoneOn = false;
   var bluetoothOn = false;
@@ -67,6 +68,16 @@ class MockInterface extends ProgrammableVideoPlatform {
     speakerphoneOn = speakerphoneEnabled;
     bluetoothOn = bluetoothPreferred;
     return Future.delayed(Duration(milliseconds: 1), () => null);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAudioSettings() {
+    getAudioSettingsWasCalled = true;
+    final result = {
+      'speakerphoneEnabled': speakerphoneOn,
+      'bluetoothPreferred': bluetoothOn,
+    };
+    return Future.delayed(Duration(milliseconds: 1), () => result);
   }
 
   @override

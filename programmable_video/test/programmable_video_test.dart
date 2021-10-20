@@ -47,9 +47,21 @@ void main() {
     });
 
     test('should call interface code to check speaker mode', () async {
-      final result = await TwilioProgrammableVideo.getSpeakerphoneOn();
-      expect(mockInterface.getSpeakerPhoneOnWasCalled, true);
-      expect(result, speakerphoneOn);
+      final result = await TwilioProgrammableVideo.getAudioSettings();
+      expect(mockInterface.getSpeakerPhoneOnWasCalled, false);
+      expect(mockInterface.getAudioSettingsWasCalled, true);
+
+      expect(result.speakerphoneEnabled, false);
+      expect(result.bluetoothPreferred, false);
+
+      await TwilioProgrammableVideo.setAudioSettings(
+        speakerphoneEnabled: true,
+        bluetoothPreferred: true,
+      );
+
+      final result2 = await TwilioProgrammableVideo.getAudioSettings();
+      expect(result2.speakerphoneEnabled, true);
+      expect(result2.bluetoothPreferred, true);
     });
 
     test('should call interface code to disable audio settings', () async {
