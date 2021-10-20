@@ -31,7 +31,7 @@ void main() {
     });
   });
 
-  group('.setSpeakerPhoneOn() & .getSpeakerPhoneOn()', () {
+  group('.setAudioSettings() & .getAudioSettings()', () {
     final mockInterface = MockInterface();
     final speakerphoneOn = true;
     final bluetoothOn = true;
@@ -47,6 +47,11 @@ void main() {
     });
 
     test('should call interface code to check speaker mode', () async {
+      await TwilioProgrammableVideo.setAudioSettings(
+        speakerphoneEnabled: false,
+        bluetoothPreferred: false,
+      );
+
       final result = await TwilioProgrammableVideo.getAudioSettings();
       expect(mockInterface.getSpeakerPhoneOnWasCalled, false);
       expect(mockInterface.getAudioSettingsWasCalled, true);

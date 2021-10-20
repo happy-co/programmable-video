@@ -26,10 +26,11 @@ void main() {
   var nativeIsRemoteAudioTrackPlaybackEnabledIsCalled = false;
   var nativeDisconnectIsCalled = false;
   var nativeConnectIsCalled = false;
-  var nativeSetSpeakerphoneOnIsCalled = false;
+  var nativeSetAudioSettingsIsCalled = false;
   var nativeSpeakerPhoneOn = false;
+  var nativeBluetoothOn = false;
   var nativeCameraId = '';
-  var nativeGetSpeakerphoneOnIsCalled = false;
+  var nativeGetAudioSettingsIsCalled = false;
   var nativeSwitchCameraIsCalled = false;
 
   var cameraSource = CameraSource('BACK_CAMERA', false, false, false);
@@ -112,13 +113,17 @@ void main() {
         case 'connect':
           nativeConnectIsCalled = true;
           break;
-        case 'setSpeakerphoneOn':
-          nativeSetSpeakerphoneOnIsCalled = true;
-          nativeSpeakerPhoneOn = methodCall.arguments['on'];
+        case 'setAudioSettings':
+          nativeSetAudioSettingsIsCalled = true;
+          nativeSpeakerPhoneOn = methodCall.arguments['speakerphoneEnabled'];
+          nativeBluetoothOn = methodCall.arguments['bluetoothPreferred'];
           break;
-        case 'getSpeakerphoneOn':
-          nativeGetSpeakerphoneOnIsCalled = true;
-          return nativeSpeakerPhoneOn;
+        case 'getAudioSettings':
+          nativeGetAudioSettingsIsCalled = true;
+          return <String, dynamic>{
+            'speakerphoneEnabled': nativeSpeakerPhoneOn,
+            'bluetoothPreferred': nativeBluetoothOn,
+          };
         case 'CameraCapturer#switchCamera':
           nativeSwitchCameraIsCalled = true;
           nativeCameraId = methodCall.arguments['cameraId'];
@@ -312,27 +317,33 @@ void main() {
     });
   });
 
-  group('.setSpeakerphoneOn() & .getSpeakerphoneOn()', () {
-    final callBool = true;
+  group('.setAudioSettings() & .getAudioSettings()', () {
+    final speakerphoneOn = true;
+    final bluetoothOn = true;
 
-    test('should call native setSpeakerPhone code in dart', () async {
-      await instance.setSpeakerphoneOn(callBool);
-      expect(nativeSetSpeakerphoneOnIsCalled, true);
+    test('should call native setAudioSettings code in dart', () async {
+      await instance.setAudioSettings(speakerphoneOn, bluetoothOn);
+      expect(nativeSetAudioSettingsIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
-          'setSpeakerphoneOn',
-          arguments: {'on': callBool},
+          'setAudioSettings',
+          arguments: {
+            'speakerphoneEnabled': speakerphoneOn,
+            'bluetoothPreferred': bluetoothOn,
+          },
         )
       ]);
     });
 
     test('should call native getSpeakerPhone code in dart and get same bool as previously set', () async {
-      final result = await instance.getSpeakerphoneOn();
-      expect(result, callBool);
-      expect(nativeGetSpeakerphoneOnIsCalled, true);
+      final result = await instance.getAudioSettings();
+      expect(result['speakerphoneEnabled'], speakerphoneOn);
+      expect(result['bluetoothPreferred'], bluetoothOn);
+
+      expect(nativeGetAudioSettingsIsCalled, true);
       expect(methodCalls, <Matcher>[
         isMethodCall(
-          'getSpeakerphoneOn',
+          'getAudioSettings',
           arguments: null,
         )
       ]);
