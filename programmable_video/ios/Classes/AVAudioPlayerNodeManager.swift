@@ -4,6 +4,12 @@ import TwilioVideo
 internal class AVAudioPlayerNodeManager {
     let TAG = "AVAudioPlayerNodeManager"
     
+    private let nodeManagerQueue: DispatchQueue = DispatchQueue(
+        label: "nodeManagerQueue",
+        qos: DispatchQoS.userInteractive,
+        autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
+        target: nil)
+    
     var nodes: [Int: AVAudioPlayerNodeBundle] = [:]
     var pausedNodes: [Int: AVAudioPlayerNodeBundle] = [:]
 
@@ -57,27 +63,33 @@ internal class AVAudioPlayerNodeManager {
     }
 
     public func playNode(_ id: Int) {
-        play(id)
+        self.nodeManagerQueue.sync {
+            play(id)
+        }
     }
 
     func play(_ id: Int, position: AVAudioFramePosition = 0) {
         guard let node = nodes[id] else {
             return
         }
-        node.queued = false
-
-        debug("play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)\n\tposition: \(position)")
-
+        debug("play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)\n\tposition: \(position)\n\tqueued: \(node.queued)")
+        
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
 
+            debug("play = dequeuing file: \(fileName(node.file))")
             node.playing = true
+            node.queued = false
 
             node.player.scheduleSegment(node.file, startingFrame: position, frameCount: frameCount, at: nil) {
                 self.debug("segmentComplete => file: \(self.fileName(node.file)). playing: \(node.playing), startedAt: \(position), loop: \(node.loop), paused: \(self.isPaused(node.id))")
                 if node.loop && node.playing && !self.isPaused(node.id) {
                     node.playing = false
-                    self.play(node.id)
+                    node.queued = true
+                    self.debug("segmentComplete => queued file: \(self.fileName(node.file))")
+                    self.nodeManagerQueue.sync {
+                        self.play(node.id)
+                    }
                 } else {
                     node.playing = false
                 }
@@ -85,8 +97,8 @@ internal class AVAudioPlayerNodeManager {
             node.startFrame = position
             node.pauseTime = nil
             node.player.play()
-            if gainToVolume(node.eq.globalGain) < node.volume {
-                fadeInNode(node)
+            if !node.fadingIn, gainToVolume(node.eq.globalGain) < node.volume {
+                self.fadeInNode(node)
             }
         }
     }
@@ -96,50 +108,59 @@ internal class AVAudioPlayerNodeManager {
     }
 
     public func stopNode(_ id: Int) {
-        guard let node = nodes[id] else {
-            return
-        }
-        debug("stopNode => file: \(fileName(node.file))")
+        self.nodeManagerQueue.sync {
+            guard let node = nodes[id] else {
+                return
+            }
+            debug("stopNode => file: \(fileName(node.file))")
 
-        if isPaused(id) {
-            node.pauseTime = nil
-            pausedNodes.removeValue(forKey: node.id)
-        }
-        node.playing = false
+            if isPaused(id) {
+                node.pauseTime = nil
+                pausedNodes.removeValue(forKey: node.id)
+            }
+            node.playing = false
 
-        fadeOutNode(node)
-        node.player.stop()
+            fadeOutNode(node)
+            node.player.stop()
+        }
     }
 
     public func pauseNode(_ id: Int, _ resumeAfterRendererStarted: Bool = false) {
-        guard let node = nodes[id] else {
-            return
+        self.nodeManagerQueue.sync {
+            guard let node = nodes[id] else {
+                return
+            }
+
+            node.pauseTime = getPosition(id)
+            node.playing = false
+            node.queued = false
+            node.resumeAfterRendererStarted = resumeAfterRendererStarted
+
+            fadeOutNode(node)
+            debug("pauseNode => faded out node \(node.id) isPlaying \(node.player.isPlaying)\n\tcurrentQueue: \(Thread.current.name)")
+            node.player.stop()
+            debug("pauseNode => stopped node \(node.id)")
+            pausedNodes[node.id] = node
+            debug("pauseNode => paused node \(node.id) pauseTime: \(String(describing: node.pauseTime))")
         }
-
-        node.pauseTime = getPosition(id)
-        node.playing = false
-        node.resumeAfterRendererStarted = resumeAfterRendererStarted
-
-        fadeOutNode(node)
-        node.player.stop()
-        pausedNodes[node.id] = node
-        debug("pauseNode => paused node \(node.id) pauseTime: \(String(describing: node.pauseTime))")
     }
 
     public func resumeNode(_ id: Int) {
-        guard let node = nodes[id],
-              let pausePosition = node.pauseTime else {
-            return
-        }
+        self.nodeManagerQueue.sync {
+            guard let node = nodes[id],
+                  let pausePosition = node.pauseTime else {
+                return
+            }
 
-        if node.playing {
-            return
-        }
+            if node.playing {
+                return
+            }
 
-        debug("resumeNode => node \(node.id), frame: \(pausePosition), volume: \(node.volume)")
-        node.resumeAfterRendererStarted = false
-        pausedNodes.removeValue(forKey: node.id)
-        seekPosition(id, pausePosition)
+            debug("resumeNode => node \(node.id), frame: \(pausePosition), volume: \(node.volume)\n\tcurrentQueue: \(Thread.current.name)")
+            node.resumeAfterRendererStarted = false
+            pausedNodes.removeValue(forKey: node.id)
+            seek(id, pausePosition)
+        }
     }
 
     public func setMusicVolume(_ id: Int, _ volume: Double) {
@@ -159,20 +180,22 @@ internal class AVAudioPlayerNodeManager {
         debug("fadeOutNode => START - node \(node.id), volume \(node.volume)")
         let volume = gainToVolume(node.eq.globalGain)
         let increment = volume / 10
-        fadeOut(node, volume, increment)
-        debug("AVAudioPlayerNodeManager::fadeOutNode => END - node \(node.id)")
+        fadeOut(node, volume - increment, increment)
+        debug("fadeOutNode => END - node \(node.id)")
     }
 
     func fadeOut(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume >= 0 ? volume : 0
         node.eq.globalGain = volumeToGain(vol)
-        debug("fadeOut => node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("fadeOut => node \(node.id), volume \(gainToVolume(node.eq.globalGain)) currentVolume: \(volume) vol: \(vol)")
 
-        if volume > 0 {
+        if vol > 0 {
             let timeSecs = 0.001  /// 1 ms
             Thread.sleep(forTimeInterval: timeSecs)
-            let nextStep = volume - volumeIncrement
+            let nextStep = vol - volumeIncrement
             fadeOut(node, nextStep, volumeIncrement)
+        } else {
+            debug("fadeOut => complete")
         }
     }
 
@@ -190,13 +213,15 @@ internal class AVAudioPlayerNodeManager {
     func fadeIn(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume <= node.volume ? volume : node.volume
         node.eq.globalGain = volumeToGain(vol)
-        debug("fadeIn => node \(node.id), volume \(node.volume) currentVolume: \(volume)")
+        debug("fadeIn => node \(node.id), volume \(gainToVolume(node.eq.globalGain)) currentVolume: \(volume), vol: \(vol)")
 
         if volume < node.volume {
             let timeSecs = 0.001  /// 1 ms
             Thread.sleep(forTimeInterval: timeSecs)
             let nextStep = volume + volumeIncrement
             fadeIn(node, nextStep, volumeIncrement)
+        } else {
+            debug("fadeIn => complete")
         }
     }
 
@@ -230,6 +255,12 @@ internal class AVAudioPlayerNodeManager {
     }
 
     public func seekPosition(_ id: Int, _ positionInMillis: Int64) {
+        self.nodeManagerQueue.sync {
+            self.seek(id, positionInMillis)
+        }
+    }
+    
+    func seek(_ id: Int, _ positionInMillis: Int64) {
         guard let node = nodes[id] else {
             return
         }
@@ -238,7 +269,7 @@ internal class AVAudioPlayerNodeManager {
         if framePosition < 0 || framePosition >= node.file.length {
             framePosition = 0
         }
-        debug("seekPosition => id: \(id), positionInMillis: \(positionInMillis), framePosition: \(framePosition), lengthInFrames: \(node.file.length)")
+        debug("seek => id: \(id), positionInMillis: \(positionInMillis), framePosition: \(framePosition), lengthInFrames: \(node.file.length)")
 
         node.playing = false
         node.player.stop()
@@ -285,30 +316,40 @@ internal class AVAudioPlayerNodeManager {
 
     public func anyPlaying() -> Bool {
         var result = false
-        for nodeBundle in nodes.values where nodeBundle.playing {
-            debug("anyPlaying => node \(nodeBundle.id) is playing")
-            result = true
-            break
+        self.nodeManagerQueue.sync {
+            for nodeBundle in nodes.values where nodeBundle.playing {
+                debug("anyPlaying => node \(nodeBundle.id) is playing")
+                result = true
+                break
+            }
+            debug("anyPlaying => \(result)")
         }
-        debug("anyPlaying => \(result)")
         return result
     }
 
     public func anyQueued() -> Bool {
         var result = false
-        for nodeBundle in nodes.values where nodeBundle.queued {
-            debug("anyQueued => node \(nodeBundle.id) is queued")
-            result = true
-            break
+        self.nodeManagerQueue.sync {
+            for nodeBundle in nodes.values where nodeBundle.queued {
+                debug("anyQueued => node \(nodeBundle.id) is queued")
+                result = true
+                break
+            }
+            for nodeBundle in nodes.values {
+                debug("anyQueued => node \(fileName(nodeBundle.file)) queued: \(nodeBundle.queued)")
+            }
+            debug("anyQueued => \(result)")
         }
-        debug("anyQueued => \(result)")
         return result
     }
 
     public func anyPaused() -> Bool {
-        let anyPaused = !pausedNodes.values.isEmpty
-        debug("anyPaused => \(anyPaused)")
-        return anyPaused
+        var result = false
+        self.nodeManagerQueue.sync {
+            result = !pausedNodes.values.isEmpty
+            debug("anyPaused => \(result)")
+        }
+        return result
     }
 
     func isPaused(_ id: Int) -> Bool {
@@ -318,8 +359,9 @@ internal class AVAudioPlayerNodeManager {
     public func pauseAll(_ resumeAfterRendererStarted: Bool = false) {
         self.nodes.values.forEach { (node: AVAudioPlayerNodeBundle) in
             let nodeIsPlaying = node.player.isPlaying
-            debug("pauseAll => node \(node.id) isPlaying: \(nodeIsPlaying)")
-            if nodeIsPlaying {
+            let nodeIsQueued = node.queued
+            debug("pauseAll => node \(node.id) isPlaying: \(nodeIsPlaying) isQueued: \(nodeIsQueued)")
+            if nodeIsPlaying || nodeIsQueued {
                 self.pauseNode(node.id, resumeAfterRendererStarted)
             }
         }
