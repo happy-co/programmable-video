@@ -5,7 +5,7 @@ import TwilioVideo
 
 class RemoteParticipantListener: BaseListener, RemoteParticipantDelegate {
     let TAG = "RemoteParticipantListener"
-    
+
     func remoteParticipantDidDisableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         debug("remoteParticipantDidDisableAudioTrack => " +
             "trackSid: \(publication.trackSid), " +

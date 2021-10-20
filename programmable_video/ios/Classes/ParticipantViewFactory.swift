@@ -4,7 +4,7 @@ import TwilioVideo
 
 class ParticipantViewFactory: NSObject, FlutterPlatformViewFactory {
     let TAG = "ParticipantViewFactory"
-    
+
     private var plugin: PluginHandler
 
     init(_ plugin: PluginHandler) {

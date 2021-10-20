@@ -663,7 +663,7 @@ public class AVAudioEngineDevice: NSObject, AudioDevice {
         }
 
         result = self.startAudioUnit()
-        
+
         // Resume playback on audio player nodes that were active prior to engine restart
         if self.audioPlayerNodeManager.anyPaused() {
             /*

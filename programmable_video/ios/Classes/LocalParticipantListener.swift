@@ -4,7 +4,7 @@ import TwilioVideo
 
 class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     let TAG = "LocalParticipantListener"
-    
+
     func localParticipantDidPublishAudioTrack(participant: LocalParticipant, audioTrackPublication: LocalAudioTrackPublication) {
         debug("didPublishAudioTrack => " +
             "trackSid: \(audioTrackPublication.trackSid), " +

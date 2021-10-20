@@ -4,7 +4,7 @@ import TwilioVideo
 
 class RoomListener: BaseListener, RoomDelegate {
     let TAG = "RoomListener"
-    
+
     public var connectOptions: ConnectOptions
 
     public var room: Room?

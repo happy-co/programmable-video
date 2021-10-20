@@ -1,15 +1,18 @@
+// swiftlint:disable file_length
+
 import Foundation
 import TwilioVideo
 
+// swiftlint:disable type_body_length
 internal class AVAudioPlayerNodeManager {
     let TAG = "AVAudioPlayerNodeManager"
-    
+
     private let nodeManagerQueue: DispatchQueue = DispatchQueue(
         label: "nodeManagerQueue",
         qos: DispatchQoS.userInteractive,
         autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
         target: nil)
-    
+
     var nodes: [Int: AVAudioPlayerNodeBundle] = [:]
     var pausedNodes: [Int: AVAudioPlayerNodeBundle] = [:]
 
@@ -73,7 +76,7 @@ internal class AVAudioPlayerNodeManager {
             return
         }
         debug("play =>\n\tfile: \(fileName(node.file))\n\tloop: \(node.loop)\n\tplaying: \(node.playing)\n\tposition: \(position)\n\tqueued: \(node.queued)")
-        
+
         if !node.playing {
             let frameCount: AVAudioFrameCount = AVAudioFrameCount(node.file.length - position)
 
@@ -259,7 +262,7 @@ internal class AVAudioPlayerNodeManager {
             self.seek(id, positionInMillis)
         }
     }
-    
+
     func seek(_ id: Int, _ positionInMillis: Int64) {
         guard let node = nodes[id] else {
             return

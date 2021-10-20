@@ -4,7 +4,7 @@ import TwilioVideo
 
 class RemoteDataTrackListener: BaseListener, RemoteDataTrackDelegate {
     let TAG = "RemoteDataTrackListener"
-    
+
     func remoteDataTrackDidReceiveData(remoteDataTrack: RemoteDataTrack, message: Data) {
         debug("didReceiveData => " +
             "sid: \(remoteDataTrack.sid), " +

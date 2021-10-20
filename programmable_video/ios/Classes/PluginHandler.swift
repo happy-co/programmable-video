@@ -6,7 +6,7 @@ import TwilioVideo
 
 public class PluginHandler: BaseListener {
     let TAG = "PluginHandler"
-    
+
     let audioSettings = AudioSettings()
 
     public func getRemoteParticipant(_ sid: String) -> RemoteParticipant? {
@@ -17,7 +17,7 @@ public class PluginHandler: BaseListener {
         return SwiftTwilioProgrammableVideoPlugin.roomListener?.room?.localParticipant
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("handle => received \(call.method)")
         switch call.method {
@@ -330,7 +330,7 @@ public class PluginHandler: BaseListener {
             return result(FlutterError(code: "\(error.code)", message: error.description, details: nil))
         }
     }
-    
+
     private func getAudioSettings(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let audioSettingsDict = [
             "speakerphoneEnabled": audioSettings.speakerEnabled,
