@@ -74,11 +74,11 @@ public class PluginHandler: BaseListener {
     private func switchCamera(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("switchCamera => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'cameraId' parameters", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("cameraId"), details: nil))
         }
 
         guard let newCameraId = arguments["cameraId"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'cameraId' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("cameraId"), details: nil))
         }
 
         if let cameraSource = SwiftTwilioProgrammableVideoPlugin.cameraSource {
@@ -110,11 +110,11 @@ public class PluginHandler: BaseListener {
     private func setTorch(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("setTorch => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameters", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         guard let enableTorch = arguments["enable"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         do {
@@ -147,11 +147,11 @@ public class PluginHandler: BaseListener {
         }
 
         guard let localVideoTrackName = arguments["name"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("name"), details: nil))
         }
 
         guard let localVideoTrackEnable = arguments["enable"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         debug("localVideoTrackEnable => called for \(localVideoTrackName), enable=\(localVideoTrackEnable)")
@@ -170,11 +170,11 @@ public class PluginHandler: BaseListener {
         }
 
         guard let localAudioTrackName = arguments["name"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("name"), details: nil))
         }
 
         guard let localAudioTrackEnable = arguments["enable"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         debug("localAudioTrackEnable => called for \(localAudioTrackName), enable=\(localAudioTrackEnable)")
@@ -193,17 +193,17 @@ public class PluginHandler: BaseListener {
         }
 
         guard let remoteAudioTrackSid = arguments["sid"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'sid' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("sid"), details: nil))
         }
 
         guard let remoteAudioTrackEnable = arguments["enable"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         debug("remoteAudioTrackEnable => called for \(remoteAudioTrackSid), enable=\(remoteAudioTrackEnable)")
 
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("enable"), details: nil))
         }
 
         remoteAudioTrack.remoteTrack?.isPlaybackEnabled = remoteAudioTrackEnable
@@ -216,13 +216,13 @@ public class PluginHandler: BaseListener {
         }
 
         guard let remoteAudioTrackSid = arguments["sid"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'sid' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("sid"), details: nil))
         }
 
         debug("isRemoteAudioTrackPlaybackEnabled => called for \(remoteAudioTrackSid)")
 
         guard let remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid) else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'enable' parameter", details: nil))
+            return result(FlutterError(code: "NOT_FOUND", message: "No remote audio track found: \(remoteAudioTrackSid)", details: nil))
         }
 
         return result(remoteAudioTrack.remoteTrack?.isPlaybackEnabled)
@@ -248,11 +248,11 @@ public class PluginHandler: BaseListener {
         }
 
         guard let localDataTrackName = arguments["name"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("name"), details: nil))
         }
 
         guard let localDataTrackMessage = arguments["message"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("message"), details: nil))
         }
 
         debug("localDataTrackSendString => called for \(localDataTrackName)")
@@ -271,11 +271,11 @@ public class PluginHandler: BaseListener {
         }
 
         guard let localDataTrackName = arguments["name"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("name"), details: nil))
         }
 
         guard let localDataTrackMessage = arguments["message"] as? FlutterStandardTypedData else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'message' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("message"), details: nil))
         }
 
         debug("localDataTrackSendString => called for \(localDataTrackName)")
@@ -309,11 +309,11 @@ public class PluginHandler: BaseListener {
         }
 
         guard let speakerphoneEnabled = arguments["speakerphoneEnabled"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'speakerphoneEnabled' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("speakerphoneEnabled"), details: nil))
         }
 
         guard let bluetoothPreferred = arguments["bluetoothPreferred"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'bluetoothPreferred' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("bluetoothPreferred"), details: nil))
         }
 
         initializeAudioDevice()
@@ -371,11 +371,11 @@ public class PluginHandler: BaseListener {
     private func setSpeakerphoneOn(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("setSpeakerphoneOn => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'on' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("on"), details: nil))
         }
 
         guard let on = arguments["on"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'on' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("on"), details: nil))
         }
 
         initializeAudioDevice()
@@ -446,15 +446,15 @@ public class PluginHandler: BaseListener {
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("connect => called")
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'connectOptions' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("connectOptions"), details: nil))
         }
 
         guard let optionsObj = arguments["connectOptions"] as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'connectOptions' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("connectOptions"), details: nil))
         }
 
         guard let accessToken = optionsObj["accessToken"] as? String else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'accessToken' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("accessToken"), details: nil))
         }
 
         // Override the device before creating any Rooms or Tracks.
@@ -674,20 +674,24 @@ public class PluginHandler: BaseListener {
 
     private func debug(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any?] else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'native' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("native"), details: nil))
         }
 
         guard let enableNative = arguments["native"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'native' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("native"), details: nil))
         }
 
         guard let enableAudio = arguments["audio"] as? Bool else {
-            return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'audio' parameter", details: nil))
+            return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("audio"), details: nil))
         }
 
         SwiftTwilioProgrammableVideoPlugin.nativeDebug = enableNative
         SwiftTwilioProgrammableVideoPlugin.audioDebug = enableAudio
         result(enableNative)
+    }
+
+    private func missingParameterMessage(_ parameterName: String) -> String {
+        return "The parameter '\(parameterName)' was not given"
     }
 
     func debug(_ msg: String) {

@@ -97,7 +97,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::onMethodCall => received ${call.method}")
+        debug("onMethodCall => received ${call.method}")
         when (call.method) {
             "debug" -> debug(call, result)
             "connect" -> connect(call, result)
@@ -123,16 +123,16 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     private fun getSources(call: MethodCall, result: MethodChannel.Result) {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.getSources => called")
+        debug("getSources => called")
         return result.success(TwilioProgrammableVideoPlugin.cameraEnumerator.deviceNames.map {
             VideoCapturerHandler.cameraIdToMap(it)
         })
     }
 
     private fun switchCamera(call: MethodCall, result: MethodChannel.Result) {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.switchCamera => called")
+        debug("switchCamera => called")
         val newCameraId = call.argument<String>("cameraId")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'cameraId' was not given", null)
+                ?: return result.error("MISSING_PARAMS", missingParameterMessage("cameraId"), null)
 
         val capturer = TwilioProgrammableVideoPlugin.cameraCapturer
         if (capturer is Camera2Capturer)
@@ -149,11 +149,11 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun localVideoTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localVideoTrackName = call.argument<String>("name")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("name"), null)
         val localVideoTrackEnable = call.argument<Boolean>("enable")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("enable"), null)
 
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::localVideoTrackEnable => called for $localVideoTrackName, enable=$localVideoTrackEnable")
+        debug("localVideoTrackEnable => called for $localVideoTrackName, enable=$localVideoTrackEnable")
 
         val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull { it.trackName == localVideoTrackName }
         if (localVideoTrack != null) {
@@ -165,11 +165,11 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun localAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localAudioTrackName = call.argument<String>("name")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("name"), null)
         val localAudioTrackEnable = call.argument<Boolean>("enable")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("enable"), null)
 
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::localAudioTrackEnable => called for $localAudioTrackName, enable=$localAudioTrackEnable")
+        debug("localAudioTrackEnable => called for $localAudioTrackName, enable=$localAudioTrackEnable")
 
         val localAudioTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localAudioTracks?.firstOrNull { it.trackName == localAudioTrackName }
         if (localAudioTrack != null) {
@@ -181,11 +181,11 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun localDataTrackSendString(call: MethodCall, result: MethodChannel.Result) {
         val localDataTrackName = call.argument<String>("name")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("name"), null)
         val localDataTrackMessage = call.argument<String>("message")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'message' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("message"), null)
 
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::localDataTrackSendString => called for $localDataTrackName")
+        debug("localDataTrackSendString => called for $localDataTrackName")
 
         val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
             ?: return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
@@ -196,11 +196,11 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun localDataTrackSendByteBuffer(call: MethodCall, result: MethodChannel.Result) {
         val localDataTrackName = call.argument<String>("name")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'name' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("name"), null)
         val localDataTrackMessage = call.argument<ByteArray>("message")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'message' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("message"), null)
 
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::localDataTrackSendByteBuffer => called for $localDataTrackName")
+        debug("localDataTrackSendByteBuffer => called for $localDataTrackName")
 
         val localDataTrack = TwilioProgrammableVideoPlugin.roomListener.room?.localParticipant?.localDataTracks?.firstOrNull { it.trackName == localDataTrackName }
             ?: return result.error("NOT_FOUND", "No LocalDataTrack found with the name '$localDataTrackName'", null)
@@ -211,10 +211,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun remoteAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val remoteAudioTrackSid = call.argument<String>("sid")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("sid"), null)
         val enable = call.argument<Boolean>("enable")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'enable' was not given", null)
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::remoteAudioTrackEnable => sid: $remoteAudioTrackSid enable: $enable")
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("enable"), null)
+        debug("remoteAudioTrackEnable => sid: $remoteAudioTrackSid enable: $enable")
         val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
             ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
 
@@ -224,8 +224,8 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun isRemoteAudioTrackPlaybackEnabled(call: MethodCall, result: MethodChannel.Result) {
         val remoteAudioTrackSid = call.argument<String>("sid")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'sid' was not given", null)
-        TwilioProgrammableVideoPlugin.debug("PluginHandler::isRemoteAudioTrackPlaybackEnabled => sid: $remoteAudioTrackSid")
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("sid"), null)
+        debug("isRemoteAudioTrackPlaybackEnabled => sid: $remoteAudioTrackSid")
         val remoteAudioTrack = getRemoteAudioTrack(remoteAudioTrackSid)
             ?: return result.error("NOT_FOUND", "No RemoteAudioTrack found with sid $remoteAudioTrackSid", null)
 
@@ -246,9 +246,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun setAudioSettings(call: MethodCall, result: MethodChannel.Result) {
         val speakerphoneEnabled = call.argument<Boolean>("speakerphoneEnabled")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'speakerphoneEnabled' was not given", null)
+                ?: return result.error("MISSING_PARAMS", missingParameterMessage("speakerphoneEnabled"), null)
         val bluetoothPreferred = call.argument<Boolean>("bluetoothPreferred")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'bluetoothPreferred' was not given", null)
+                ?: return result.error("MISSING_PARAMS", missingParameterMessage("bluetoothPreferred"), null)
 
         audioSettings.speakerEnabled = speakerphoneEnabled
         audioSettings.bluetoothPreferred = bluetoothPreferred
@@ -317,7 +317,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     private fun setSpeakerphoneOn(call: MethodCall, result: MethodChannel.Result) {
         val on = call.argument<Boolean>("on")
-            ?: return result.error("MISSING_PARAMS", "The parameter 'on' was not given", null)
+            ?: return result.error("MISSING_PARAMS", missingParameterMessage("on"), null)
 
         audioSettings.speakerEnabled = on
         setSpeakerPhoneOnInternal()
@@ -642,6 +642,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     fun sendCameraEvent(name: String, data: Any, e: java.lang.Exception? = null) {
         sendEvent(name, data, e)
+    }
+
+    private fun missingParameterMessage(parameterName: String): String {
+        return "The parameter '$parameterName' was not given"
     }
 
     internal fun debug(msg: String) {
