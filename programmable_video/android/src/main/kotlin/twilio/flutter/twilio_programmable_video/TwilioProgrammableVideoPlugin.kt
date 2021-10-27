@@ -79,6 +79,10 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
         lateinit var roomListener: RoomListener
 
+        // Default to false as Camera1Capturer and Camera1Enumator seem to work alright
+        // on devices that supported Camera2, but the reverse is not true.
+        var camera2IsSupported: Boolean = false
+
         var cameraCapturer: VideoCapturer? = null
 
         var loggingSink: EventChannel.EventSink? = null
@@ -134,7 +138,8 @@ class TwilioProgrammableVideoPlugin : FlutterPlugin {
 
     private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger, platformViewRegistry: PlatformViewRegistry) {
         pluginHandler = PluginHandler(applicationContext)
-        cameraEnumerator = if (Camera2Enumerator.isSupported(applicationContext))
+        camera2IsSupported = Camera2Enumerator.isSupported(applicationContext)
+        cameraEnumerator = if (camera2IsSupported)
             Camera2Enumerator(applicationContext)
         else
             Camera1Enumerator()

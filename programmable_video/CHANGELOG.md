@@ -5,6 +5,7 @@
 - Made improvements to `AVAudioEngineDevice`.
 - Deprecated `setSpeakerPhoneOn`.
 - Added audio device notifications to dart layer.
+- **Android** Normalized camera ID when interacting with `CameraManager` to address a crash introduced by the formatting used by `Camera1Enumerator`.
 
 ## 0.10.0+1
 
