@@ -5,7 +5,7 @@ class RemoteParticipantEvent {
   /// The associated remote participant.
   final RemoteParticipant remoteParticipant;
 
-  RemoteParticipantEvent(this.remoteParticipant) : assert(remoteParticipant != null);
+  RemoteParticipantEvent(this.remoteParticipant);
 }
 
 //#region AUDIO TRACK EVENTS
@@ -17,8 +17,7 @@ class RemoteAudioTrackEvent extends RemoteParticipantEvent {
   RemoteAudioTrackEvent(
     RemoteParticipant remoteParticipant,
     this.remoteAudioTrackPublication,
-  )   : assert(remoteAudioTrackPublication != null),
-        super(remoteParticipant);
+  ) : super(remoteParticipant);
 }
 
 class RemoteAudioTrackSubscriptionEvent extends RemoteAudioTrackEvent {
@@ -29,8 +28,7 @@ class RemoteAudioTrackSubscriptionEvent extends RemoteAudioTrackEvent {
     RemoteParticipant remoteParticipant,
     RemoteAudioTrackPublication remoteAudioTrackPublication,
     this._remoteAudioTrack,
-  )   : assert(_remoteAudioTrack != null),
-        super(remoteParticipant, remoteAudioTrackPublication);
+  ) : super(remoteParticipant, remoteAudioTrackPublication);
 
   RemoteAudioTrack get remoteAudioTrack => _remoteAudioTrack;
 }
@@ -56,8 +54,7 @@ class RemoteDataTrackEvent extends RemoteParticipantEvent {
   RemoteDataTrackEvent(
     RemoteParticipant remoteParticipant,
     this.remoteDataTrackPublication,
-  )   : assert(remoteDataTrackPublication != null),
-        super(remoteParticipant);
+  ) : super(remoteParticipant);
 }
 
 class RemoteDataTrackSubscriptionEvent extends RemoteDataTrackEvent {
@@ -68,8 +65,7 @@ class RemoteDataTrackSubscriptionEvent extends RemoteDataTrackEvent {
     RemoteParticipant remoteParticipant,
     RemoteDataTrackPublication remoteDataTrackPublication,
     this.remoteDataTrack,
-  )   : assert(remoteDataTrack != null),
-        super(remoteParticipant, remoteDataTrackPublication);
+  ) : super(remoteParticipant, remoteDataTrackPublication);
 }
 
 class RemoteDataTrackSubscriptionFailedEvent extends RemoteDataTrackEvent {
@@ -96,8 +92,7 @@ class RemoteNetworkQualityLevelChangedEvent implements NetworkQualityLevelChange
   RemoteNetworkQualityLevelChangedEvent(
     this.remoteParticipant,
     this.networkQualityLevel,
-  )   : assert(remoteParticipant != null),
-        assert(networkQualityLevel != null);
+  );
 }
 
 //#region VIDEO TRACK EVENTS
@@ -109,8 +104,7 @@ class RemoteVideoTrackEvent extends RemoteParticipantEvent {
   RemoteVideoTrackEvent(
     RemoteParticipant remoteParticipant,
     this.remoteVideoTrackPublication,
-  )   : assert(remoteVideoTrackPublication != null),
-        super(remoteParticipant);
+  ) : super(remoteParticipant);
 }
 
 class RemoteVideoTrackSubscriptionEvent extends RemoteVideoTrackEvent {
@@ -121,8 +115,7 @@ class RemoteVideoTrackSubscriptionEvent extends RemoteVideoTrackEvent {
     RemoteParticipant remoteParticipant,
     RemoteVideoTrackPublication remoteVideoTrackPublication,
     this.remoteVideoTrack,
-  )   : assert(remoteVideoTrack != null),
-        super(remoteParticipant, remoteVideoTrackPublication);
+  ) : super(remoteParticipant, remoteVideoTrackPublication);
 }
 
 class RemoteVideoTrackSubscriptionFailedEvent extends RemoteVideoTrackEvent {

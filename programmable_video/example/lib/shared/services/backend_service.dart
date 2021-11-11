@@ -18,19 +18,19 @@ abstract class BackendService {
   Future<TwilioListRoomResponse> listRooms(TwilioListRoomRequest twilioListRoomRequest);
 }
 
-class FirebaseFunctions implements BackendService {
-  FirebaseFunctions._();
+class FirebaseFunctionsService implements BackendService {
+  FirebaseFunctionsService._();
 
-  static final instance = FirebaseFunctions._();
+  static final instance = FirebaseFunctionsService._();
 
-  final CloudFunctions cf = CloudFunctions(region: 'europe-west1');
+  final FirebaseFunctions cf = FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   @override
   Future<TwilioRoomResponse> completeRoomBySid(TwilioRoomBySidRequest twilioRoomBySidRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'completeRoomBySid').call(twilioRoomBySidRequest.toMap());
+      final response = await cf.httpsCallable('completeRoomBySid').call(twilioRoomBySidRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,
@@ -42,9 +42,9 @@ class FirebaseFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> createRoom(TwilioRoomRequest twilioRoomRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'createRoom').call(twilioRoomRequest.toMap());
+      final response = await cf.httpsCallable('createRoom').call(twilioRoomRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,
@@ -56,9 +56,9 @@ class FirebaseFunctions implements BackendService {
   @override
   Future<TwilioRoomTokenResponse> createToken(TwilioRoomTokenRequest twilioRoomTokenRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'createToken').call(twilioRoomTokenRequest.toMap());
+      final response = await cf.httpsCallable('createToken').call(twilioRoomTokenRequest.toMap());
       return TwilioRoomTokenResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,
@@ -70,9 +70,9 @@ class FirebaseFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> getRoomBySid(TwilioRoomBySidRequest twilioRoomBySidRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'getRoomBySid').call(twilioRoomBySidRequest.toMap());
+      final response = await cf.httpsCallable('getRoomBySid').call(twilioRoomBySidRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,
@@ -84,9 +84,9 @@ class FirebaseFunctions implements BackendService {
   @override
   Future<TwilioRoomResponse> getRoomByUniqueName(TwilioRoomByUniqueNameRequest twilioRoomByUniqueNameRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'getRoomByUniqueName').call(twilioRoomByUniqueNameRequest.toMap());
+      final response = await cf.httpsCallable('getRoomByUniqueName').call(twilioRoomByUniqueNameRequest.toMap());
       return TwilioRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,
@@ -98,9 +98,9 @@ class FirebaseFunctions implements BackendService {
   @override
   Future<TwilioListRoomResponse> listRooms(TwilioListRoomRequest twilioListRoomRequest) async {
     try {
-      final response = await cf.getHttpsCallable(functionName: 'listRooms').call(twilioListRoomRequest.toMap());
+      final response = await cf.httpsCallable('listRooms').call(twilioListRoomRequest.toMap());
       return TwilioListRoomResponse.fromMap(Map<String, dynamic>.from(response.data));
-    } on CloudFunctionsException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       throw PlatformException(
         code: e.code,
         message: e.message,

@@ -13,13 +13,21 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     internal static var remoteDataTrackListener = RemoteDataTrackListener()
 
+    internal static var audioNotificationListener = AudioNotificationListener()
+
     public static var cameraSource: CameraSource?
 
     public static var loggingSink: FlutterEventSink?
 
-    public static var audioDevice: AudioDevice?
-
     public static var nativeDebug = false
+
+    public static var audioDebug = false
+
+    internal static var audioDevice: AudioDevice?
+
+    internal static var audioDeviceOnConnected: (() -> Void)?
+
+    internal static var audioDeviceOnDisconnected: (() -> Void)?
 
     public static func debug(_ msg: String) {
         if SwiftTwilioProgrammableVideoPlugin.nativeDebug {
@@ -31,9 +39,33 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    public static func debugAudio(_ msg: String) {
+        if SwiftTwilioProgrammableVideoPlugin.audioDebug {
+            guard let loggingSink = loggingSink else {
+                return
+            }
+            loggingSink(msg)
+        }
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftTwilioProgrammableVideoPlugin()
         instance.onRegister(registrar)
+    }
+
+    public static func setCustomAudioDevice(_ device: AudioDevice, onConnected: @escaping () -> Void, onDisconnected: @escaping () -> Void) {
+        audioDevice = device
+        audioDeviceOnConnected = onConnected
+        audioDeviceOnDisconnected = onDisconnected
+        if let audioDevice = audioDevice as? AVAudioEngineDevice {
+            audioDevice.setApplyAudioSettings(pluginHandler.applyAudioSettings)
+        }
+    }
+
+    public static func clearCustomAudioDevice() {
+        audioDevice = nil
+        audioDeviceOnConnected = nil
+        audioDeviceOnDisconnected = nil
     }
 
     private var methodChannel: FlutterMethodChannel?
@@ -49,6 +81,8 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     private var loggingChannel: FlutterEventChannel?
 
     private var remoteDataTrackChannel: FlutterEventChannel?
+
+    private var audioNotificationChannel: FlutterEventChannel?
 
     public func onRegister(_ registrar: FlutterPluginRegistrar) {
         methodChannel = FlutterMethodChannel(name: "twilio_programmable_video", binaryMessenger: registrar.messenger())
@@ -72,19 +106,22 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
         remoteDataTrackChannel = FlutterEventChannel(name: "twilio_programmable_video/remote_data_track", binaryMessenger: registrar.messenger())
         remoteDataTrackChannel?.setStreamHandler(RemoteDataTrackStreamHandler())
 
+        audioNotificationChannel = FlutterEventChannel(name: "twilio_programmable_video/audio_notification", binaryMessenger: registrar.messenger())
+        audioNotificationChannel?.setStreamHandler(AudioNotificationStreamHandler())
+
         let pvf = ParticipantViewFactory(SwiftTwilioProgrammableVideoPlugin.pluginHandler)
         registrar.register(pvf, withId: "twilio_programmable_video/views")
     }
 
     class CameraStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler.onListen => Camera eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler::onListen => Camera eventChannel attached")
             pluginHandler.events = events
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler.onCancel => Camera eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("CameraStreamHandler::onCancel => Camera eventChannel detached")
             pluginHandler.events = nil
             return nil
         }
@@ -93,14 +130,14 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
     class RoomStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
             guard let roomListener = SwiftTwilioProgrammableVideoPlugin.roomListener else { return nil }
-            SwiftTwilioProgrammableVideoPlugin.debug("RoomStreamHandler.onListen => Room eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RoomStreamHandler::onListen => Room eventChannel attached")
             roomListener.events = events
             roomListener.room = TwilioVideoSDK.connect(options: roomListener.connectOptions, delegate: roomListener)
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("RoomStreamHandler.onCancel => Room eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RoomStreamHandler::onCancel => Room eventChannel detached")
             guard let roomListener = SwiftTwilioProgrammableVideoPlugin.roomListener else { return nil }
             roomListener.events = nil
             return nil
@@ -109,13 +146,13 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     class RemoteParticipantStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantStreamHandler.onListen => RemoteParticipant eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantStreamHandler::onListen => RemoteParticipant eventChannel attached")
             SwiftTwilioProgrammableVideoPlugin.remoteParticipantListener.events = events
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantStreamHandler.onCancel => RemoteParticipant eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteParticipantStreamHandler::onCancel => RemoteParticipant eventChannel detached")
             SwiftTwilioProgrammableVideoPlugin.remoteParticipantListener.events = nil
             return nil
         }
@@ -123,13 +160,13 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     class LocalParticipantStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler.onListen => LocalParticipant eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler::onListen => LocalParticipant eventChannel attached")
             SwiftTwilioProgrammableVideoPlugin.localParticipantListener.events = events
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler.onCancel => LocalParticipant eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantStreamHandler::onCancel => LocalParticipant eventChannel detached")
             SwiftTwilioProgrammableVideoPlugin.localParticipantListener.events = nil
             return nil
         }
@@ -137,13 +174,13 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     class LoggingStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler.onListen => Logging eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler::onListen => Logging eventChannel attached")
             SwiftTwilioProgrammableVideoPlugin.loggingSink = events
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler.onCancel => Logging eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("LoggingStreamHandler::onCancel => Logging eventChannel detached")
             SwiftTwilioProgrammableVideoPlugin.loggingSink = nil
             return nil
         }
@@ -151,14 +188,28 @@ public class SwiftTwilioProgrammableVideoPlugin: NSObject, FlutterPlugin {
 
     class RemoteDataTrackStreamHandler: NSObject, FlutterStreamHandler {
         func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler.onListen => RemoteDataTrack eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler::onListen => RemoteDataTrack eventChannel attached")
             SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener.events = events
             return nil
         }
 
         func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler.onCancel => RemoteDataTrack eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.debug("RemoteDataTrackStreamHandler::onCancel => RemoteDataTrack eventChannel detached")
             SwiftTwilioProgrammableVideoPlugin.remoteDataTrackListener.events = nil
+            return nil
+        }
+    }
+
+    class AudioNotificationStreamHandler: NSObject, FlutterStreamHandler {
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("AudioNotificationStreamHandler::onListen => AudioNotification eventChannel attached")
+            SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.events = events
+            return nil
+        }
+
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            SwiftTwilioProgrammableVideoPlugin.debug("AudioNotificationStreamHandler::onCancel => AudioNotification eventChannel detached")
+            SwiftTwilioProgrammableVideoPlugin.audioNotificationListener.events = nil
             return nil
         }
     }

@@ -70,7 +70,7 @@ class TwilioException implements Exception {
   final int code;
 
   /// Message containing a short explanation.
-  final String message;
+  final String? message;
 
   const TwilioException(this.code, this.message);
 
@@ -81,9 +81,6 @@ class TwilioException implements Exception {
 
   /// Construct from a [TwilioExceptionModel].
   factory TwilioException._fromModel(TwilioExceptionModel model) {
-    if (model == null) {
-      return null;
-    }
     return TwilioException(model.code, model.message);
   }
 }

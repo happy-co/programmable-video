@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twilio_programmable_video_platform_interface/src/audio_codecs/audio_codec.dart';
-import 'package:twilio_programmable_video_platform_interface/src/enums/camera_source.dart';
+import 'package:twilio_programmable_video_platform_interface/src/camera_source.dart';
 import 'package:twilio_programmable_video_platform_interface/src/enums/region.dart';
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 import 'package:twilio_programmable_video_platform_interface/src/video_codecs/video_codec.dart';
@@ -30,7 +30,7 @@ void main() {
     LocalVideoTrackModel(
       name: 'video',
       enabled: true,
-      cameraCapturer: CameraCapturerModel(CameraSource.FRONT_CAMERA, 'type'),
+      cameraCapturer: CameraCapturerModel(CameraSource('FRONT_CAMERA', false, false, false), 'type'),
     ),
   ];
   final enableAutomaticSubscription = true;
@@ -68,12 +68,12 @@ void main() {
           'connectOptions': {
             'accessToken': accessToken,
             'roomName': roomName,
-            'region': EnumToString.parse(region),
+            'region': EnumToString.convertToString(region),
             'preferredAudioCodecs': Map<String, String>.fromIterable(preferredAudioCodecs.map<String>((AudioCodec a) => a.name)),
             'preferredVideoCodecs': Map<String, String>.fromIterable(preferredVideoCodecs.map<String>((VideoCodec v) => v.name)),
-            'audioTracks': Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object>>((TrackModel a) => a.toMap())),
+            'audioTracks': Map<Object, Object>.fromIterable(audioTracks.map<Map<String, Object?>>((TrackModel a) => a.toMap())),
             'dataTracks': Map<Object, Object>.fromIterable(dataTracks.map<Map<String, Object>>((LocalDataTrackModel d) => d.toMap())),
-            'videoTracks': Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object>>((LocalVideoTrackModel v) => v.toMap())),
+            'videoTracks': Map<Object, Object>.fromIterable(videoTracks.map<Map<String, Object?>>((LocalVideoTrackModel v) => v.toMap())),
             'enableDominantSpeaker': enableDominantSpeaker,
             'enableAutomaticSubscription': enableAutomaticSubscription,
             'enableNetworkQuality': enableNetworkQuality,
@@ -86,22 +86,6 @@ void main() {
 
   group('ConnectOptionsModel()', () {
     test('should not construct without accessToken', () {
-      expect(
-          () => ConnectOptionsModel(
-                null,
-                audioTracks: audioTracks,
-                dataTracks: dataTracks,
-                videoTracks: videoTracks,
-                enableAutomaticSubscription: enableAutomaticSubscription,
-                enableDominantSpeaker: enableDominantSpeaker,
-                preferredAudioCodecs: preferredAudioCodecs,
-                preferredVideoCodecs: preferredVideoCodecs,
-                region: region,
-                roomName: roomName,
-                enableNetworkQuality: enableNetworkQuality,
-                networkQualityConfiguration: networkQualityConfiguration,
-              ),
-          throwsAssertionError);
       expect(
           () => ConnectOptionsModel(
                 '',

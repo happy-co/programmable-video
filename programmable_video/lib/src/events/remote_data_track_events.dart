@@ -10,8 +10,7 @@ class RemoteDataTrackStringMessageEvent {
   RemoteDataTrackStringMessageEvent(
     this.remoteDataTrack,
     this.message,
-  )   : assert(remoteDataTrack != null),
-        assert(message != null);
+  );
 }
 
 class RemoteDataTrackBufferMessageEvent {
@@ -24,6 +23,5 @@ class RemoteDataTrackBufferMessageEvent {
   RemoteDataTrackBufferMessageEvent(
     this.remoteDataTrack,
     this.message,
-  )   : assert(remoteDataTrack != null),
-        assert(message != null);
+  );
 }

@@ -1,13 +1,12 @@
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:twilio_programmable_video_platform_interface/twilio_programmable_video_platform_interface.dart';
 
 abstract class BaseCameraEvent {
-  final CameraCapturerModel model;
+  final CameraCapturerModel? model;
 
   const BaseCameraEvent(this.model);
 
   @override
-  String toString() => 'CameraEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'CameraEvent: { source: ${model!.source} }';
 }
 
 /// Use this event if camera was switched
@@ -17,7 +16,7 @@ class CameraSwitched extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'CameraSwitchedEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'CameraSwitchedEvent: { source: ${model!.source} }';
 }
 
 /// Use this event if camera was switched
@@ -27,7 +26,7 @@ class FirstFrameAvailable extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'FirstFrameAvailableEvent: { cameraSource: ${EnumToString.parse(model.source)} }';
+  String toString() => 'FirstFrameAvailableEvent: { source: ${model!.source} }';
 }
 
 /// Use this event if camera was switched
@@ -40,12 +39,12 @@ class CameraError extends BaseCameraEvent {
   ) : super(model);
 
   @override
-  String toString() => 'CameraErrorEvent: { cameraSource: ${EnumToString.parse(model.source)}, exception: $exception }';
+  String toString() => 'CameraErrorEvent: { source: ${model!.source}, exception: $exception }';
 }
 
-class SkipableCameraEvent extends BaseCameraEvent {
-  const SkipableCameraEvent() : super(null);
+class SkippableCameraEvent extends BaseCameraEvent {
+  const SkippableCameraEvent() : super(null);
 
   @override
-  String toString() => 'SkipableCameraEvent';
+  String toString() => 'SkippableCameraEvent';
 }

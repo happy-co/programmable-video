@@ -4,28 +4,28 @@ part of twilio_programmable_video;
 class LocalDataTrackPublication implements DataTrackPublication {
   final String _sid;
 
-  LocalDataTrack _localDataTrack;
+  LocalDataTrack? _localDataTrack;
 
   /// The base data track of the published local data track.
   @override
-  DataTrack get dataTrack => _localDataTrack;
+  DataTrack? get dataTrack => _localDataTrack;
 
   /// Returns `true` if the published data track is enabled or `false` otherwise.
   @override
-  bool get isTrackEnabled => _localDataTrack.isEnabled;
+  bool get isTrackEnabled => _localDataTrack?.isEnabled ?? false;
 
   /// The name of the local data track.
   @override
-  String get trackName => _localDataTrack.name;
+  String get trackName => _localDataTrack?.name ?? '';
 
   /// The SID of the local data track.
   @override
   String get trackSid => _sid;
 
   /// The local data track.
-  LocalDataTrack get localDataTrack => _localDataTrack;
+  LocalDataTrack? get localDataTrack => _localDataTrack;
 
-  LocalDataTrackPublication(this._sid) : assert(_sid != null);
+  LocalDataTrackPublication(this._sid);
 
   /// Construct from a [LocalDataTrackPublicationModel].
   factory LocalDataTrackPublication._fromModel(LocalDataTrackPublicationModel model) {
@@ -36,12 +36,10 @@ class LocalDataTrackPublication implements DataTrackPublication {
 
   /// Update properties from a [LocalDataTrackPublicationModel].
   void _updateFromModel(LocalDataTrackPublicationModel model) {
-    if (model.localDataTrack != null) {
-      if (_localDataTrack == null) {
-        _localDataTrack = LocalDataTrack._fromModel(model.localDataTrack);
-      } else {
-        _localDataTrack._updateFromModel(model.localDataTrack);
-      }
+    if (_localDataTrack == null) {
+      _localDataTrack = LocalDataTrack._fromModel(model.localDataTrack);
+    } else {
+      _localDataTrack!._updateFromModel(model.localDataTrack);
     }
   }
 }

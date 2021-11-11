@@ -7,6 +7,12 @@ class DataTrackOptions {
   /// Default value for max retransmits
   static const int defaultMaxRetransmits = -1;
 
+  /// The maximum period of time in milliseconds in which retransmissions will be sent.
+  static const int defaultMaxPacketLifeTimeValue = 65535;
+
+  /// The maximum number of times to transmit a message before giving up.
+  static const int defaultMaxRetransmitsValue = 65535;
+
   /// Ordered transmission of messages. Default is `true`.
   final bool ordered;
 
@@ -25,11 +31,9 @@ class DataTrackOptions {
     this.ordered = true,
     this.maxPacketLifeTime = DataTrackOptions.defaultMaxPacketLifeTime,
     this.maxRetransmits = DataTrackOptions.defaultMaxRetransmits,
-    this.name,
-  })  : assert(ordered != null),
-        assert(maxPacketLifeTime != null),
-        assert(maxRetransmits != null),
-        assert((maxRetransmits == DataTrackOptions.defaultMaxRetransmits && maxPacketLifeTime == DataTrackOptions.defaultMaxPacketLifeTime) ||
+    required this.name,
+  }) : assert((maxRetransmits == DataTrackOptions.defaultMaxRetransmits && maxPacketLifeTime == DataTrackOptions.defaultMaxPacketLifeTime) ||
             (maxRetransmits != DataTrackOptions.defaultMaxRetransmits && maxPacketLifeTime == DataTrackOptions.defaultMaxPacketLifeTime) ||
-            (maxRetransmits == DataTrackOptions.defaultMaxRetransmits && maxPacketLifeTime != DataTrackOptions.defaultMaxPacketLifeTime));
+            (maxRetransmits == DataTrackOptions.defaultMaxRetransmits && maxPacketLifeTime != DataTrackOptions.defaultMaxPacketLifeTime) ||
+            (maxRetransmits == DataTrackOptions.defaultMaxRetransmitsValue && maxPacketLifeTime == defaultMaxPacketLifeTimeValue));
 }

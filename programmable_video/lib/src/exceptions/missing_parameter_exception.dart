@@ -2,8 +2,8 @@ part of twilio_programmable_video;
 
 class MissingParameterException extends PlatformException {
   MissingParameterException({
-    @required String code,
-    String message,
+    required String code,
+    String? message,
     dynamic details,
   }) : super(
           code: code,

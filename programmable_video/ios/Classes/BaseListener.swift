@@ -6,7 +6,7 @@ public class BaseListener: NSObject {
     public var events: FlutterEventSink?
 
     private func errorToDict(_ error: Error?) -> [String: Any]? {
-        if let error = error as? NSError {
+        if let error = error as NSError? {
             return [
                 "code": error.code,
                 "message": error.description

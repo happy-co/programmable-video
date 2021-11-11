@@ -17,7 +17,7 @@ void main() {
     });
 
     test('BufferMessage.toString() should return correct String', () {
-      final message = null;
+      final dynamic message = null;
       final event = BufferMessage(remoteDataTrack, message);
       expect(
         event.toString(),
@@ -34,11 +34,11 @@ void main() {
       );
     });
 
-    test('SkipAbleRemoteDataTrackEvent.toString() should return correct String', () {
-      final event = SkipAbleRemoteDataTrackEvent();
+    test('SkippableRemoteDataTrackEvent.toString() should return correct String', () {
+      final event = SkippableRemoteDataTrackEvent();
       expect(
         event.toString(),
-        'SkipAbleRemoteDataTrackEvent',
+        'SkippableRemoteDataTrackEvent',
       );
     });
   });
