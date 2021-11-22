@@ -30,6 +30,11 @@ class RoomListener: BaseListener, RoomDelegate {
 
     func roomDidDisconnect(room: Room, error: Error?) {
         debug("roomDidDisconnect => room sid is '\(room.sid)', error is \(String(describing: error))")
+
+        if let onDisconnect = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnDisconnected {
+            onDisconnect()
+        }
+
         sendEvent("disconnected", data: [ "room": roomToDict(room) ], error: error)
     }
 

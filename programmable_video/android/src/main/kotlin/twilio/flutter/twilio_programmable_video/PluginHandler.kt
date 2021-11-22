@@ -97,7 +97,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
-        debug("onMethodCall => received ${call.method}")
+        // `getStats`, if called repeatedly to drive an animation, is quite noisy
+        if (call.method != "getStats") {
+            debug("onMethodCall => received ${call.method}")
+        }
         when (call.method) {
             "debug" -> debug(call, result)
             "connect" -> connect(call, result)
@@ -394,13 +397,17 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun connect(call: MethodCall, result: MethodChannel.Result) {
         debug("connect => called, Build.MODEL: '${Build.MODEL}'")
         if (TwilioProgrammableVideoPlugin.HARDWARE_AEC_BLACKLIST.contains(Build.MODEL) && !WebRtcAudioUtils.useWebRtcBasedAcousticEchoCanceler()) {
-            debug("setWebRtcBasedAcousticEchoCanceler => true")
+            debug("connect => setWebRtcBasedAcousticEchoCanceler: true")
             WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(true)
         }
         val optionsObj = call.argument<Map<String, Any>>("connectOptions")
             ?: return result.error("MISSING_PARAMS", "Missing 'connectOptions' parameter", null)
 
-        setAudioFocus(true)
+        val obtainedFocus = setAudioFocus(true)
+        if (!obtainedFocus) {
+            debug("connect => Failed to obtain audio focus, aborting connect.")
+            return result.error("ACTIVE_CALL", "Detected an active call that is using the audio system.", null)
+        }
 
         try {
             val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
@@ -564,7 +571,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         result.success(enableNative)
     }
 
-    internal fun setAudioFocus(focus: Boolean) {
+    internal fun setAudioFocus(focus: Boolean): Boolean {
         if (focus) {
             if (previousAudioMode == null) {
                 previousAudioMode = audioManager.mode
@@ -574,6 +581,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 previousVolumeControlStream = volumeControlStream
             }
             previousMicrophoneMute = audioManager.isMicrophoneMute
+            var requestResult: Int
 
             // Request audio focus
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -583,7 +591,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     .build()
                 audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                     .setAudioAttributes(playbackAttributes)
-                    .setAcceptsDelayedFocusGain(true)
+                    .setAcceptsDelayedFocusGain(false)
                     .setOnAudioFocusChangeListener {
                         // Occasionally observe during tests that just after requesting AudioFocus we receive a AudioFocus LOSS event
                         // When this occurred during tests, Spotify audio continues rather than pausing while our audio begins.
@@ -599,9 +607,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     "\n\tfocus: $focus," +
                     "\n\taudioFocusRequest: $audioFocusRequest" +
                     "\n\tpreviousAudioMode: $previousAudioMode")
-                audioManager.requestAudioFocus(audioFocusRequest!!)
+                requestResult = audioManager.requestAudioFocus(audioFocusRequest!!)
             } else {
-                audioManager.requestAudioFocus(
+                requestResult = audioManager.requestAudioFocus(
                     null, AudioManager.STREAM_VOICE_CALL,
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
                 )
@@ -620,6 +628,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
             audioManager.isMicrophoneMute = false
             this.activity?.volumeControlStream = AudioManager.STREAM_VOICE_CALL
+            val requestGranted = requestResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            debug("requestAudioFocus => requestGranted: $requestGranted")
+            return requestGranted
         } else {
             debug("setAudioFocus =>" +
                     "\tfocus: $focus," +
@@ -637,6 +648,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             }
             audioManager.isMicrophoneMute = previousMicrophoneMute
             this.activity?.volumeControlStream = previousVolumeControlStream
+            return true
         }
     }
 

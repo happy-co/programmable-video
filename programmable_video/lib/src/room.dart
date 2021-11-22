@@ -133,11 +133,14 @@ class Room {
   /// Disconnects from the room.
   Future<void> disconnect() async {
     await ProgrammableVideoPlatform.instance.disconnect();
+    _localParticipant?._dispose();
+  }
+
+  Future<void> dispose() async {
     await _roomStream.cancel();
     await _remoteParticipantStream.cancel();
     await _localParticipantStream.cancel();
     await _remoteDataTrackStream.cancel();
-    _localParticipant?._dispose();
   }
 
   /// Find or create a [RemoteParticipant].
@@ -179,6 +182,8 @@ class Room {
     } else if (event is Connected) {
       _onConnected.add(this);
     } else if (event is Disconnected) {
+      dispose();
+
       for (var participant in _remoteParticipants) {
         participant._dispose();
       }

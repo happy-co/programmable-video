@@ -31,6 +31,7 @@ part 'events/participant_events.dart';
 part 'events/remote_data_track_events.dart';
 part 'events/remote_participant_events.dart';
 part 'events/room_events.dart';
+part 'exceptions/active_call_exception.dart';
 part 'exceptions/initialization_exception.dart';
 part 'exceptions/missing_camera_exception.dart';
 part 'exceptions/missing_parameter_exception.dart';

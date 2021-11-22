@@ -53,6 +53,12 @@ class TwilioProgrammableVideo {
         message: err.message,
         details: err.details,
       );
+    } else if (err.code == 'ACTIVE_CALL') {
+      return ActiveCallException(
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      );
     }
     return err;
   }
@@ -183,6 +189,7 @@ class TwilioProgrammableVideo {
   /// Throws [MissingParameterException] if [ConnectOptions] are not provided.
   /// Throws [MissingCameraException] if no camera is found for the specified [CameraSource].
   /// Throws [InitializationException] if an error is caught when attempting to connect.
+  /// Throws [ActiveCallException] if it fails to get AudioFocus on Android, or activate its AVAudioSession on iOS.
   static Future<Room> connect(ConnectOptions connectOptions) async {
     if (await requestPermissionForCameraAndMicrophone()) {
       try {

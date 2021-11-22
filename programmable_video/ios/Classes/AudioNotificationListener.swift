@@ -37,7 +37,7 @@ internal class AudioNotificationListener: BaseListener {
                  AVAudioSession.RouteChangeReason.categoryChange,
                  // In iOS 9.2+ switching routes from a BT device in control center may cause a category change.
                  AVAudioSession.RouteChangeReason.routeConfigurationChange:
-                debug("category: \(AVAudioSession.sharedInstance().category)")
+                debug("handleRouteChange => category: \(AVAudioSession.sharedInstance().category)")
             // Each device change might cause the actual sample rate or channel configuration of the session to change.
             case AVAudioSession.RouteChangeReason.newDeviceAvailable:
                 let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey]

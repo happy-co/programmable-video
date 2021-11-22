@@ -1,3 +1,7 @@
+## 0.11.0+1
+
+- Throw `ActiveCallException` if we cannot activate the `AVAudioSession` (iOS) or get Audio Focus (Android) on `connect`.
+
 ## 0.11.0
 
 - Added responsive management of audio settings using `setAudioSettings`.

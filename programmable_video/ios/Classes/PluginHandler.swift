@@ -1,5 +1,6 @@
 // swiftlint:disable type_body_length
 // swiftlint:disable file_length
+import CallKit
 import Flutter
 import Foundation
 import TwilioVideo
@@ -19,7 +20,10 @@ public class PluginHandler: BaseListener {
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        debug("handle => received \(call.method)")
+        // `getStats`, if called repeatedly to drive an animation, is quite noisy
+        if call.method != "getStats" {
+            debug("handle => received \(call.method)")
+        }
         switch call.method {
         case "debug":
             debug(call, result: result)
@@ -358,7 +362,7 @@ public class PluginHandler: BaseListener {
         let audioSession = AVAudioSession.sharedInstance()
         let mode: AVAudioSession.Mode = getAudioMode()
         let options: AVAudioSession.CategoryOptions = getAudioOptions()
-        debug("applyAudioSettings =>\n\tmode: \(mode)\n\toptions: \(options)")
+        debug("applyAudioSettings =>\n\tmode: \(mode)\n\toptions: \(options)\n\tcurrentMode: \(audioSession.mode)\n\tcurrentOptions: \(audioSession.categoryOptions)")
         try audioSession.setCategory(.playAndRecord, mode: mode, options: options)
 
         if SwiftTwilioProgrammableVideoPlugin.audioDevice == nil || !(SwiftTwilioProgrammableVideoPlugin.audioDevice! is AVAudioEngineDevice) {
@@ -421,10 +425,6 @@ public class PluginHandler: BaseListener {
             SwiftTwilioProgrammableVideoPlugin.cameraSource = nil
         }
 
-        if let onDisconnect = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnDisconnected {
-            onDisconnect()
-        }
-
         result(true)
     }
 
@@ -442,6 +442,24 @@ public class PluginHandler: BaseListener {
         TwilioVideoSDK.audioDevice = SwiftTwilioProgrammableVideoPlugin.audioDevice!
     }
 
+    private func checkForActiveCalls() throws {
+        let observer = CXCallObserver()
+        let calls = observer.calls
+        var hasActiveCalls = false
+        for call in calls where !call.hasEnded {
+            hasActiveCalls = true
+            break
+        }
+
+        if hasActiveCalls && AVAudioSession.sharedInstance().isOtherAudioPlaying {
+            do {
+                try AVAudioSession.sharedInstance().setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
+            } catch let error {
+                throw error
+            }
+        }
+    }
+
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func connect(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("connect => called")
@@ -455,6 +473,13 @@ public class PluginHandler: BaseListener {
 
         guard let accessToken = optionsObj["accessToken"] as? String else {
             return result(FlutterError(code: "MISSING_PARAMS", message: missingParameterMessage("accessToken"), details: nil))
+        }
+
+        do {
+            try checkForActiveCalls()
+        } catch {
+            debug("connect => detected an active call that is preventing activation of the AVAudioSession")
+            return result(FlutterError(code: "ACTIVE_CALL", message: "Detected an active call that is using the audio system.", details: nil))
         }
 
         // Override the device before creating any Rooms or Tracks.

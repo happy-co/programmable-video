@@ -140,7 +140,7 @@ internal class AVAudioPlayerNodeManager {
             node.resumeAfterRendererStarted = resumeAfterRendererStarted
 
             fadeOutNode(node)
-            debug("pauseNode => faded out node \(node.id) isPlaying \(node.player.isPlaying)\n\tcurrentQueue: \(Thread.current.name)")
+            debug("pauseNode => faded out node \(node.id) isPlaying \(node.player.isPlaying)")
             node.player.stop()
             debug("pauseNode => stopped node \(node.id)")
             pausedNodes[node.id] = node
@@ -190,15 +190,12 @@ internal class AVAudioPlayerNodeManager {
     func fadeOut(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume >= 0 ? volume : 0
         node.eq.globalGain = volumeToGain(vol)
-        debug("fadeOut => node \(node.id), volume \(gainToVolume(node.eq.globalGain)) currentVolume: \(volume) vol: \(vol)")
 
         if vol > 0 {
             let timeSecs = 0.001  /// 1 ms
             Thread.sleep(forTimeInterval: timeSecs)
             let nextStep = vol - volumeIncrement
             fadeOut(node, nextStep, volumeIncrement)
-        } else {
-            debug("fadeOut => complete")
         }
     }
 
@@ -216,15 +213,12 @@ internal class AVAudioPlayerNodeManager {
     func fadeIn(_ node: AVAudioPlayerNodeBundle, _ volume: Double, _ volumeIncrement: Double) {
         let vol = volume <= node.volume ? volume : node.volume
         node.eq.globalGain = volumeToGain(vol)
-        debug("fadeIn => node \(node.id), volume \(gainToVolume(node.eq.globalGain)) currentVolume: \(volume), vol: \(vol)")
 
         if volume < node.volume {
             let timeSecs = 0.001  /// 1 ms
             Thread.sleep(forTimeInterval: timeSecs)
             let nextStep = volume + volumeIncrement
             fadeIn(node, nextStep, volumeIncrement)
-        } else {
-            debug("fadeIn => complete")
         }
     }
 
