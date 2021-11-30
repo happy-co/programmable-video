@@ -144,7 +144,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     private fun takePhoto(call: MethodCall, result: MethodChannel.Result) {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        debug("PluginHandler.takePhoto => called")
         if (allowCamera2) {
             takePhotoQueue.offer(TakePhotoRequest(call, result))
         } else {
@@ -158,7 +158,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 val stream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
                 val byteArray = stream.toByteArray()
-                TwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => Photo data size: ${byteArray.size}")
+                debug("PluginHandler.takePhoto => Photo data size: ${byteArray.size}")
                 bitmap.recycle()
                 result.success(byteArray)
             } catch (e: java.lang.Exception) {
@@ -183,7 +183,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     val quality = call.argument<Int>("imageCompression") ?: 100
                     val nv21Data = YuvUtils.createNV21Data(i420Buffer)
                     val jpegData = YuvUtils.createJPEGData(nv21Data, i420Buffer.width, i420Buffer.height, quality)
-                    TwilioProgrammableVideoPlugin.debug("PluginHandler.onRenderFrame => Photo data size: ${jpegData.size}")
+                    debug("PluginHandler.onRenderFrame => Photo data size: ${jpegData.size}")
                     result.success(jpegData)
                 } else {
                     result.error("ERROR", "Photo data is empty", null)
@@ -224,14 +224,14 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     }
 
     private fun localParticipantResetVideo(call: MethodCall, result: MethodChannel.Result) {
-        TwilioProgrammableVideoPlugin.debug("PluginHandler.localParticipantResetVideo => called")
+        debug("PluginHandler.localParticipantResetVideo => called")
         val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
         if (localVideoTrack != null && localVideoTrack.isTrackEnabled) {
             getLocalParticipant()?.unpublishTrack(localVideoTrack.localVideoTrack)
             getLocalParticipant()?.publishTrack(localVideoTrack.localVideoTrack)
             return result.success(true)
         }
-        TwilioProgrammableVideoPlugin.debug("No LocalVideoTrack found or LocalVideoTrack already released while resetting video")
+        debug("No LocalVideoTrack found or LocalVideoTrack already released while resetting video")
         return result.success(false)
     }
 
@@ -254,7 +254,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private fun localVideoTrackFrameCount(call: MethodCall, result: MethodChannel.Result) {
         val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
         if (localVideoTrack == null) {
-            TwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrack#FrameCount => No video track found")
+            debug("PluginHandler.localVideoTrack#FrameCount => No video track found")
         }
         return result.success(frameCount.get())
     }
@@ -506,7 +506,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
 
             if (optionsObj["allowCamera2"] != null && optionsObj["allowCamera2"] is Boolean) {
-                TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting allowCamera2 to '${optionsObj["allowCamera2"]}'")
+                debug("PluginHandler.connect => setting allowCamera2 to '${optionsObj["allowCamera2"]}'")
                 allowCamera2 = optionsObj["allowCamera2"] as Boolean
             }
 
@@ -639,9 +639,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                                     { it.framerate }
                             )).reversed()
 
-                            TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => supported camera formats")
+                            debug("PluginHandler.connect => supported camera formats")
                             for (format in formats) {
-                                TwilioProgrammableVideoPlugin.debug("${format.dimensions.width}x${format.dimensions.height} ${format.framerate}fps")
+                                debug("${format.dimensions.width}x${format.dimensions.height} ${format.framerate}fps")
                             }
 
                             var highestDimensions = VideoDimensions.HD_720P_VIDEO_DIMENSIONS
@@ -655,7 +655,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                                     break
                                 }
                             }
-                            TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => selected camera format: ${highestDimensions.width}x${highestDimensions.height} ${highestFPS}fps")
+                            debug("PluginHandler.connect => selected camera format: ${highestDimensions.width}x${highestDimensions.height} ${highestFPS}fps")
 
                             val videoConstraints = VideoConstraints.Builder()
                                     .minVideoDimensions(highestDimensions)
@@ -671,9 +671,9 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                             // Not all devices report the formats in the same order
                             formats.sortedWith(compareBy({ it.dimensions.width }, { it.dimensions.height }))
 
-                            TwilioProgrammableVideoPlugin.debug("PluginHandler.connect => support camera formats")
+                            debug("PluginHandler.connect => support camera formats")
                             for(format in formats) {
-                                TwilioProgrammableVideoPlugin.debug("${format.dimensions.width} x ${format.dimensions.height}")
+                                debug("${format.dimensions.width} x ${format.dimensions.height}")
                             }
 
                             val highestDimensions = formats.first().dimensions

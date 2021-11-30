@@ -81,9 +81,6 @@ class TwilioException implements Exception {
 
   /// Construct from a [TwilioExceptionModel].
   factory TwilioException._fromModel(TwilioExceptionModel model) {
-    if (model == null) {
-      return null;
-    }
     return TwilioException(model.code, model.message);
   }
 }

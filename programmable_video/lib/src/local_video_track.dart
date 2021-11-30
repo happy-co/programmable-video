@@ -34,8 +34,8 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// The results of this operation are signaled to other [Participant]s in the same [Room].
   /// When a video track is disabled, blank frames are sent in place of video frames from a video capturer.
-  Future<int> frameCount() async {
-    return const MethodChannel('twilio_programmable_video').invokeMethod('LocalVideoTrack#frameCount', <String, dynamic>{'name': name});
+  Future<int?> frameCount() async {
+    return const MethodChannel('twilio_programmable_video').invokeMethod<int>('LocalVideoTrack#frameCount', <String, dynamic>{'name': name});
   }
 
   /// Set the state of the local video track.

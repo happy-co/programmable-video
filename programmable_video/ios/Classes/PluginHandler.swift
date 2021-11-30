@@ -123,7 +123,7 @@ public class PluginHandler: BaseListener {
     }
 
     private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.takePhoto => called")
+        debug("PluginHandler.takePhoto => called")
         let arguments = call.arguments as? [String: Any?]
         let imageCompression = arguments!["imageCompression"] as? CGFloat ?? 100
         let convertedImageCompression = imageCompression / 100
@@ -215,7 +215,7 @@ public class PluginHandler: BaseListener {
     }
 
     private func localParticipantResetVideo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localParticipantResetVideo => called")
+        debug("PluginHandler.localParticipantResetVideo => called")
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first
         guard let videoTrack = localVideoTrack?.localTrack else {
                return result(FlutterError(code: "NOT_FOUND", message: "No LocalVideoTrack found", details: nil))
@@ -232,7 +232,7 @@ public class PluginHandler: BaseListener {
         guard let localVideoTrackName = arguments["name"] as? String else {
             return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'name' parameter", details: nil))
         }
-        SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.localVideoTrackFrameCount => called for \(localVideoTrackName), enable=\(String(describing: localVideoTrackEnable))")
+        debug("PluginHandler.localVideoTrackFrameCount => called for \(localVideoTrackName), enable=\(String(describing: localVideoTrackEnable))")
 
         let localVideoTrack = getLocalParticipant()?.localVideoTracks.first(where: {$0.trackName == localVideoTrackName})
         if localVideoTrack != nil {
@@ -711,13 +711,6 @@ public class PluginHandler: BaseListener {
                             }
                         }
 
-                        // Sometimes capture does not work when first initlaized on iOS 13.4+
-                        // re-selecting the capture device fixes this problem
-                        videoSource.selectCaptureDevice(cameraDevice, format: videoFormat, completion: { (_, _, error) in
-                            if let error = error {
-                                SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => setting video format errored - code: \((error as NSError).code) message: \((error as NSError).description)")
-                            }
-                        })
                         videoTracks.append(localVideoTrack)
                         SwiftTwilioProgrammableVideoPlugin.cameraSource = videoSource
                     }
@@ -812,7 +805,7 @@ public class PluginHandler: BaseListener {
 
         guard let videoFormat = (videoFormats.reversed.array as! [VideoFormat]).first(where: {
             $0.dimensions.height <= 720 }) else {
-            SwiftTwilioProgrammableVideoPlugin.debug("PluginHandler.connect => could not find an appropriate video format")
+            debug("PluginHandler.connect => could not find an appropriate video format")
                 return nil
         }
         videoFormat.frameRate = 24
