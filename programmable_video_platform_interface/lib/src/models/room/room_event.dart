@@ -2,7 +2,7 @@ import 'package:twilio_programmable_video_platform_interface/src/models/model_ex
 
 /// The base RoomEvent that all other RoomEvent types must extend.
 abstract class BaseRoomEvent {
-  final RoomModel roomModel;
+  final RoomModel? roomModel;
 
   const BaseRoomEvent(this.roomModel);
 
@@ -12,7 +12,7 @@ abstract class BaseRoomEvent {
 
 /// Use this event if connecting to a Room failed.
 class ConnectFailure extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const ConnectFailure(
     RoomModel roomModel,
@@ -33,7 +33,7 @@ class Connected extends BaseRoomEvent {
 
 /// Use this event when the LocalParticipant disconnects from the Room.
 class Disconnected extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const Disconnected(
     RoomModel roomModel,
@@ -80,7 +80,7 @@ class Reconnected extends BaseRoomEvent {
 
 /// Use this event when the LocalParticipant is reconnecting to the Room.
 class Reconnecting extends BaseRoomEvent {
-  final TwilioExceptionModel exception;
+  final TwilioExceptionModel? exception;
 
   const Reconnecting(
     RoomModel roomModel,
@@ -109,7 +109,7 @@ class RecordingStopped extends BaseRoomEvent {
 
 /// Use this event when a new RemoteParticipant becomes the dominant speaker.
 class DominantSpeakerChanged extends BaseRoomEvent {
-  final RemoteParticipantModel dominantSpeaker;
+  final RemoteParticipantModel? dominantSpeaker;
 
   const DominantSpeakerChanged(
     RoomModel roomModel,
@@ -121,9 +121,9 @@ class DominantSpeakerChanged extends BaseRoomEvent {
 }
 
 /// Use this event if an invalid RoomEvent is received from native code which should be skipped.
-class SkipAbleRoomEvent extends BaseRoomEvent {
-  const SkipAbleRoomEvent() : super(null);
+class SkippableRoomEvent extends BaseRoomEvent {
+  const SkippableRoomEvent() : super(null);
 
   @override
-  String toString() => 'SkipAbleRoomEvent';
+  String toString() => 'SkippableRoomEvent';
 }

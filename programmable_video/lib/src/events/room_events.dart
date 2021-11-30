@@ -5,12 +5,12 @@ class RoomConnectFailureEvent {
   final Room room;
 
   /// An exception describing why connect failed.
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomConnectFailureEvent(
     this.room,
     this.exception,
-  ) : assert(room != null);
+  );
 }
 
 class RoomReconnectingEvent {
@@ -20,12 +20,12 @@ class RoomReconnectingEvent {
   /// An error explaining why the [LocalParticipant] is reconnecting to a room.
   /// Errors are limited to [TwilioException.signalingConnectionDisconnectedException]
   /// and [TwilioException.mediaConnectionErrorException].
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomReconnectingEvent(
     this.room,
     this.exception,
-  ) : assert(room != null);
+  );
 }
 
 class RoomDisconnectedEvent {
@@ -34,12 +34,12 @@ class RoomDisconnectedEvent {
 
   /// An exception if there was a problem that caused the room to be disconnected from.
   /// This value will be null is there were no problems disconnecting from the room.
-  final TwilioException exception;
+  final TwilioException? exception;
 
   RoomDisconnectedEvent(
     this.room,
     this.exception,
-  ) : assert(room != null);
+  );
 }
 
 class RoomParticipantConnectedEvent {
@@ -52,8 +52,7 @@ class RoomParticipantConnectedEvent {
   RoomParticipantConnectedEvent(
     this.room,
     this.remoteParticipant,
-  )   : assert(room != null),
-        assert(remoteParticipant != null);
+  );
 }
 
 class RoomParticipantDisconnectedEvent {
@@ -66,8 +65,7 @@ class RoomParticipantDisconnectedEvent {
   RoomParticipantDisconnectedEvent(
     this.room,
     this.remoteParticipant,
-  )   : assert(room != null),
-        assert(remoteParticipant != null);
+  );
 }
 
 class DominantSpeakerChangedEvent {
@@ -75,10 +73,10 @@ class DominantSpeakerChangedEvent {
   final Room room;
 
   /// The remote participant with the loudest audio track
-  final RemoteParticipant remoteParticipant;
+  final RemoteParticipant? remoteParticipant;
 
   DominantSpeakerChangedEvent(
     this.room,
     this.remoteParticipant,
-  ) : assert(room != null);
+  );
 }

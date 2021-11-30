@@ -1,5 +1,7 @@
 // Imports the Flutter Driver API.
 import 'dart:io';
+
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
 
@@ -28,12 +30,12 @@ void main() {
 
     final envVars = Platform.environment;
     // Check if we need a specific timeout (in seconds) otherwise default to 30.
-    final timeout = envVars['E2E_TEST_TIMEOUT_SECS'] != null ? int.tryParse(envVars['E2E_TEST_TIMEOUT_SECS']) : 30;
+    final timeout = envVars['E2E_TEST_TIMEOUT_SECS'] != null ? int.tryParse(envVars['E2E_TEST_TIMEOUT_SECS']!) : 30;
     print('Using a timeout of $timeout seconds');
 
-    FlutterDriver driver;
-    ProcessResult micPermResult;
-    ProcessResult camPermResult;
+    late FlutterDriver driver;
+    late ProcessResult micPermResult;
+    late ProcessResult camPermResult;
 
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
@@ -48,7 +50,7 @@ void main() {
 
       // Running for Android
       if (envVars['ANDROID_SDK_ROOT'] != null) {
-        String adbPath;
+        String? adbPath;
         if (Platform.isLinux || Platform.isMacOS || Platform.isFuchsia) {
           adbPath = '${envVars['ANDROID_SDK_ROOT']}/platform-tools/adb';
         }
@@ -83,14 +85,12 @@ void main() {
 
     // Close the connection to the driver after the tests have completed.
     tearDownAll(() async {
-      if (driver != null) {
-        await driver.close();
-      }
+      await driver.close();
     });
 
     test('sould have started up the app and have an empty room field', () async {
       // Use the `driver.getText` method to verify the field is empty
-      await driver.waitFor(enterRoomNameTextField, timeout: Duration(seconds: timeout));
+      await driver.waitFor(enterRoomNameTextField, timeout: Duration(seconds: timeout!));
       expect(await driver.getText(enterRoomNameTextField), '');
     });
 
@@ -105,7 +105,7 @@ void main() {
       await driver.tap(joinButton);
       // Needed for stuff wrapped in animations, otherwise it can't be found during the tests
       await driver.runUnsynchronized(() async {
-        await driver.waitFor(waitForParticipantText, timeout: Duration(seconds: timeout));
+        await driver.waitFor(waitForParticipantText, timeout: Duration(seconds: timeout!));
         await driver.waitFor(publisherWidget);
         await driver.waitFor(localParticipantVideo);
       });

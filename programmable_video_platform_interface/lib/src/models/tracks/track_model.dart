@@ -6,8 +6,8 @@ abstract class TrackModel {
   final bool enabled;
 
   const TrackModel({
-    this.name,
-    this.enabled,
+    required this.name,
+    required this.enabled,
   });
 
   @override
@@ -16,7 +16,7 @@ abstract class TrackModel {
   }
 
   /// Create map from properties.
-  Map<String, Object> toMap() {
-    return <String, Object>{'enable': enabled, 'name': name};
+  Map<String, Object?> toMap() {
+    return <String, Object?>{'enable': enabled, 'name': name};
   }
 }

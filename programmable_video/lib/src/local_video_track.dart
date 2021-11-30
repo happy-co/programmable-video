@@ -2,22 +2,20 @@ part of twilio_programmable_video;
 
 /// A local video track that gets video frames from a specified [VideoCapturer].
 class LocalVideoTrack extends VideoTrack {
-  Widget _widget;
+  Widget? _widget;
 
   final VideoCapturer _videoCapturer;
 
   /// Check if it is enabled.
   ///
-  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraSource] are provided.
+  /// When the value is `false`, blank video frames are sent. When the value is `true`, frames from the [CameraCapturer] are provided.
   @override
   bool get isEnabled => super._enabled;
 
   /// Retrieves the [VideoCapturer].
   VideoCapturer get videoCapturer => _videoCapturer;
 
-  LocalVideoTrack(enabled, this._videoCapturer, {String name = ''})
-      : assert(_videoCapturer != null),
-        super(enabled, name);
+  LocalVideoTrack(enabled, this._videoCapturer, {String name = ''}) : super(enabled, name);
 
   /// Construct from a [LocalVideoTrackModel].
   factory LocalVideoTrack._fromModel(LocalVideoTrackModel model) {
@@ -49,7 +47,7 @@ class LocalVideoTrack extends VideoTrack {
   /// Throws [NotFoundException] if no track is found by the name provided (probably means you haven't connected).
   Future<void> enable(bool enabled) async {
     try {
-      await ProgrammableVideoPlatform.instance.enableVideoTrack(name: name, enabled: enabled);
+      await ProgrammableVideoPlatform.instance.enableVideoTrack(enabled, name);
       _enabled = enabled;
     } on PlatformException catch (err) {
       throw TwilioProgrammableVideo._convertException(err);
@@ -60,7 +58,7 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// By default the widget will be mirrored, to change that set [mirror] to false.
   /// If you provide a [key] make sure it is unique among all [VideoTrack]s otherwise Flutter might send the wrong creation params to the native side.
-  Widget widget({bool mirror = true, Key key}) {
+  Widget widget({bool mirror = true, Key? key}) {
     key ??= ValueKey('Twilio_LocalParticipant');
 
     var creationParams = {
@@ -100,8 +98,8 @@ class LocalVideoTrack extends VideoTrack {
     final cameraCapturer = videoCapturer as CameraCapturer;
     return LocalVideoTrackModel(
       enabled: _enabled,
-      name: _name,
-      cameraCapturer: CameraCapturerModel(cameraCapturer.cameraSource, 'CameraCapturer'),
+      name: name,
+      cameraCapturer: CameraCapturerModel(cameraCapturer.source, 'CameraCapturer'),
     );
   }
 }

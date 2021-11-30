@@ -121,7 +121,7 @@ Reference table of all the twilio exceptions with their error code and platform 
 | SIGNALING_CONNECTION_DISCONNECTED_EXCEPTION         | TVIErrorSignalingConnectionDisconnectedError       | `53001`          |
 | SIGNALING_CONNECTION_TIMEOUT_EXCEPTION              | TVIErrorSignalingConnectionTimeoutError            | `53002`          |
 | SIGNALING_INCOMING_MESSAGE_INVALID_EXCEPTION        | TVIErrorSignalingIncomingMessageInvalidError       | `53003`          |
-| SIGNALING_OUTGOING_MESSAGE_INVALID_EXCEPTION        | TVIErrorSignalingOutgoingMessageInvalidError       | `53004`          |  
+| SIGNALING_OUTGOING_MESSAGE_INVALID_EXCEPTION        | TVIErrorSignalingOutgoingMessageInvalidError       | `53004`          |
 | SIGNALING_DNS_RESOLUTION_ERROR_EXCEPTION            | TVIErrorSignalingDnsResolutionError                | `53005`          |
 | SIGNALING_SERVER_BUSY_EXCEPTION                     | TVIErrorSignalingServerBusyError                   | `53006`          |
 | ROOM_NAME_INVALID_EXCEPTION                         | TVIErrorRoomNameInvalidError                       | `53100`          |
@@ -135,7 +135,7 @@ Reference table of all the twilio exceptions with their error code and platform 
 | ROOM_TYPE_INVALID_EXCEPTION                         | TVIErrorRoomTypeInvalidError                       | `53108`          |
 | ROOM_TIMEOUT_OUT_OF_RANGE_EXCEPTION                 | TVIErrorRoomTimeoutOutOfRangeError	               | `53109`          |
 | ROOM_STATUS_CALLBACK_METHOD_INVALID_EXCEPTION       | TVIErrorRoomStatusCallbackMethodInvalidError	   | `53110`          |
-| ROOM_STATUS_CALLBACK_INVALID_EXCEPTION              | TVIErrorRoomStatusCallbackInvalidError             | `53111`          | 
+| ROOM_STATUS_CALLBACK_INVALID_EXCEPTION              | TVIErrorRoomStatusCallbackInvalidError             | `53111`          |
 | ROOM_STATUS_INVALID_EXCEPTION                       | TVIErrorRoomStatusInvalidError	                   | `53112`          |
 | ROOM_ROOM_EXISTS_EXCEPTION                          | TVIErrorRoomRoomExistsError	                       | `53113`          |
 | ROOM_INVALID_PARAMETERS_EXCEPTION                   | TVIErrorRoomInvalidParametersError	               | `53114`          |
@@ -146,24 +146,24 @@ Reference table of all the twilio exceptions with their error code and platform 
 | ROOM_ACCOUNT_LIMIT_EXCEEDED_EXCEPTION               |	TVIErrorRoomAccountLimitExceededError   	       | `53119`          |
 | PARTICIPANT_IDENTITY_INVALID_EXCEPTION              |	TVIErrorParticipantIdentityInvalidError            | `53200`          |
 | PARTICIPANT_IDENTITY_TOO_LONG_EXCEPTION             |	TVIErrorParticipantIdentityTooLongError	           | `53201`          |
-| PARTICIPANT_IDENTITY_CHARS_INVALID_EXCEPTION        |	TVIErrorParticipantIdentityCharsInvalidError       | `53202`          | 
+| PARTICIPANT_IDENTITY_CHARS_INVALID_EXCEPTION        |	TVIErrorParticipantIdentityCharsInvalidError       | `53202`          |
 | PARTICIPANT_MAX_TRACKS_EXCEEDED_EXCEPTION           |	TVIErrorParticipantMaxTracksExceededError   	   | `53203`          |
 | PARTICIPANT_NOT_FOUND_EXCEPTION                     |	TVIErrorParticipantNotFoundError                   | `53204`          |
 | PARTICIPANT_DUPLICATE_IDENTITY_EXCEPTION            |	TVIErrorParticipantDuplicateIdentityError	       | `53205`          |
-| PARTICIPANT_ACCOUNT_LIMIT_EXCEEDED_EXCEPTION        |	TVIErrorParticipantAccountLimitExceededError       | `53206`          |  
+| PARTICIPANT_ACCOUNT_LIMIT_EXCEEDED_EXCEPTION        |	TVIErrorParticipantAccountLimitExceededError       | `53206`          |
 | PARTICIPANT_INVALID_SUBSCRIBE_RULE_EXCEPTION        |	TVIErrorParticipantInvalidSubscribeRuleError       | `53215`          |
 | TRACK_INVALID_EXCEPTION                             |	TVIErrorTrackInvalidError                          | `53300`          |
 | TRACK_NAME_INVALID_EXCEPTION                        |	TVIErrorTrackNameInvalidError                      | `53301`          |
 | TRACK_NAME_TOO_LONG_EXCEPTION                       |	TVIErrorTrackNameTooLongError                      | `53302`          |
 | TRACK_NAME_CHARS_INVALID_EXCEPTION                  |	TVIErrorTrackNameCharsInvalidError                 | `53303`          |
 | TRACK_NAME_IS_DUPLICATED_EXCEPTION                  |	TVIErrorTrackNameIsDuplicatedError                 | `53304`          |
-| TRACK_SERVER_TRACK_CAPACITY_REACHED_EXCEPTION       |	TVIErrorTrackServerTrackCapacityReachedError       | `53305`          |  
+| TRACK_SERVER_TRACK_CAPACITY_REACHED_EXCEPTION       |	TVIErrorTrackServerTrackCapacityReachedError       | `53305`          |
 | TRACK_DATA_TRACK_MESSAGE_TOO_LARGE_EXCEPTION        |	TVIErrorTrackDataTrackMessageTooLargeError         | `53306`          |
 | TRACK_DATA_TRACK_SEND_BUFFER_FULL_EXCEPTION         |	TVIErrorTrackDataTrackSendBufferFullError          | `53307`          |
 | MEDIA_CLIENT_LOCAL_DESC_FAILED_EXCEPTION            |	TVIErrorMediaClientLocalDescFailedError            | `53400`          |
 | MEDIA_SERVER_LOCAL_DESC_FAILED_EXCEPTION            |	TVIErrorMediaServerLocalDescFailedError            | `53401`          |
 | MEDIA_CLIENT_REMOTE_DESC_FAILED_EXCEPTION           |	TVIErrorMediaClientRemoteDescFailedError           | `53402`          |
-| MEDIA_SERVER_REMOTE_DESC_FAILED_EXCEPTION           |	TVIErrorMediaServerRemoteDescFailedError           | `53403`          | 
+| MEDIA_SERVER_REMOTE_DESC_FAILED_EXCEPTION           |	TVIErrorMediaServerRemoteDescFailedError           | `53403`          |
 | MEDIA_NO_SUPPORTED_CODEC_EXCEPTION                  |	TVIErrorMediaNoSupportedCodecError                 | `53404`          |
 | MEDIA_CONNECTION_ERROR_EXCEPTION                    |	TVIErrorMediaConnectionError                       | `53405`          |
 | MEDIA_DATA_TRACK_FAILED_EXCEPTION                   |	TVIErrorMediaDataTrackFailedError	               | `53406`          |
@@ -171,3 +171,11 @@ Reference table of all the twilio exceptions with their error code and platform 
 | MEDIA_ICE_RESTART_NOT_ALLOWED_EXCEPTION             |	TVIErrorMediaIceRestartNotAllowedError             | `53408`          |
 | CONFIGURATION_ACQUIRE_FAILED_EXCEPTION              |	TVIErrorConfigurationAcquireFailedError	           | `53500`          |
 | CONFIGURATION_ACQUIRE_TURN_FAILED_EXCEPTION         |	TVIErrorConfigurationAcquireTurnFailedError	       | `53501`          |
+
+### AVAudioEngineDevice Architecture
+
+Below is a rough architectural diagram of the audio pipeline constructed and managed by the `AVAudioEngineDevice` (which is an opt-in feature).
+
+Of note, `PlayerNodeBundles` are managed by the `AVAudioPlayerNodeManager`, which is utilized internally by the `AVAudioEngineDevice`.
+
+![AVAudioEngineDevice Architecture Diagram](./resources/avaudioenginedevice.jpg)

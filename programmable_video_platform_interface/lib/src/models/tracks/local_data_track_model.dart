@@ -8,12 +8,12 @@ class LocalDataTrackModel extends TrackModel {
   final int maxRetransmits;
 
   const LocalDataTrackModel({
-    String name,
-    bool enabled,
-    this.ordered,
-    this.reliable,
-    this.maxPacketLifeTime,
-    this.maxRetransmits,
+    required String name,
+    bool enabled = false,
+    this.ordered = false,
+    this.reliable = false,
+    this.maxPacketLifeTime = -1,
+    this.maxRetransmits = -1,
   }) : super(
           name: name,
           enabled: enabled,

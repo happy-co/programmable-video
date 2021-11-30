@@ -5,17 +5,17 @@ import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 
 class TwilioRoomRequest {
   final TwilioRoomType type;
-  final bool enableTurn;
-  final String uniqueName;
-  final int maxParticipants;
-  final TwilioStatusCallbackMethod statusCallbackMethod;
-  final String statusCallback;
-  final bool recordParticipantsOnConnect;
-  final List<TwilioVideoCodec> videoCodecs;
-  final Region mediaRegion;
+  final bool? enableTurn;
+  final String? uniqueName;
+  final int? maxParticipants;
+  final TwilioStatusCallbackMethod? statusCallbackMethod;
+  final String? statusCallback;
+  final bool? recordParticipantsOnConnect;
+  final List<TwilioVideoCodec?>? videoCodecs;
+  final Region? mediaRegion;
 
   TwilioRoomRequest({
-    this.type,
+    required this.type,
     this.enableTurn,
     this.uniqueName,
     this.maxParticipants,
@@ -27,9 +27,6 @@ class TwilioRoomRequest {
   });
 
   factory TwilioRoomRequest.fromMap(Map<String, dynamic> data) {
-    if (data == null) {
-      return null;
-    }
     return TwilioRoomRequest(
       enableTurn: data['enableTurn'],
       maxParticipants: data['maxParticipants'],
@@ -37,7 +34,7 @@ class TwilioRoomRequest {
       recordParticipantsOnConnect: data['recordParticipantsOnConnect'],
       statusCallback: data['statusCallback'],
       statusCallbackMethod: EnumToString.fromString(TwilioStatusCallbackMethod.values, data['statusCallbackMethod']),
-      type: EnumToString.fromString(TwilioRoomType.values, data['type'].toString().camelCase),
+      type: EnumToString.fromString(TwilioRoomType.values, data['type'].toString().camelCase) ?? TwilioRoomType.peerToPeer,
       uniqueName: data['uniqueName'],
       videoCodecs: (data['videoCodecs'] as List<String>)
           .map(
@@ -51,13 +48,13 @@ class TwilioRoomRequest {
     return {
       'enableTurn': enableTurn,
       'maxParticipants': maxParticipants,
-      'mediaRegion': EnumToString.convertToString(mediaRegion),
+      'mediaRegion': mediaRegion != null ? EnumToString.convertToString(mediaRegion) : null,
       'recordParticipantsOnConnect': recordParticipantsOnConnect,
       'statusCallback': statusCallback,
-      'statusCallbackMethod': EnumToString.convertToString(statusCallbackMethod),
-      'type': type != null ? EnumToString.convertToString(type).paramCase : null,
+      'statusCallbackMethod': mediaRegion != null ? EnumToString.convertToString(statusCallbackMethod) : null,
+      'type': EnumToString.convertToString(type).paramCase,
       'uniqueName': uniqueName,
-      'videoCodecs': videoCodecs?.map((TwilioVideoCodec videoCodec) => EnumToString.convertToString(videoCodec))?.toList()
+      'videoCodecs': videoCodecs?.map((TwilioVideoCodec? videoCodec) => EnumToString.convertToString(videoCodec)).toList()
     };
   }
 }

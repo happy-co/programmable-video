@@ -16,8 +16,8 @@ class NetworkQualityConfigurationModel {
   /// Create map from properties.
   Map<String, Object> toMap() {
     return <String, Object>{
-      'local': EnumToString.parse(local),
-      'remote': EnumToString.parse(remote),
+      'local': EnumToString.convertToString(local),
+      'remote': EnumToString.convertToString(remote),
     };
   }
 

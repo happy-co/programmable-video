@@ -6,7 +6,7 @@ export 'vp9_codec.dart';
 abstract class VideoCodec {
   String name;
 
-  VideoCodec(this.name) : assert(name != null);
+  VideoCodec(this.name);
 
   @override
   String toString() {

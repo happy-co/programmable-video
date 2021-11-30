@@ -4,7 +4,7 @@ part of twilio_programmable_video;
 class LocalAudioTrackPublication implements AudioTrackPublication {
   final String _sid;
 
-  LocalAudioTrack _localAudioTrack;
+  LocalAudioTrack? _localAudioTrack;
 
   /// The SID of the local audio track.
   @override
@@ -12,20 +12,20 @@ class LocalAudioTrackPublication implements AudioTrackPublication {
 
   /// The name of the local audio track.
   @override
-  String get trackName => _localAudioTrack.name;
+  String get trackName => _localAudioTrack?.name ?? '';
 
   /// Returns `true` if the published audio track is enabled or `false` otherwise.
   @override
-  bool get isTrackEnabled => _localAudioTrack.isEnabled;
+  bool get isTrackEnabled => _localAudioTrack?.isEnabled ?? false;
 
   /// The local audio track.
-  LocalAudioTrack get localAudioTrack => _localAudioTrack;
+  LocalAudioTrack? get localAudioTrack => _localAudioTrack;
 
   /// The base audio track of the published local audio track.
   @override
-  AudioTrack get audioTrack => _localAudioTrack;
+  AudioTrack? get audioTrack => _localAudioTrack;
 
-  LocalAudioTrackPublication(this._sid) : assert(_sid != null);
+  LocalAudioTrackPublication(this._sid);
 
   /// Construct from a [LocalAudioTrackPublicationModel].
   factory LocalAudioTrackPublication._fromModel(LocalAudioTrackPublicationModel model) {
@@ -36,12 +36,10 @@ class LocalAudioTrackPublication implements AudioTrackPublication {
 
   /// Update properties from a [LocalAudioTrackPublicationModel].
   void _updateFromModel(LocalAudioTrackPublicationModel model) {
-    if (model.localAudioTrack != null) {
-      if (_localAudioTrack == null) {
-        _localAudioTrack = LocalAudioTrack._fromModel(model.localAudioTrack);
-      } else {
-        _localAudioTrack._updateFromModel(model.localAudioTrack);
-      }
+    if (_localAudioTrack == null) {
+      _localAudioTrack = LocalAudioTrack._fromModel(model.localAudioTrack);
+    } else {
+      _localAudioTrack!._updateFromModel(model.localAudioTrack);
     }
   }
 }
