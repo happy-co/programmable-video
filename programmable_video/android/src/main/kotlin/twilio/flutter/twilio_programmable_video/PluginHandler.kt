@@ -4,7 +4,6 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
@@ -40,17 +39,11 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.util.Queue
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicLong
 import tvi.webrtc.voiceengine.WebRtcAudioUtils
 
 class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
     private val TAG = "PluginHandler"
-
-    private data class TakePhotoRequest(val call: MethodCall, val result: MethodChannel.Result)
 
     private var previousAudioMode: Int? = null
 
@@ -68,13 +61,7 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     internal var audioSettings: AudioSettings = AudioSettings()
 
-    private var frameCount: AtomicLong = AtomicLong(0)
-
-    private lateinit var frameToKeep: I420Frame
-
-    private val takePhotoQueue: Queue<TakePhotoRequest> = ConcurrentLinkedQueue<TakePhotoRequest>()
-
-    private var allowCamera2 = false
+    private var photographer: Photographer? = null
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(applicationContext: Context) {
@@ -130,72 +117,30 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             "LocalAudioTrack#enable" -> localAudioTrackEnable(call, result)
             "LocalDataTrack#sendString" -> localDataTrackSendString(call, result)
             "LocalDataTrack#sendByteBuffer" -> localDataTrackSendByteBuffer(call, result)
-            "LocalParticipant#resetVideo" -> localParticipantResetVideo(call, result)
             "LocalVideoTrack#enable" -> localVideoTrackEnable(call, result)
-            "LocalVideoTrack#frameCount" -> localVideoTrackFrameCount(call, result)
             "RemoteAudioTrack#enablePlayback" -> remoteAudioTrackEnable(call, result)
             "RemoteAudioTrack#isPlaybackEnabled" -> isRemoteAudioTrackPlaybackEnabled(call, result)
             "CameraCapturer#switchCamera" -> switchCamera(call, result)
-            "CameraCapturer#takePhoto" -> takePhoto(call, result)
+            "CameraCapturer#takePhoto" -> takePhoto(result)
             "CameraCapturer#setTorch" -> setTorch(call, result)
             "CameraSource#getSources" -> getSources(call, result)
             else -> result.notImplemented()
         }
     }
 
-    private fun takePhoto(call: MethodCall, result: MethodChannel.Result) {
-        debug("PluginHandler.takePhoto => called")
-        if (allowCamera2) {
-            takePhotoQueue.offer(TakePhotoRequest(call, result))
-        } else {
-            val imageCompression = call.argument<Int>("imageCompression") ?: 100
-            return try {
-                val yuvFrame = YuvFrame(frameToKeep)
-                if (!yuvFrame.hasData()) {
-                    result.error("ERROR", "Photo data is empty", null)
-                }
-                val bitmap = yuvFrame.bitmap
-                val stream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, imageCompression, stream)
-                val byteArray = stream.toByteArray()
-                debug("PluginHandler.takePhoto => Photo data size: ${byteArray.size}")
-                bitmap.recycle()
-                result.success(byteArray)
-            } catch (e: java.lang.Exception) {
-                result.error("ERROR", "Error taking photo", e)
-            }
-        }
-    }
-
-    /**
-     * Called when the local video track renders a frame.
-     * The frame is used for take photo requests.
-     */
-    fun onRenderFrame(frame: I420Frame) {
-        Handler(Looper.getMainLooper()).post {
-            frameCount.incrementAndGet()
-            var request = takePhotoQueue.poll()
-            while (request != null) {
-                val (call, result) = request
-
-                val i420Buffer = YuvUtils.createI420Buffer(frame)
-                if (i420Buffer != null) {
-                    val quality = call.argument<Int>("imageCompression") ?: 100
-                    val nv21Data = YuvUtils.createNV21Data(i420Buffer)
-                    val jpegData = YuvUtils.createJPEGData(nv21Data, i420Buffer.width, i420Buffer.height, quality)
-                    debug("PluginHandler.onRenderFrame => Photo data size: ${jpegData.size}")
-                    result.success(jpegData)
+    private fun takePhoto(result: MethodChannel.Result) {
+        val photographer = this.photographer
+        if (photographer != null) {
+            photographer.takePicture { jpeg: ByteArray? ->
+                if (jpeg != null) {
+                    result.success(jpeg)
                 } else {
-                    result.error("ERROR", "Photo data is empty", null)
+                    result.error("ERROR", "Error converting video frame to JPEG", null)
                 }
-
-                request = takePhotoQueue.poll()
             }
+        } else {
+            result.error("NOT_FOUND", "No LocalVideoTrack initialised to capture photo", null)
         }
-    }
-
-    fun getAllowCamera2(): Boolean {
-        return allowCamera2
     }
 
     private fun getSources(call: MethodCall, result: MethodChannel.Result) {
@@ -223,18 +168,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         VideoCapturerHandler.setTorch(call, result)
     }
 
-    private fun localParticipantResetVideo(call: MethodCall, result: MethodChannel.Result) {
-        debug("PluginHandler.localParticipantResetVideo => called")
-        val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
-        if (localVideoTrack != null && localVideoTrack.isTrackEnabled) {
-            getLocalParticipant()?.unpublishTrack(localVideoTrack.localVideoTrack)
-            getLocalParticipant()?.publishTrack(localVideoTrack.localVideoTrack)
-            return result.success(true)
-        }
-        debug("No LocalVideoTrack found or LocalVideoTrack already released while resetting video")
-        return result.success(false)
-    }
-
     private fun localVideoTrackEnable(call: MethodCall, result: MethodChannel.Result) {
         val localVideoTrackName = call.argument<String>("name")
             ?: return result.error("MISSING_PARAMS", missingParameterMessage("name"), null)
@@ -249,14 +182,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
             return result.success(null)
         }
         return result.error("NOT_FOUND", "No LocalVideoTrack found with the name '$localVideoTrackName'", null)
-    }
-
-    private fun localVideoTrackFrameCount(call: MethodCall, result: MethodChannel.Result) {
-        val localVideoTrack = getLocalParticipant()?.localVideoTracks?.firstOrNull()
-        if (localVideoTrack == null) {
-            debug("PluginHandler.localVideoTrack#FrameCount => No video track found")
-        }
-        return result.success(frameCount.get())
     }
 
     private fun localAudioTrackEnable(call: MethodCall, result: MethodChannel.Result) {
@@ -505,11 +430,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         try {
             val optionsBuilder = ConnectOptions.Builder(optionsObj["accessToken"] as String)
 
-            if (optionsObj["allowCamera2"] != null && optionsObj["allowCamera2"] is Boolean) {
-                debug("PluginHandler.connect => setting allowCamera2 to '${optionsObj["allowCamera2"]}'")
-                allowCamera2 = optionsObj["allowCamera2"] as Boolean
-            }
-
             // Set the room name if it has been passed.
             if (optionsObj["roomName"] != null) {
                 debug("connect => setting roomName to '${optionsObj["roomName"]}'")
@@ -571,8 +491,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                 optionsBuilder.audioTracks(audioTracks)
             }
 
-            optionsBuilder.encodingParameters(EncodingParameters(16, 0))
-
             // Set the local data tracks if it has been passed.
             if (optionsObj["dataTracks"] != null) {
                 val dataTrackMap = optionsObj["dataTracks"] as Map<*, *>
@@ -625,80 +543,13 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     val videoCapturerMap = videoTrack["videoCapturer"] as Map<*, *>
 
                     if ((videoCapturerMap["type"] as String) == "CameraCapturer") {
-                        VideoCapturerHandler.initializeCapturer(videoCapturerMap, result, allowCamera2)
+                        VideoCapturerHandler.initializeCapturer(videoCapturerMap, result)
                     } else {
                         return result.error("INIT_ERROR", "VideoCapturer type ${videoCapturerMap["type"]} not yet supported.", null)
                     }
 
                     if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-                        if (allowCamera2) {
-                            // Sorted by height, then width, then fps. Eg. 1440x1080, 1600x720, 1280×720, 800x600
-                            val formats = TwilioProgrammableVideoPlugin.cameraCapturer.supportedFormats.sortedWith(compareBy(
-                                    { it.dimensions.height },
-                                    { it.dimensions.width },
-                                    { it.framerate }
-                            )).reversed()
-
-                            debug("PluginHandler.connect => supported camera formats")
-                            for (format in formats) {
-                                debug("${format.dimensions.width}x${format.dimensions.height} ${format.framerate}fps")
-                            }
-
-                            var highestDimensions = VideoDimensions.HD_720P_VIDEO_DIMENSIONS
-                            val highestFPS = VideoConstraints.FPS_24
-                            for (format in formats) {
-                                // Find a format closest to 720p 24fps
-                                if (format.dimensions.height >= VideoDimensions.HD_720P_VIDEO_HEIGHT && format.framerate >= VideoConstraints.FPS_24) {
-                                    highestDimensions = format.dimensions
-                                } else {
-                                    // We don't want anything lower than 720p 24fps
-                                    break
-                                }
-                            }
-                            debug("PluginHandler.connect => selected camera format: ${highestDimensions.width}x${highestDimensions.height} ${highestFPS}fps")
-
-                            val videoConstraints = VideoConstraints.Builder()
-                                    .minVideoDimensions(highestDimensions)
-                                    .maxVideoDimensions(highestDimensions)
-                                    .maxFps(highestFPS)
-                                    .minFps(highestFPS)
-                                    .build()
-
-                            frameCount.set(0)
-                            videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoConstraints, videoTrack["name"] as String))
-                        } else {
-                            val formats = TwilioProgrammableVideoPlugin.cameraCapturer.supportedFormats
-                            // Not all devices report the formats in the same order
-                            formats.sortedWith(compareBy({ it.dimensions.width }, { it.dimensions.height }))
-
-                            debug("PluginHandler.connect => support camera formats")
-                            for(format in formats) {
-                                debug("${format.dimensions.width} x ${format.dimensions.height}")
-                            }
-
-                            val highestDimensions = formats.first().dimensions
-                            var videoDimensions = VideoDimensions(VideoDimensions.HD_720P_VIDEO_WIDTH, VideoDimensions.HD_720P_VIDEO_HEIGHT)
-                            if (highestDimensions.height < VideoDimensions.HD_720P_VIDEO_HEIGHT) {
-                                videoDimensions = VideoDimensions(highestDimensions.width, highestDimensions.height)
-                            }
-
-                            val videoConstraints = VideoConstraints.Builder()
-                                    .minVideoDimensions(videoDimensions)
-                                    .maxVideoDimensions(videoDimensions)
-                                    .maxFps(VideoConstraints.FPS_24)
-                                    .minFps(VideoConstraints.FPS_24)
-                                    .build()
-
-                            val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoConstraints, videoTrack["name"] as String)
-                            // Reset the frame count and add a renderer to count frames
-                            // Also hold on the current frame being processed for the take photo method
-                            frameCount.set(0)
-                            localVideoTrack?.addRenderer(fun(it: I420Frame) {
-                                frameCount.incrementAndGet()
-                                frameToKeep = it
-                            })
-                            videoTracks.add(localVideoTrack)
-                        }
+                        videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoTrack["name"] as String))
                     }
                 }
                 debug("connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
@@ -821,6 +672,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     fun sendCameraEvent(name: String, data: Any, e: java.lang.Exception? = null) {
         sendEvent(name, data, e)
+    }
+
+    fun setPhotographer(photographer: Photographer) {
+        this.photographer = photographer
     }
 
     private fun missingParameterMessage(parameterName: String): String {

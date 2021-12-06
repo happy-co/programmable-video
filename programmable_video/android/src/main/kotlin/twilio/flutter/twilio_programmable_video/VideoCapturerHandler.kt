@@ -18,8 +18,8 @@ class VideoCapturerHandler {
         private val TAG = "VideoCapturerHandler"
 
         @JvmStatic
-        fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result, allowCamera2: Boolean = false) {
-            if (TwilioProgrammableVideoPlugin.camera2IsSupported && allowCamera2) {
+        fun initializeCapturer(videoCapturerMap: Map<*, *>, result: MethodChannel.Result) {
+            if (TwilioProgrammableVideoPlugin.camera2IsSupported) {
                 initializeCamera2Capturer(videoCapturerMap, result)
             } else {
                 initializeCameraCapturer(videoCapturerMap, result)

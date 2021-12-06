@@ -89,10 +89,9 @@ class CameraCapturer implements VideoCapturer {
   }
 
   /// Takes a photo from the camera capturer.
-  Future<dynamic> takePhoto(int imageCompression) async {
+  Future<dynamic> takePhoto() async {
     final methodData = await MethodChannel('twilio_programmable_video').invokeMethod(
       'CameraCapturer#takePhoto',
-      {'imageCompression': imageCompression},
     );
     return methodData;
   }

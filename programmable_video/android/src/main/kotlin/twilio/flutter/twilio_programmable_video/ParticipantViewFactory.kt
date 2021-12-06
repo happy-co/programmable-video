@@ -1,7 +1,6 @@
 package twilio.flutter.twilio_programmable_video
 
 import android.content.Context
-import com.twilio.video.I420Frame
 import com.twilio.video.LocalVideoTrack
 import com.twilio.video.VideoTrack
 import com.twilio.video.VideoView
@@ -35,18 +34,16 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
             }
 
             if (videoTrack != null) {
-                val videoView: VideoView = if (videoTrack is LocalVideoTrack && plugin.getAllowCamera2()) {
-                    // If this is the local video track, we want to provide the frame to the plugin handler for taking photo requests.
-                    object: VideoView(context) {
-                        override fun renderFrame(frame: I420Frame) {
-                            plugin.onRenderFrame(frame)
-                            super.renderFrame(frame)
-                        }
-                    }
-                } else {
-                    VideoView(context)
-                }
+                val videoView = VideoView(context)
                 videoView.mirror = params["mirror"] as Boolean
+
+                if (videoTrack is LocalVideoTrack) {
+                    debug("create => constructing video processor photographer from local view")
+                    val photographer = Photographer()
+                    plugin.setPhotographer(photographer)
+                    videoTrack.videoSource.setVideoProcessor(photographer)
+                }
+
                 return ParticipantView(videoView, videoTrack)
             }
         }
