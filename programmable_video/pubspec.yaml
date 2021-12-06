@@ -19,6 +19,7 @@ dependencies:
     git:
       url: https://github.com/happy-co/programmable-video.git
       path: programmable_video_platform_interface
+      ref: 8635c96b678f29c21cbb1af3a176189da584f7d3
   collection: ^1.15.0
 
 dev_dependencies:
