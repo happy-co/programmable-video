@@ -132,10 +132,12 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
         val photographer = this.photographer
         if (photographer != null) {
             photographer.takePicture { jpeg: ByteArray? ->
-                if (jpeg != null) {
-                    result.success(jpeg)
-                } else {
-                    result.error("ERROR", "Error converting video frame to JPEG", null)
+                Handler(Looper.getMainLooper()).post {
+                    if (jpeg != null) {
+                        result.success(jpeg)
+                    } else {
+                        result.error("ERROR", "Error converting video frame to JPEG", null)
+                    }
                 }
             }
         } else {
@@ -549,7 +551,13 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                     }
 
                     if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-                        videoTracks.add(LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoTrack["name"] as String))
+                        val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoTrack["name"] as String)
+                        if (localVideoTrack != null) {
+                            debug("connect => constructing video processor photographer from local video track")
+                            photographer = Photographer()
+                            localVideoTrack.videoSource.setVideoProcessor(photographer)
+                        }
+                        videoTracks.add(localVideoTrack)
                     }
                 }
                 debug("connect => setting videoTracks to '${videoTracks.joinToString(", ")}'")
@@ -672,10 +680,6 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
 
     fun sendCameraEvent(name: String, data: Any, e: java.lang.Exception? = null) {
         sendEvent(name, data, e)
-    }
-
-    fun setPhotographer(photographer: Photographer) {
-        this.photographer = photographer
     }
 
     private fun missingParameterMessage(parameterName: String): String {

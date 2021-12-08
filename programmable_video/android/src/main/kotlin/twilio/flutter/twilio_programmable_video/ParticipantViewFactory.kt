@@ -1,7 +1,6 @@
 package twilio.flutter.twilio_programmable_video
 
 import android.content.Context
-import com.twilio.video.LocalVideoTrack
 import com.twilio.video.VideoTrack
 import com.twilio.video.VideoView
 import io.flutter.plugin.common.MessageCodec
@@ -36,14 +35,6 @@ class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plu
             if (videoTrack != null) {
                 val videoView = VideoView(context)
                 videoView.mirror = params["mirror"] as Boolean
-
-                if (videoTrack is LocalVideoTrack) {
-                    debug("create => constructing video processor photographer from local view")
-                    val photographer = Photographer()
-                    plugin.setPhotographer(photographer)
-                    videoTrack.videoSource.setVideoProcessor(photographer)
-                }
-
                 return ParticipantView(videoView, videoTrack)
             }
         }

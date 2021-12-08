@@ -50,7 +50,7 @@ class LocalVideoTrack extends VideoTrack {
   ///
   /// By default the widget will be mirrored, to change that set [mirror] to false.
   /// If you provide a [key] make sure it is unique among all [VideoTrack]s otherwise Flutter might send the wrong creation params to the native side.
-  Widget widget({bool mirror = true, Key? key}) {
+  Widget widget({bool mirror = true, Key? key, PlatformViewHitTestBehavior hitTestBehavior = PlatformViewHitTestBehavior.opaque}) {
     key ??= ValueKey('Twilio_LocalParticipant');
 
     var creationParams = {
@@ -64,6 +64,7 @@ class LocalVideoTrack extends VideoTrack {
         viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
+        hitTestBehavior: hitTestBehavior,
         onPlatformViewCreated: (int viewId) {
           TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
         },
@@ -76,6 +77,7 @@ class LocalVideoTrack extends VideoTrack {
         viewType: 'twilio_programmable_video/views',
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
+        hitTestBehavior: hitTestBehavior,
         onPlatformViewCreated: (int viewId) {
           TwilioProgrammableVideo._log('LocalVideoTrack => View created: $viewId, creationParams: $creationParams');
         },
