@@ -1,3 +1,8 @@
+## 0.11.1
+
+- Updated TwilioVideo iOS SDK from v4.4 to v4.6.
+- Replaced jcenter with MavenCentral in the Android project.
+
 ## 0.11.0+1
 
 - Throw `ActiveCallException` if we cannot activate the `AVAudioSession` (iOS) or get Audio Focus (Android) on `connect`.
