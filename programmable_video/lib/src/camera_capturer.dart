@@ -89,11 +89,16 @@ class CameraCapturer implements VideoCapturer {
   }
 
   /// Takes a photo from the camera capturer.
-  Future<dynamic> takePhoto() async {
-    final methodData = await MethodChannel('twilio_programmable_video').invokeMethod(
-      'CameraCapturer#takePhoto',
-    );
-    return methodData;
+  Future<Uint8List> takePhoto() async {
+    try {
+      final data = await MethodChannel('twilio_programmable_video').invokeMethod(
+        'CameraCapturer#takePhoto',
+      );
+
+      return Uint8List.fromList(data);
+    } on PlatformException catch (err) {
+      throw TwilioProgrammableVideo._convertException(err);
+    }
   }
 
   /// Get availability of torch on active [CameraSource].

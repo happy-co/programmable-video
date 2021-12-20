@@ -32,6 +32,8 @@ import com.twilio.video.PcmuCodec
 import com.twilio.video.RemoteAudioTrackPublication
 import com.twilio.video.RemoteParticipant
 import com.twilio.video.VideoCodec
+import com.twilio.video.VideoDimensions
+import com.twilio.video.VideoFormat
 import com.twilio.video.Vp8Codec
 import com.twilio.video.Vp9Codec
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -550,8 +552,10 @@ class PluginHandler : MethodCallHandler, ActivityAware, BaseListener {
                         return result.error("INIT_ERROR", "VideoCapturer type ${videoCapturerMap["type"]} not yet supported.", null)
                     }
 
+                    val videoFormat = VideoFormat(VideoDimensions.HD_720P_VIDEO_DIMENSIONS, 24)
+
                     if (TwilioProgrammableVideoPlugin.cameraCapturer != null) {
-                        val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoTrack["name"] as String)
+                        val localVideoTrack = LocalVideoTrack.create(this.applicationContext, videoTrack["enable"] as Boolean, TwilioProgrammableVideoPlugin.cameraCapturer!!, videoFormat, videoTrack["name"] as String)
                         if (localVideoTrack != null) {
                             debug("connect => constructing video processor photographer from local video track")
                             photographer = Photographer()

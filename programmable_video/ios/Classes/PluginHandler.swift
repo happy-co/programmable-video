@@ -124,12 +124,8 @@ public class PluginHandler: BaseListener {
 
     private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("PluginHandler.takePhoto => called")
-        let arguments = call.arguments as? [String: Any?]
-        let imageCompression = arguments!["imageCompression"] as? CGFloat ?? 100
-        let convertedImageCompression = imageCompression / 100
-
         if let frameToKeep = stillFrameRenderer.frameToKeep {
-            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, convertedImageCompression))
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, 1.0))
         }
         return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
@@ -703,7 +699,7 @@ public class PluginHandler: BaseListener {
                             return result(FlutterError(code: "MISSING_VIDEO_FORMAT", message: "Unable to find a appropriate video format", details: nil))
                         }
 
-                        videoSource.startCapture(device: cameraDevice) { (device: AVCaptureDevice, _: VideoFormat, error: Error?) in
+                        videoSource.startCapture(device: cameraDevice, format: videoFormat) { (device: AVCaptureDevice, _: VideoFormat, error: Error?) in
                             if let error = error {
                                 self.sendEvent("cameraError", data: ["capturer": self.videoSourceToDict(SwiftTwilioProgrammableVideoPlugin.cameraSource, newCameraSource: nil)], error: error)
                             } else {
