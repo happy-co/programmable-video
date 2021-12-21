@@ -60,13 +60,13 @@ class AudioNotificationListener() : BaseListener() {
     fun listenForRouteChanges(context: Context) {
         debug("listenForRouteChanges")
         context.registerReceiver(receiver, intentFilter)
-        BluetoothAdapter.getDefaultAdapter().getProfileProxy(context, getProfileProxy(), BluetoothProfile.HEADSET)
+        BluetoothAdapter.getDefaultAdapter()?.getProfileProxy(context, getProfileProxy(), BluetoothProfile.HEADSET)
     }
 
     fun stopListeningForRouteChanges(context: Context) {
         debug("stopListeningForRouteChanges")
         context.unregisterReceiver(receiver)
-        BluetoothAdapter.getDefaultAdapter().closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProfile)
+        BluetoothAdapter.getDefaultAdapter()?.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothProfile)
     }
 
     private fun getBroadcastReceiver(): BroadcastReceiver {

@@ -1,7 +1,8 @@
 ## 0.11.1
 
+- Added null-safety check for `BluetoothAdapter.getDefaultAdapter()`. It returns null when called on an Android Emulator.
 - Updated TwilioVideo iOS SDK from v4.4 to v4.6.
-- Replaced jcenter with MavenCentral in the Android project.
+- Replaced `jcenter` with `mavenCentral` in the `build.gradle`.
 
 ## 0.11.0+1
 
