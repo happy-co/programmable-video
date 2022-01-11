@@ -6,7 +6,7 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
 
   final String _name;
 
-  RemoteVideoTrack _remoteVideoTrack;
+  RemoteVideoTrack? _remoteVideoTrack;
 
   bool _subscribed;
 
@@ -33,18 +33,21 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
   /// Returns the published remote video track.
   ///
   /// Will return `null` if the track is not subscribed to.
-  RemoteVideoTrack get remoteVideoTrack => _remoteVideoTrack;
+  RemoteVideoTrack? get remoteVideoTrack => _remoteVideoTrack;
 
   /// The base video track object of the published remote video track.
   ///
   /// Will return `null` if the track is not subscribed to.
   @override
-  VideoTrack get videoTrack => _remoteVideoTrack;
+  VideoTrack? get videoTrack => _remoteVideoTrack;
 
-  RemoteVideoTrackPublication(this._subscribed, this._enabled, this._sid, this._name, this._remoteParticipant)
-      : assert(_sid != null),
-        assert(_name != null),
-        assert(_remoteParticipant != null);
+  RemoteVideoTrackPublication(
+    this._subscribed,
+    this._enabled,
+    this._sid,
+    this._name,
+    this._remoteParticipant,
+  );
 
   /// Create a [RemoteParticipant] from a [RemoteVideoTrackPublicationModel].
   factory RemoteVideoTrackPublication._fromModel(RemoteVideoTrackPublicationModel model, RemoteParticipant remoteParticipant) {
@@ -58,9 +61,10 @@ class RemoteVideoTrackPublication implements VideoTrackPublication {
     _subscribed = model.subscribed;
     _enabled = model.enabled;
 
-    if (model.remoteVideoTrack != null) {
-      _remoteVideoTrack ??= RemoteVideoTrack._fromModel(model.remoteVideoTrack, _remoteParticipant);
-      _remoteVideoTrack._updateFromModel(model.remoteVideoTrack);
+    final remoteVideoTrack = model.remoteVideoTrack;
+    if (remoteVideoTrack != null) {
+      _remoteVideoTrack ??= RemoteVideoTrack._fromModel(remoteVideoTrack, _remoteParticipant);
+      _remoteVideoTrack!._updateFromModel(model.remoteVideoTrack!);
     } else {
       _remoteVideoTrack = null;
     }

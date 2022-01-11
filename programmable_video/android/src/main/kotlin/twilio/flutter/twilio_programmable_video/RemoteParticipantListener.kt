@@ -11,8 +11,10 @@ import com.twilio.video.RemoteVideoTrackPublication
 import com.twilio.video.TwilioException
 
 class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
+    private val TAG = "RemoteParticipantListener"
+
     override fun onAudioTrackDisabled(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackDisabled => " +
+        debug("onAudioTrackDisabled => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}")
 
@@ -23,7 +25,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackEnabled(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackEnabled => " +
+        debug("onAudioTrackEnabled => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}")
 
@@ -34,7 +36,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackPublished(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackPublished => " +
+        debug("onAudioTrackPublished => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
@@ -46,7 +48,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackSubscribed(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication, remoteAudioTrack: RemoteAudioTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackSubscribed => " +
+        debug("onAudioTrackSubscribed => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
@@ -58,7 +60,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackSubscriptionFailed(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication, twilioException: TwilioException) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackSubscriptionFailed => " +
+        debug("onAudioTrackSubscriptionFailed => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
@@ -70,7 +72,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackUnpublished(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackUnpublished => " +
+        debug("onAudioTrackUnpublished => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
@@ -82,7 +84,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onAudioTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteAudioTrackPublication: RemoteAudioTrackPublication, remoteAudioTrack: RemoteAudioTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onAudioTrackUnsubscribed => " +
+        debug("onAudioTrackUnsubscribed => " +
                 "trackSid: ${remoteAudioTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteAudioTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteAudioTrackPublication.isTrackSubscribed}")
@@ -95,7 +97,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackPublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackPublished => " +
+        debug("onDataTrackPublished => " +
                 "trackSid: ${remoteDataTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
@@ -107,7 +109,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackSubscribed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, remoteDataTrack: RemoteDataTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscribed => " +
+        debug("onDataTrackSubscribed => " +
                 "trackSid: ${remoteDataTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
@@ -120,7 +122,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackSubscriptionFailed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, twilioException: TwilioException) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackSubscriptionFailed => " +
+        debug("onDataTrackSubscriptionFailed => " +
                 "trackSid: ${remoteDataTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
@@ -132,7 +134,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackUnpublished(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnpublished => " +
+        debug("onDataTrackUnpublished => " +
                 "trackSid: ${remoteDataTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
@@ -144,7 +146,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onDataTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteDataTrackPublication: RemoteDataTrackPublication, remoteDataTrack: RemoteDataTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onDataTrackUnsubscribed => " +
+        debug("onDataTrackUnsubscribed => " +
                 "trackSid: ${remoteDataTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteDataTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteDataTrackPublication.isTrackSubscribed}")
@@ -157,7 +159,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onNetworkQualityLevelChanged(remoteParticipant: RemoteParticipant, networkQualityLevel: NetworkQualityLevel) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onNetworkQualityLevelChanged => sid: ${remoteParticipant.sid}")
+        debug("onNetworkQualityLevelChanged => sid: ${remoteParticipant.sid}")
         sendEvent("networkQualityLevelChanged", mapOf(
                 "remoteParticipant" to remoteParticipantToMap(remoteParticipant, true),
                 "networkQualityLevel" to networkQualityLevel.toString()
@@ -165,7 +167,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackDisabled(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackDisabled => " +
+        debug("onVideoTrackDisabled => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}")
 
@@ -176,7 +178,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackEnabled(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackEnabled => " +
+        debug("onVideoTrackEnabled => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}")
 
@@ -187,7 +189,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackPublished(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackPublished => " +
+        debug("onVideoTrackPublished => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
@@ -199,7 +201,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackSubscribed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, remoteVideoTrack: RemoteVideoTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackSubscribed => " +
+        debug("onVideoTrackSubscribed => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
@@ -211,7 +213,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackSubscriptionFailed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, twilioException: TwilioException) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackSubscriptionFailed => " +
+        debug("onVideoTrackSubscriptionFailed => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
@@ -223,7 +225,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackUnpublished(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnpublished => " +
+        debug("onVideoTrackUnpublished => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
@@ -235,7 +237,7 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
     }
 
     override fun onVideoTrackUnsubscribed(remoteParticipant: RemoteParticipant, remoteVideoTrackPublication: RemoteVideoTrackPublication, remoteVideoTrack: RemoteVideoTrack) {
-        TwilioProgrammableVideoPlugin.debug("RemoteParticipantListener.onVideoTrackUnsubscribed => " +
+        debug("onVideoTrackUnsubscribed => " +
                 "trackSid: ${remoteVideoTrackPublication.trackSid}, " +
                 "isTrackEnabled: ${remoteVideoTrackPublication.isTrackEnabled}, " +
                 "isTrackSubscribed: ${remoteVideoTrackPublication.isTrackSubscribed}")
@@ -318,5 +320,9 @@ class RemoteParticipantListener : BaseListener(), RemoteParticipant.Listener {
             }
             return null
         }
+    }
+
+    internal fun debug(msg: String) {
+        TwilioProgrammableVideoPlugin.debug("$TAG::$msg")
     }
 }

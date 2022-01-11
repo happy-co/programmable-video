@@ -4,15 +4,11 @@ import com.twilio.video.VideoTrack
 import com.twilio.video.VideoView
 import io.flutter.plugin.platform.PlatformView
 
-class ParticipantView : PlatformView {
-    private var videoView: VideoView
+class ParticipantView(private var videoView: VideoView, videoTrack: VideoTrack) : PlatformView {
+    private val TAG = "ParticipantView"
 
-    private var videoTrack: VideoTrack
-
-    constructor(videoView: VideoView, videoTrack: VideoTrack) {
-        this.videoView = videoView
-        this.videoTrack = videoTrack
-        videoTrack.addRenderer(videoView)
+    init {
+        videoTrack.addSink(videoView)
     }
 
     override fun getView(): VideoView {
@@ -20,6 +16,10 @@ class ParticipantView : PlatformView {
     }
 
     override fun dispose() {
-        TwilioProgrammableVideoPlugin.debug("Disposing ParticipantView")
+        debug("dispose => Disposing ParticipantView")
+    }
+
+    internal fun debug(msg: String) {
+        TwilioProgrammableVideoPlugin.debug("$TAG::$msg")
     }
 }

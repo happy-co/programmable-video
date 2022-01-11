@@ -28,6 +28,7 @@ export 'tracks/remote_data_track_model.dart';
 export 'tracks/remote_video_track_model.dart';
 export 'tracks/remote_audio_track_model.dart';
 
+export 'audio_notification_event.dart';
 export 'connect_options_model.dart';
 export 'network_quality_configuration_model.dart';
 export 'remote_data_track_event.dart';

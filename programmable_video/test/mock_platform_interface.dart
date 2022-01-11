@@ -8,8 +8,14 @@ class MockInterface extends ProgrammableVideoPlatform {
   var setNativeDebugWasCalled = false;
   var nativeDebug;
   var setSpeakerPhoneOnWasCalled = false;
-  var speakerPhoneOn;
   var getSpeakerPhoneOnWasCalled = false;
+  var setAudioSettingsWasCalled = false;
+  var getAudioSettingsWasCalled = false;
+  var disableAudioSettingsWasCalled = false;
+  var speakerphoneOn = false;
+  var bluetoothOn = false;
+  var deviceHasReceiverWasCalled = false;
+  var getStatsWasCalled = false;
   var connectToRoomWasCalled = false;
   var enableAudioTrackWasCalled = false;
   var enableVideoTrackWasCalled = false;
@@ -27,15 +33,15 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<void> setNativeDebug(bool native) {
+  Future<void> setNativeDebug(bool native, bool audio) {
     setNativeDebugWasCalled = true;
     nativeDebug = native;
     return Future.delayed(Duration(milliseconds: 1));
   }
 
   @override
-  Stream<BaseCameraEvent> cameraStream() {
-    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1));
+  Stream<BaseCameraEvent>? cameraStream() {
+    return Stream<BaseCameraEvent>.periodic(Duration(seconds: 1), (x) => SkippableCameraEvent());
   }
 
   @override
@@ -46,14 +52,52 @@ class MockInterface extends ProgrammableVideoPlatform {
   @override
   Future<bool> setSpeakerphoneOn(bool on) {
     setSpeakerPhoneOnWasCalled = true;
-    speakerPhoneOn = on;
-    return Future.delayed(Duration(milliseconds: 1), () => speakerPhoneOn);
+    speakerphoneOn = on;
+    return Future.delayed(Duration(milliseconds: 1), () => speakerphoneOn);
   }
 
   @override
   Future<bool> getSpeakerphoneOn() {
     getSpeakerPhoneOnWasCalled = true;
-    return Future.delayed(Duration(milliseconds: 1), () => speakerPhoneOn);
+    return Future.delayed(Duration(milliseconds: 1), () => speakerphoneOn);
+  }
+
+  @override
+  Future setAudioSettings(bool speakerphoneEnabled, bool bluetoothPreferred) {
+    setAudioSettingsWasCalled = true;
+    speakerphoneOn = speakerphoneEnabled;
+    bluetoothOn = bluetoothPreferred;
+    return Future.delayed(Duration(milliseconds: 1), () => null);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAudioSettings() {
+    getAudioSettingsWasCalled = true;
+    final result = {
+      'speakerphoneEnabled': speakerphoneOn,
+      'bluetoothPreferred': bluetoothOn,
+    };
+    return Future.delayed(Duration(milliseconds: 1), () => result);
+  }
+
+  @override
+  Future disableAudioSettings() {
+    disableAudioSettingsWasCalled = true;
+    speakerphoneOn = false;
+    bluetoothOn = false;
+    return Future.delayed(Duration(milliseconds: 1), () => null);
+  }
+
+  @override
+  Future<bool> deviceHasReceiver() {
+    deviceHasReceiverWasCalled = true;
+    return Future.delayed(Duration(milliseconds: 1), () => true);
+  }
+
+  @override
+  Future<Map<dynamic, dynamic>> getStats() {
+    getStatsWasCalled = true;
+    return Future.delayed(Duration(milliseconds: 1), () => {});
   }
 
   @override
@@ -63,39 +107,33 @@ class MockInterface extends ProgrammableVideoPlatform {
   }
 
   @override
-  Future<bool> enableVideoTrack({bool enabled, String name}) {
+  Future<bool> enableVideoTrack([bool enabled = false, String name = '']) {
     enableVideoTrackWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => enabled);
   }
 
   @override
-  Future<bool> enableAudioTrack({bool enable, String name}) {
+  Future<bool> enableAudioTrack([bool enable = false, String sid = '']) {
     enableAudioTrackWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1), () => enable);
   }
 
   @override
-  Future<void> sendMessage({String message, String name}) {
+  Future<void> sendMessage([String message = '', String name = '']) {
     sendMessageWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1));
   }
 
   @override
-  Future<void> sendBuffer({ByteBuffer message, String name}) {
+  Future<void> sendBuffer([ByteBuffer? message, String name = '']) {
     sendBufferWasCalled = true;
     return Future.delayed(Duration(milliseconds: 1));
   }
 
   @override
-  Future<CameraSource> switchCamera() async {
+  Future<CameraSource> switchCamera(CameraSource newSource) async {
     switchCameraWasCalled = true;
-    return Future.delayed(Duration(milliseconds: 1), () => CameraSource.FRONT_CAMERA);
-  }
-
-  @override
-  Future<bool> hasTorch() async {
-    hasTorchWasCalled = true;
-    return Future.delayed(Duration(milliseconds: 1), () => true);
+    return Future.delayed(Duration(milliseconds: 1), () => CameraSource('FRONT_CAMERA', false, false, false));
   }
 
   @override

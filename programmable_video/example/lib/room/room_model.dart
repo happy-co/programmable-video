@@ -2,11 +2,11 @@ import 'package:twilio_programmable_video_example/models/twilio_enums.dart';
 import 'package:twilio_programmable_video_example/room/room_validators.dart';
 
 class RoomModel with RoomValidators {
-  final String name;
+  final String? name;
   final bool isLoading;
   final bool isSubmitted;
-  final String token;
-  final String identity;
+  final String? token;
+  final String? identity;
   final TwilioRoomType type;
 
   RoomModel({
@@ -22,18 +22,14 @@ class RoomModel with RoomValidators {
     switch (type) {
       case TwilioRoomType.peerToPeer:
         return 'peer 2 peer';
-        break;
       case TwilioRoomType.group:
         return 'large (max 50 participants)';
-        break;
       case TwilioRoomType.groupSmall:
         return 'small (max 4 participants)';
-        break;
     }
-    return '';
   }
 
-  String get nameErrorText {
+  String? get nameErrorText {
     return isSubmitted && !nameValidator.isValid(name) ? invalidNameErrorText : null;
   }
 
@@ -46,12 +42,12 @@ class RoomModel with RoomValidators {
   }
 
   RoomModel copyWith({
-    String name,
-    bool isLoading,
-    bool isSubmitted,
-    String token,
-    String identity,
-    TwilioRoomType type,
+    String? name,
+    bool? isLoading,
+    bool? isSubmitted,
+    String? token,
+    String? identity,
+    TwilioRoomType? type,
   }) {
     return RoomModel(
       name: name ?? this.name,

@@ -74,9 +74,9 @@ void main() {
       );
     });
 
-    test('SkipAbleLocalParticipantEvent.toString() should return correct String', () {
-      final event = SkipAbleLocalParticipantEvent();
-      expect(event.toString(), 'SkipAbleLocalParticipantEvent');
+    test('SkippableLocalParticipantEvent.toString() should return correct String', () {
+      final event = SkippableLocalParticipantEvent();
+      expect(event.toString(), 'SkippableLocalParticipantEvent');
     });
   });
 }

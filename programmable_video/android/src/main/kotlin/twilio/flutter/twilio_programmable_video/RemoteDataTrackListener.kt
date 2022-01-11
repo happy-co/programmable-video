@@ -4,9 +4,10 @@ import com.twilio.video.RemoteDataTrack
 import java.nio.ByteBuffer
 
 class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
+    private val TAG = "RemoteDataTrackListener"
 
     override fun onMessage(remoteDataTrack: RemoteDataTrack, message: ByteBuffer) {
-        TwilioProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (ByteBuffer): $message ")
+        debug("onMessage => sid: ${remoteDataTrack.sid}, message (ByteBuffer): $message ")
 
         sendEvent("bufferMessage", mapOf(
                 "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack),
@@ -15,7 +16,7 @@ class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
     }
 
     override fun onMessage(remoteDataTrack: RemoteDataTrack, message: String) {
-        TwilioProgrammableVideoPlugin.debug("RemoteDataTrackListener.onMessage => sid: ${remoteDataTrack.sid}, message (String): $message")
+        debug("onMessage => sid: ${remoteDataTrack.sid}, message (String): $message")
 
         sendEvent("stringMessage", mapOf(
                 "remoteDataTrack" to remoteDataTrackToMap(remoteDataTrack),
@@ -39,5 +40,9 @@ class RemoteDataTrackListener : BaseListener(), RemoteDataTrack.Listener {
             }
             return null
         }
+    }
+
+    internal fun debug(msg: String) {
+        TwilioProgrammableVideoPlugin.debug("$TAG::$msg")
     }
 }

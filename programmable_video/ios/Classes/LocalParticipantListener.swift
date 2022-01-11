@@ -3,8 +3,10 @@ import Foundation
 import TwilioVideo
 
 class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
+    let TAG = "LocalParticipantListener"
+
     func localParticipantDidPublishAudioTrack(participant: LocalParticipant, audioTrackPublication: LocalAudioTrackPublication) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishAudioTrack => " +
+        debug("didPublishAudioTrack => " +
             "trackSid: \(audioTrackPublication.trackSid), " +
             "isTrackEnabled: \(audioTrackPublication.isTrackEnabled)"
         )
@@ -15,7 +17,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantDidFailToPublishAudioTrack(participant: LocalParticipant, audioTrack: LocalAudioTrack, error: Error) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishAudioTrack => \(error)")
+        debug("didFailToPublishAudioTrack => \(error)")
         sendEvent("audioTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
             "localAudioTrack": LocalParticipantListener.localAudioTrackToDict(audioTrack) as Any
@@ -23,7 +25,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantDidPublishDataTrack(participant: LocalParticipant, dataTrackPublication: LocalDataTrackPublication) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishDataTrack => " +
+        debug("didPublishDataTrack => " +
             "trackSid: \(dataTrackPublication.trackSid), " +
             "isTrackEnabled: \(dataTrackPublication.isTrackEnabled)"
         )
@@ -34,7 +36,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantDidFailToPublishDataTrack(participant: LocalParticipant, dataTrack: LocalDataTrack, error: Error) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishDataTrack => \(error)")
+        debug("didFailToPublishDataTrack => \(error)")
         sendEvent("dataTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
             "localDataTrack": LocalParticipantListener.localDataTrackToDict(dataTrack) as Any
@@ -42,7 +44,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didPublishVideoTrack => " +
+        debug("didPublishVideoTrack => " +
             "trackSid: \(videoTrackPublication.trackSid), " +
             "isTrackEnabled: \(videoTrackPublication.isTrackEnabled)"
         )
@@ -53,7 +55,7 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantDidFailToPublishVideoTrack(participant: LocalParticipant, videoTrack: LocalVideoTrack, error: Error) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didFailToPublishVideoTrack => \(error)")
+        debug("didFailToPublishVideoTrack => \(error)")
         sendEvent("videoTrackPublicationFailed", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
             "localVideoTrack": LocalParticipantListener.localVideoTrackToDict(videoTrack) as Any
@@ -61,11 +63,11 @@ class LocalParticipantListener: BaseListener, LocalParticipantDelegate {
     }
 
     func localParticipantNetworkQualityLevelDidChange(participant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
-        SwiftTwilioProgrammableVideoPlugin.debug("LocalParticipantListener.didChangeNetworkQualityLevel =>" +
-                                                    "sid: \(participant.sid ?? "")")
-sendEvent("networkQualityLevelChanged", data: [
+        debug("didChangeNetworkQualityLevel =>" +
+                "sid: \(participant.sid ?? "")")
+        sendEvent("networkQualityLevelChanged", data: [
             "localParticipant": LocalParticipantListener.localParticipantToDict(participant) as Any,
-    "networkQualityLevel": Mapper.networkQualityLevelToString(networkQualityLevel) as Any
+            "networkQualityLevel": Mapper.networkQualityLevelToString(networkQualityLevel) as Any
         ])
     }
 
@@ -168,5 +170,9 @@ sendEvent("networkQualityLevelChanged", data: [
             ]
         }
         return nil
+    }
+
+    func debug(_ msg: String) {
+        SwiftTwilioProgrammableVideoPlugin.debug("\(TAG)::\(msg)")
     }
 }

@@ -37,7 +37,7 @@ void main() {
       'name': localVideoTrack.name,
       'enabled': localVideoTrack.enabled,
       'videoCapturer': {
-        'cameraSource': EnumToString.parse(localVideoTrack.cameraCapturer.source),
+        'source': localVideoTrack.cameraCapturer.source?.toMap(),
         'type': localVideoTrack.cameraCapturer.type,
       }
     },
@@ -50,120 +50,13 @@ void main() {
 
   final networkQualityLevel = NetworkQualityLevel.NETWORK_QUALITY_LEVEL_ONE;
 
-  group('LocalParticipantModel()', () {
-    test('should not construct without identity', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: null,
-          sid: sid,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without sid', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: null,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without sid', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: sid,
-          signalingRegion: null,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without sid', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: sid,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: null,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without localAudioTrackPublications', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: sid,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: null,
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without localDataTrackPublications', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: sid,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: null,
-          localVideoTrackPublications: [ModelInstances.localVideoTrackPublicationModel],
-        ),
-        throwsAssertionError,
-      );
-    });
-
-    test('should not construct without localVideoTrackPublications', () {
-      expect(
-        () => LocalParticipantModel(
-          identity: identity,
-          sid: sid,
-          signalingRegion: signalingRegion,
-          networkQualityLevel: networkQualityLevel,
-          localAudioTrackPublications: [ModelInstances.localAudioTrackPublicationModel],
-          localDataTrackPublications: [ModelInstances.localDataTrackPublicationModel],
-          localVideoTrackPublications: null,
-        ),
-        throwsAssertionError,
-      );
-    });
-  });
-
   group('.fromEventChannelMap()', () {
     test('should correctly construct from Map', () {
       final map = {
         'identity': identity,
         'sid': sid,
         'signalingRegion': signalingRegion,
-        'networkQualityLevel': EnumToString.parse(networkQualityLevel),
+        'networkQualityLevel': EnumToString.convertToString(networkQualityLevel),
         'localAudioTrackPublications': [localAudioTrackPublicationMap],
         'localDataTrackPublications': [localDataTrackPublicationMap],
         'localVideoTrackPublications': [localVideoTrackPublicationMap]
@@ -194,12 +87,9 @@ void main() {
       expect(model.localVideoTrackPublications[0].localVideoTrack.enabled, localVideoTrack.enabled);
       expect(model.localVideoTrackPublications[0].localVideoTrack.name, localVideoTrack.name);
       expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.isScreencast, localVideoTrack.cameraCapturer.isScreencast);
-      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source, localVideoTrack.cameraCapturer.source);
-    });
-
-    test('should not construct from incorrect Map', () {
-      final map = {'identity': null};
-      expect(() => LocalParticipantModel.fromEventChannelMap(map), throwsAssertionError);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.cameraId, localVideoTrack.cameraCapturer.source?.cameraId);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.isFrontFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
+      expect(model.localVideoTrackPublications[0].localVideoTrack.cameraCapturer.source?.isBackFacing, localVideoTrack.cameraCapturer.source?.isBackFacing);
     });
   });
 

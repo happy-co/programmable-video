@@ -1,3 +1,83 @@
+## 0.11.0+1
+
+- Throw `ActiveCallException` if we cannot activate the `AVAudioSession` (iOS) or get Audio Focus (Android) on `connect`.
+
+## 0.11.0
+
+- Added responsive management of audio settings using `setAudioSettings`.
+- Added optional integration with `ocarina` on Android to allow for integrated audio focus management.
+- Made improvements to `AVAudioEngineDevice`.
+- Deprecated `setSpeakerPhoneOn`.
+- Added audio device notifications to dart layer.
+- **Android** Normalized camera ID when interacting with `CameraManager` to address a crash introduced by the formatting used by `Camera1Enumerator`.
+
+## 0.10.0+1
+
+- Bumped minor versions of dependencies.
+
+## 0.10.0
+
+- **BREAKING**: Migrated TwilioVideo iOS SDK from v3 to v4.
+- **BREAKING**: Migrated TwilioVideo Android SDK from v5 to v6.
+- **BREAKING**: Replaced `CameraSource` enum with a class variant to represent a potential source for camera capturing.
+- **BREAKING**: The `CameraCapturer.hasTorch()` method has been replaced with a simple getter to it's `CameraSource` `hasTorch` property.
+- Retrieving `CameraSource`s can be done using `CameraSource.getSources()` method.
+
+## 0.9.0+2
+
+- Fixed remote video stats (replaced an incorrect map key).
+
+## 0.9.0+1
+
+- Fixed typo in stats (trackSide -> trackSid).
+
+## 0.9.0
+
+- **BREAKING**: Made `exception` property of ConnectFailure, Reconnecting and Disconnected events nullable.
+
+## 0.8.0+1
+
+- Removed incorrect `!` from `local_video_track_model.dart`.
+
+## 0.8.0
+
+- **BREAKING CHANGE**: Added null safety support.
+
+## 0.7.2+1
+
+- **Android** Fixed type mismatch in `hasTorch` implementations that prevent building on gradle `4.x.x`.
+
+## 0.7.2
+
+- Added method for fetching stats.
+
+## 0.7.1
+
+- Added method for checking if device has a builtin earpiece.
+
+## 0.7.0+2
+
+- **iOS**: Fixed an uncommented line fragment that `swiftlint` missed in `AVAudioEngineDevice`.
+
+## 0.7.0+1
+
+- **iOS**: Updated AVAudioEngineDevice memory management.
+- **iOS**: Refactored AVAudioEngineDevice initialization process.
+
+## 0.7.0
+
+- **BREAKING CHANGE**: Updated plugin_platform_interface dep.
+
+## 0.6.4+1
+
+- **iOS**: Re-added AudioDevice initialization logic to beginning of setSpeakerPhoneOn.
+
+## 0.6.4
+
+- **iOS**: Adjusted `AudioDevice` initialization logic to allow users of the plugin to provide a custom `AudioDevice`.
+- **iOS**: Added `AVAudioEngineDevice`, a custom `AudioDevice`. Details in README.md.
+- **Android**: Fixed build issue with gradle version 4.1.0 and higher.
+
 ## 0.6.3+1
 
 - Added fallback logic for when `Camera2Capturer` is not supported on Android.

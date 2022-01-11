@@ -15,8 +15,7 @@ class LocalAudioTrackPublicationFailedEvent {
     this.localParticipant,
     this.localAudioTrack,
     this.twilioException,
-  )   : assert(localParticipant != null),
-        assert(localAudioTrack != null);
+  );
 }
 
 class LocalAudioTrackPublishedEvent {
@@ -29,8 +28,7 @@ class LocalAudioTrackPublishedEvent {
   LocalAudioTrackPublishedEvent(
     this.localParticipant,
     this.localAudioTrackPublication,
-  )   : assert(localParticipant != null),
-        assert(localAudioTrackPublication != null);
+  );
 }
 //#endregion
 
@@ -49,8 +47,7 @@ class LocalDataTrackPublicationFailedEvent {
     this.localParticipant,
     this.localDataTrack,
     this.twilioException,
-  )   : assert(localParticipant != null),
-        assert(localDataTrack != null);
+  );
 }
 
 class LocalDataTrackPublishedEvent {
@@ -63,8 +60,7 @@ class LocalDataTrackPublishedEvent {
   LocalDataTrackPublishedEvent(
     this.localParticipant,
     this.localDataTrackPublication,
-  )   : assert(localParticipant != null),
-        assert(localDataTrackPublication != null);
+  );
 }
 //#endregion
 
@@ -79,8 +75,7 @@ class LocalNetworkQualityLevelChangedEvent implements NetworkQualityLevelChanged
   LocalNetworkQualityLevelChangedEvent(
     this.localParticipant,
     this.networkQualityLevel,
-  )   : assert(localParticipant != null),
-        assert(networkQualityLevel != null);
+  );
 }
 
 //#region VIDEO TRACK EVENTS
@@ -98,8 +93,7 @@ class LocalVideoTrackPublicationFailedEvent {
     this.localParticipant,
     this.localVideoTrack,
     this.twilioException,
-  )   : assert(localParticipant != null),
-        assert(localVideoTrack != null);
+  );
 }
 
 class LocalVideoTrackPublishedEvent {
@@ -112,7 +106,6 @@ class LocalVideoTrackPublishedEvent {
   LocalVideoTrackPublishedEvent(
     this.localParticipant,
     this.localVideoTrackPublication,
-  )   : assert(localParticipant != null),
-        assert(localVideoTrackPublication != null);
+  );
 }
 //#endregion

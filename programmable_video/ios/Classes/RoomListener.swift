@@ -3,6 +3,8 @@ import Foundation
 import TwilioVideo
 
 class RoomListener: BaseListener, RoomDelegate {
+    let TAG = "RoomListener"
+
     public var connectOptions: ConnectOptions
 
     public var room: Room?
@@ -12,12 +14,12 @@ class RoomListener: BaseListener, RoomDelegate {
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidFailToConnect => room sid is '\(room.sid)', error is \(error)")
+        debug("roomDidFailToConnect => room sid is '\(room.sid)', error is \(error)")
         sendEvent("connectFailure", data: [ "room": roomToDict(room) ], error: error)
     }
 
     func roomDidConnect(room: Room) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidConnect => room sid is '\(room.sid)'")
+        debug("roomDidConnect => room sid is '\(room.sid)'")
         sendEvent("connected", data: [ "room": roomToDict(room) ])
 
         for remoteParticipant in room.remoteParticipants {
@@ -27,12 +29,17 @@ class RoomListener: BaseListener, RoomDelegate {
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidDisconnect => room sid is '\(room.sid)', error is \(String(describing: error))")
+        debug("roomDidDisconnect => room sid is '\(room.sid)', error is \(String(describing: error))")
+
+        if let onDisconnect = SwiftTwilioProgrammableVideoPlugin.audioDeviceOnDisconnected {
+            onDisconnect()
+        }
+
         sendEvent("disconnected", data: [ "room": roomToDict(room) ], error: error)
     }
 
     func roomDidReconnect(room: Room) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidReconnect   => room sid is '\(room.sid)'")
+        debug("roomDidReconnect   => room sid is '\(room.sid)'")
         sendEvent("reconnected", data: [ "room": roomToDict(room) ])
 
         for remoteParticipant in room.remoteParticipants {
@@ -41,33 +48,33 @@ class RoomListener: BaseListener, RoomDelegate {
     }
 
     func roomIsReconnecting(room: Room, error: Error) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomIsReconnecting => room sid is '\(room.sid)', error is \(error)")
+        debug("roomIsReconnecting => room sid is '\(room.sid)', error is \(error)")
         sendEvent("reconnecting", data: [ "room": roomToDict(room) ], error: error)
     }
 
     func roomDidStartRecording(room: Room) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidStartRecording => room sid is '\(room.sid)'")
+        debug("roomDidStartRecording => room sid is '\(room.sid)'")
         sendEvent("recordingStarted", data: [ "room": roomToDict(room) ])
     }
 
     func roomDidStopRecording(room: Room) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.roomDidStopRecording => room sid is '\(room.sid)'")
+        debug("roomDidStopRecording => room sid is '\(room.sid)'")
         sendEvent("recordingStopped", data: [ "room": roomToDict(room) ])
     }
 
     func participantDidConnect(room: Room, participant: RemoteParticipant) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.participantDidConnect => room sid is '\(room.sid)', remoteParticipant sid is '\(String(describing: participant.sid))'")
+        debug("participantDidConnect => room sid is '\(room.sid)', remoteParticipant sid is '\(String(describing: participant.sid))'")
         sendEvent("participantConnected", data: [ "room": roomToDict(room) as Any, "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant) ])
         participant.delegate = SwiftTwilioProgrammableVideoPlugin.remoteParticipantListener
     }
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.participantDidDisconnect => room sid is '\(room.sid)', remoteParticipant sid is '\(String(describing: participant.sid))'")
+        debug("participantDidDisconnect => room sid is '\(room.sid)', remoteParticipant sid is '\(String(describing: participant.sid))'")
         sendEvent("participantDisconnected", data: [ "room": roomToDict(room) as Any, "remoteParticipant": RemoteParticipantListener.remoteParticipantToDict(participant) as Any ])
     }
 
     func dominantSpeakerDidChange(room: Room, participant: RemoteParticipant?) {
-        SwiftTwilioProgrammableVideoPlugin.debug("RoomListener.dominantSpeakerDidChange => room sid is '\(room.sid)', dominantSpeaker sid is '\(participant != nil ? String(describing: participant!.sid) : "N/A")'")
+        debug("dominantSpeakerDidChange => room sid is '\(room.sid)', dominantSpeaker sid is '\(participant != nil ? String(describing: participant!.sid) : "N/A")'")
         sendEvent("dominantSpeakerChanged", data: [ "room": roomToDict(room) as Any, "remoteParticipant": (participant != nil ? RemoteParticipantListener.remoteParticipantToDict(participant!) : nil) as Any])
     }
 
@@ -106,5 +113,9 @@ class RoomListener: BaseListener, RoomDelegate {
        }
 
        return dict
+    }
+
+    func debug(_ msg: String) {
+        SwiftTwilioProgrammableVideoPlugin.debug("\(TAG)::\(msg)")
     }
 }

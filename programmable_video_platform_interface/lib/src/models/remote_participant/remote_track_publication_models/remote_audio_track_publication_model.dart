@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:twilio_programmable_video_platform_interface/src/models/model_exports.dart';
 
 /// Model that a plugin implementation can use to construct a RemoteAudioTrackPublication.
@@ -9,19 +7,18 @@ class RemoteAudioTrackPublicationModel {
   final String sid;
   final String name;
 
-  final RemoteAudioTrackModel remoteAudioTrack;
+  final RemoteAudioTrackModel? remoteAudioTrack;
 
   const RemoteAudioTrackPublicationModel({
-    this.subscribed,
-    this.enabled,
-    @required this.sid,
-    @required this.name,
-    @required this.remoteAudioTrack,
-  })  : assert(sid != null),
-        assert(name != null);
+    required this.subscribed,
+    required this.enabled,
+    required this.sid,
+    required this.name,
+    required this.remoteAudioTrack,
+  });
 
   factory RemoteAudioTrackPublicationModel.fromEventChannelMap(Map<String, dynamic> map) {
-    RemoteAudioTrackModel remoteAudioTrack;
+    RemoteAudioTrackModel? remoteAudioTrack;
     if (map['remoteAudioTrack'] != null) {
       remoteAudioTrack = RemoteAudioTrackModel.fromEventChannelMap(Map<String, dynamic>.from(map['remoteAudioTrack']));
     }
