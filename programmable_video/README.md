@@ -45,7 +45,7 @@ Open the `AndroidManifest.xml` file in your `android/app/src/main` directory and
 <uses-permission android:name="android.permission.CAMERA"/>
 <uses-permission android:name="android.permission.BLUETOOTH"/>
 <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-...
+    ...
 ```
 
 ##### Proguard
@@ -101,6 +101,29 @@ Open the `Info.plist` file in your `ios/Runner` directory and add the following 
 <true/>
 ...
 ```
+
+Open the `Podfile` file in your `ios` directory and add the following permissions:
+
+```
+...
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_MICROPHONE=1',
+        # Add other permissions required by your app
+      ]
+
+    end
+  end
+end
+...
+```
+For an example check out the `Podfile` of the example application.
+
 
 ##### Setting minimal iOS target to 11
 

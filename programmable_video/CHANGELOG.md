@@ -1,3 +1,7 @@
+## 0.12.0
+
+- **BREAKING**: Updated permission_handler dependency from 7.0.0 to 8.3.0
+
 ## 0.11.1
 
 - Added null-safety check for `BluetoothAdapter.getDefaultAdapter()`. It returns null when called on an Android Emulator.
