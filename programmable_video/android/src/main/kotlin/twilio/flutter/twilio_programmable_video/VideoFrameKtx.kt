@@ -68,7 +68,7 @@ fun VideoFrame.toJpeg(): ByteArray? {
     val bitmap = toBitmap()
     return if (bitmap != null) {
         val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
         bitmap.recycle()
         stream.toByteArray()
     } else {

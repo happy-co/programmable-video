@@ -125,7 +125,7 @@ public class PluginHandler: BaseListener {
     private func takePhoto(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         debug("PluginHandler.takePhoto => called")
         if let frameToKeep = stillFrameRenderer.frameToKeep {
-            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, 1.0))
+            return result(screenshotOfVideoStream(frameToKeep.imageBuffer, 0.8))
         }
         return result(FlutterError(code: "NOT FOUND", message: "No frame data has been captured", details: nil))
     }
