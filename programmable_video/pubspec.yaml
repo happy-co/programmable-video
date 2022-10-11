@@ -13,7 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^7.0.0
+  permission_handler: ^9.2.0
   enum_to_string: ^2.0.1
   twilio_programmable_video_platform_interface:
     git:
