@@ -10,36 +10,35 @@ import io.flutter.plugin.platform.PlatformViewFactory
 class ParticipantViewFactory(createArgsCodec: MessageCodec<Any>, private val plugin: PluginHandler) : PlatformViewFactory(createArgsCodec) {
     private val TAG = "RoomListener"
 
-    override fun create(context: Context, viewId: Int, args: Any?): PlatformView? {
+    override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
         var videoTrack: VideoTrack? = null
+        val params = args as? Map<*, *> ?: throw IllegalStateException("args cannot be null")
 
-        if (args != null) {
-            val params = args as Map<String, Any>
-            if (params.containsKey("isLocal")) {
-                debug("create => constructing local view")
+        if (params["isLocal"] == true) {
+            debug("create => constructing local view with params: '${params.values.joinToString(", ")}'")
+            val localVideoTrackName = params["name"] as? String ?: ""
                 val localParticipant = plugin.getLocalParticipant()
-                if (localParticipant != null && localParticipant.localVideoTracks != null && localParticipant.localVideoTracks?.size != 0) {
-                    videoTrack = localParticipant.localVideoTracks!![0].localVideoTrack
+                if (localParticipant?.localVideoTracks?.isNotEmpty() == true) {
+                    videoTrack = localParticipant.localVideoTracks.firstOrNull()?.localVideoTrack
                 }
-            } else {
-                debug("create => constructing view with params: '${params.values.joinToString(", ")}'")
-                if (params.containsKey("remoteParticipantSid") && params.containsKey("remoteVideoTrackSid")) {
-                    val remoteParticipant = plugin.getRemoteParticipant(params["remoteParticipantSid"] as String)
-                    val remoteVideoTrack = remoteParticipant?.remoteVideoTracks?.find { it.trackSid == params["remoteVideoTrackSid"] }
-                    if (remoteParticipant != null && remoteVideoTrack != null) {
-                        videoTrack = remoteVideoTrack.remoteVideoTrack
-                    }
-                }
-            }
 
-            if (videoTrack != null) {
-                val videoView = VideoView(context)
-                videoView.mirror = params["mirror"] as Boolean
-                return ParticipantView(videoView, videoTrack)
+        } else {
+            debug("create => constructing view with params: '${params.values.joinToString(", ")}'")
+            if ("remoteParticipantSid" in params && "remoteVideoTrackSid" in params) {
+                val remoteParticipant = plugin.getRemoteParticipant(params["remoteParticipantSid"] as String)
+                val remoteVideoTrack = remoteParticipant?.remoteVideoTracks?.find { it.trackSid == params["remoteVideoTrackSid"] }
+                if (remoteParticipant != null && remoteVideoTrack != null) {
+                    videoTrack = remoteVideoTrack.remoteVideoTrack
+                }
             }
         }
 
-        return null
+        if (videoTrack == null) {
+            throw IllegalStateException("Could not create VideoTrack")
+        }
+        val videoView = VideoView(context as Context)
+        videoView.mirror = params["mirror"] as Boolean
+        return ParticipantView(videoView, videoTrack)
     }
 
     internal fun debug(msg: String) {
