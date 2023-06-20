@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cloud_functions: ^1.0.5
+  cloud_functions: ^3.0.3
   rxdart: ^0.26.0
   provider: ^5.0.0
   native_device_orientation: ^1.0.0
